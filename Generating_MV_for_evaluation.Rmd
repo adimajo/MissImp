@@ -1,0 +1,103 @@
+---
+title: "Generating missing values for evaluation"
+output:
+  html_document:
+    df_print: paged
+---
+## 1.Preparation
+#### (1)Load packages
+```{r}
+suppressPackageStartupMessages(require(MASS))
+suppressPackageStartupMessages(require(norm))
+suppressPackageStartupMessages(require(VIM))
+suppressPackageStartupMessages(require(ggplot2))
+suppressPackageStartupMessages(require(naniar))
+suppressPackageStartupMessages(require(usethis))
+library("devtools")
+source_url('https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R')
+set.seed(1)
+```
+
+#### (2)Generate complete data
+```{r}
+# Sample data generation ------------------------------------------------------
+# Generate complete data
+mu.X <- c(1, 1)
+Sigma.X <- matrix(c(1, 1, 1, 4), nrow = 2)
+n <- 100
+X.complete.cont <- mvrnorm(n, mu.X, Sigma.X)
+lambda <- 0.5
+X.complete.discr <- rpois(n, lambda)
+n.cat <- 5
+X.complete.cat <- rbinom(n, size=5, prob = 0.5)
+X.complete <- data.frame(cbind(X.complete.cont, X.complete.discr, X.complete.cat))
+X.complete[,4] <- as.factor(X.complete[,4])
+levels(X.complete[,4]) <- c("F", "E", "D", "C", "B", "A")
+head(X.complete)
+```
+
+## 2.Generate missing values with certains mechanisms
+#### (1)MCAR
+Missing values are generated using a Bernoulli distribution of parameter perc.missing.
+
+The missing proportion of the generated incomplete dataset will be at least perc.missing.
+```{r}
+# Sample mcar missing data -----------------------------------------
+mcar <- produce_NA(X.complete, mechanism="MCAR", perc.missing = 0.2) 
+X.mcar <- mcar$data.incomp
+R.mcar <- mcar$idx_newNA
+#writeLines(paste0("Percentage of newly generated missing values: ", 100*sum(R.mcar)/prod(dim(R.mcar)), " %"))
+#matrixplot(X.mcar,  cex.axis = 0.5, interactive = F)# red parts show the positions of the missing values
+```
+#### (2)MAR
+Two methods:
+
+1. Generate missing values of X_i with all the other columns, applying a logistic model.
+
+2. Using patterns (One missing value per row or user-defined patterns).
+```{r}
+#Method 1
+mar <- produce_NA(X.complete, mechanism="MAR", perc.missing = 0.2, by.patterns= F)
+```
+#### (3)MNAR
+Two methods:
+
+1. Generate missing values of X_i with all the columns, applying a logistic model.
+
+2. Self-masked.
+```{r}
+#Method 1 -----------------------------------------
+mnar <- produce_NA(X.complete, mechanism="MNAR", perc.missing = 0.2, by.patterns= F)
+# Method2 -----------------------------------------
+mnar <- produce_NA(X.complete, mechanism="MNAR", perc.missing = 0.2, self.mask="lower", idx.incomplete = c(1,1,0,0))
+```
+
+## 3.Parameters of produce_NA function
+#### (1)idx.incomplete
+This parameter shows the columns where missing values are generated. For instance, if idx.incomplete = c(1,1,1,0), then there won't be any missing values in the last column.
+
+#### (2)Covariates and Covariates weights (only for MAR and NMAR)
+idx.covariates =c(1,1,1,0,0,0,0) means we only use the first three variables in the missing model.
+
+weights.covariates = c(1/3, 1/3, 1/3, 0, 0, 0, 0) shows the weights of each variable in the missing model.
+
+#### (3)Patterns (Only for MAR and NMAR)
+The default pattern gives one missing value per row.
+
+patterns gives possible case of missing values. In the example below, the situation of (1,1,NA,1) is impossible. we could also specify the frequency of each pattern with freq.patterns.
+```{r}
+# Sample missing data by using the by.patterns option and user-specified patterns ----
+miss <- produce_NA(X.complete, mechanism="MAR", perc.missing = 0.2, idx.incomplete = c(1,0,1,1), by.patterns = T, patterns  = matrix(c(0,1,1,1,                                                                                                                  1,1,0,0), ncol = 4, byrow=T), freq.patterns = c(0.2, 0.8))
+X.miss <- miss$data.incomp
+R.miss <- miss$idx_newNA
+```
+
+#### (4)Logistic model
+Four options of model: left-tailed ("LEFT"), right-tailed ("RIGHT"), centered ("MID"), both-tailed ("TAIL").
+
+This is the model applied on \sum w*x to calculate the probability of missing values.
+
+
+
+
+
