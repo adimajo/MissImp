@@ -1,137 +1,8 @@
-tab.disjonctif.NA <- function(tab) {
-  print("In tab.disjonctif.NA")
-  tab <- as.data.frame(tab)
-  modalite.disjonctif <- function(i) {
-    moda <- tab[, i]
-    nom <- names(tab)[i]
-    print(paste("nom:", nom))
-    n <- length(moda)
-    print(paste("n:", n))
-    moda <- as.factor(moda)
-    x <- matrix(0, n, length(levels(moda)))
-    ind <- (1:n) + n * (unclass(moda) - 1)
-    indNA <- which(is.na(ind))
-    x[(1:n) + n * (unclass(moda) - 1)] <- 1
-    x[indNA, ] <- NA
-    if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) 
-      dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
-    else dimnames(x) <- list(row.names(tab), levels(moda))
-    return(x)
-  }
-  if (ncol(tab) == 1) 
-    res <- modalite.disjonctif(1)
-  else {
-    res <- lapply(1:ncol(tab), modalite.disjonctif)
-    res <- as.matrix(data.frame(res, check.names = FALSE))
-  }
-  print("Done tab.disjonctif.NA")
-  return(res)
-}
-
-
-# from missForest package
-prodna<-function (x, noNA){
-  print("In prodna")
-  n <- nrow(x)
-  p <- ncol(x)
-  NAloc <- rep(FALSE, n * p)
-  NAloc[sample(n * p, floor(n * p * noNA))] <- TRUE
-  x[matrix(NAloc, nrow = n, ncol = p)] <- NA
-  print("Done prodna")
-  return(x)
-}
-
-
-
-estim_ncpFAMD<-function (don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"), 
-                         method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05,ind.sup=NULL,sup.var=NULL,
-                         threshold = 1e-04, verbose=TRUE) 
-{
-  print("In estim_ncpFAMD")
-  #  if(!("numeric"%in%(lapply(don,class)) & "factor"%in%(lapply(don,class)))){stop("Your data set must contain mixed data.")}
-  don <- as.data.frame(don)
-  if (!is.null(ind.sup)) don <- don[-ind.sup,]
-  if (!is.null(sup.var)) don <- don[,-sup.var]
-  if((sum(sapply(don,is.numeric))==0) || (sum(!sapply(don,is.numeric))==0)){stop("Your data set must contain mixed data.")}
-  method <- match.arg(method, c("Regularized", "regularized","EM", "em"), several.ok = T)[1]
-  method.cv <- match.arg(method.cv, c("loo", "Kfold", "kfold", "LOO"), several.ok = T)[1]
-  method <- tolower(method)
-  method.cv <- tolower(method.cv)
-  #reagencement des variables
-  jeu<-don[,c(which(sapply(don,is.numeric)),which(sapply(don,is.factor))),drop=F]
-  nbquanti<-sum(sapply(don,is.numeric))
-  jeu[,1:nbquanti]=lapply(jeu[,1:nbquanti,drop=FALSE],as.double)
-  
-  #suppression niveaux non pris
-  jeu <- droplevels(jeu)
-  
-  vrai.tab = cbind(jeu[,1:nbquanti,drop=F],tab.disjonctif.NA(jeu[,(nbquanti+1):ncol(jeu),drop=F]))
-  if (method.cv == "kfold"){
-    print("In kfold")
-    res = matrix(NA, ncp.max - ncp.min + 1, nbsim)
-    if(verbose) pb <- txtProgressBar(min=1/nbsim*100, max=100,style=3)
-    for (sim in 1:nbsim){
-      print(paste("sim:", sim))
-      continue<-TRUE
-      while(continue){
-        jeuNA <- prodna(jeu, pNA)
-        continue<-    continue<- (sum(unlist(sapply(as.data.frame(droplevels(jeuNA[,-c(1:nbquanti),drop=F])),nlevels)))!=sum(unlist(sapply(jeu,nlevels))))
-      }
-      
-      for (nbaxes in ncp.min:ncp.max) {
-        print(paste("nbaxes:", nbaxes))
-        tab.disj.comp <- imputeFAMD(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold)$tab.disj
-        if (sum(is.na(jeuNA)) != sum(is.na(jeu))){ 
-          res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE)/(sum(is.na(tab.disjonctif.NA(jeuNA))) - sum(is.na(tab.disjonctif.NA(jeu))))
-        }
-      }
-      if(verbose) setTxtProgressBar(pb, sim/nbsim*100)
-    }
-    crit = apply(res, 1, mean, na.rm = TRUE)
-    names(crit) <- c(ncp.min:ncp.max)
-    if(verbose) close(pb)
-    result = list(ncp = as.integer(which.min(crit) + ncp.min - 1), criterion = crit)
-    print("Done estim_ncpFAMD")
-    return(result)
-  }
-  
-  if (method.cv == "loo") {
-    if(verbose) pb <- txtProgressBar(min = 0, max = 100, style = 3)
-    crit <- NULL
-    tab.disj.hat <- vrai.tab
-    col.in.indicator <- c(0, rep(1,nbquanti),sapply(jeu[,(nbquanti:ncol(jeu)),drop=F], nlevels))
-    for (nbaxes in ncp.min:ncp.max) {
-      for (i in 1:nrow(jeu)) {
-        for (j in 1:ncol(jeu)) {
-          if (!is.na(jeu[i, j])) {
-            jeuNA <- as.matrix(jeu)
-            jeuNA[i, j] <- NA
-            if(!any(summary(jeuNA[,j]==0))){
-              tab.disj.hat[i, (cumsum(col.in.indicator)[j] +1):(cumsum(col.in.indicator)[j + 1])] <- imputeFAMD(as.data.frame(jeuNA), 
-                                                                                                                ncp = nbaxes, method = method, threshold = threshold)$tab.disj[i, 
-                                                                                                                                                                               (cumsum(col.in.indicator)[j] + 1):(cumsum(col.in.indicator)[j + 1])]
-            }
-          }
-        }
-        if(verbose) setTxtProgressBar(pb, round((((1:length(ncp.min:ncp.max))[which(nbaxes==(ncp.min:ncp.max))]-1)*nrow(jeu)+i)/(length(ncp.min:ncp.max)*nrow(jeu))*100))    
-      }
-      crit <- c(crit, mean((tab.disj.hat - vrai.tab)^2, na.rm = TRUE))
-    }
-    if(verbose) close(pb)
-    names(crit) <- c(ncp.min:ncp.max)
-    print("Done estim_ncpFAMD")
-    return(list(ncp = as.integer(which.min(crit) + ncp.min - 
-                                   1), criterion = crit))
-  }
-}
-
-
-
 
 #Bootstrap
 #Input: 1 incomplete dataset
 #Output: num_sample incomplete dataset
-#Suggest that num_sample > Ln n, where n is the number of rows
+#Suggest that num_sample > Log(n), where n is the number of rows
 bootsample = function(df,num_sample){
   num_row = nrow(df)
   if(num_sample<log(num_row)){
@@ -151,7 +22,7 @@ bootsample = function(df,num_sample){
 
 #Jackknife
 #Input: 1 incomplete dataset
-#Output: B incomplete dataset
+#Output: num_sample incomplete dataset
 jacksample = function(df, num_sample){
   num_row = nrow(df)
   row_tranch = num_row %/% num_sample
@@ -161,7 +32,15 @@ jacksample = function(df, num_sample){
   start = 1
   while(i <= num_sample-rest){ # num_sample-rest samples with row_tranch rows
     end = start + row_tranch -1
-    df_new = df[start:end,]
+    if(start==1){
+      df_new = df[(end+1):num_row,]
+    }
+    else if(end==num_row){
+      df_new = df[1:(start-1),]
+    }
+    else{
+      df_new = df[c(1:(start-1),(end+1):num_row),]
+    }
     #df_new[["old_idx"]] = c(start:end)
     ls_df_new[[i]] = df_new
     i = i + 1
@@ -170,7 +49,7 @@ jacksample = function(df, num_sample){
   
   while(i <= num_sample){ # rest samples with row_tranch+1 rows
     end = start + (row_tranch + 1) -1
-    df_new = df[start:end,]
+    df_new = df[c(1:(start-1),(end+1):num_row),]
     #df_new[["old_idx"]] = c(start:end)
     ls_df_new[[i]] = df_new
     i = i + 1
@@ -181,70 +60,263 @@ jacksample = function(df, num_sample){
 
 
 # The most frequent result for one categorical variable
+# Used in combine_boot with method = 'factor'
 Mode_cat = function(x) {
   ux = unique(x)
   return(ux[which.max(tabulate(match(x, ux)))])
 }
 
+# Calculate the Wilcox's VarNC for a vector of categorical values
+VA_fact=function(x){
+  lev_miss = length(levels(x))-length(unique(x))
+  freq = table(x)/length(x)
+  return(VA(c(freq, rep(0,lev_miss))))
+}
 
-# Combine imputed bootstrap and jackknife datasets
-# We need to pay extra attention to the categorical variables
-# We could take the category with the largest probability
-combine_boot = function(ls_df, col_con, col_dis, col_cat, num_row_origin){
+# Combine imputed bootstrap datasets
+# Coded for onehot categorical variables and the factor encoded categorical variables
+# Input: a list of imputed bootstrapped dataset
+# Output: the final combined imputed dataset and the variance for each imputation
+combine_boot = function(ls_df, col_con, col_dis, col_cat, num_row_origin, method='onehot',dict_cat=NULL, var_cat='unalike'){
+  method = match.arg(method, c("onehot","factor"))
+  var_cat = match.arg(var_cat, c("unalike","wilcox_va"))
+  is_unalike = (var_cat=='unalike')
+  is_onehot = (method=='onehot')
+  if(is_onehot & is.null(dict_cat)){
+    stop("dict_cat is needed when the method is onehot.")
+  }
   ls_df_new = list()
-  i = 1
+  
   ls_col_name = colnames(ls_df[[1]])
   col_num = c(col_con,col_dis)
+  exist_dis = !all(c(0,col_dis)==c(0))
+  if(exist_dis){
+    col_name_dis = ls_col_name[col_dis]
+  }
+  exist_cat =  !all(c(0,col_cat)==c(0))
+  if(exist_cat){
+    col_name_cat = ls_col_name[col_cat]
+    if(is_onehot){
+      col_name_cat = ls_col_name[col_cat]
+      #We treat everything as numeric if the categorical variables are encoded by onehot probability
+      col_num = c(col_num,col_cat)
+    }
+  }
   col_name_num = ls_col_name[col_num]
-  col_name_cat = ls_col_name[col_cat]
-  col_name_dis = ls_col_name[col_dis]
+  
+  # Deal with doublets in each imputed dataset
+  i = 1
   for(df in ls_df){
     df$index <- as.numeric(row.names(df))
-    #print(df[order(df$index), ])
     df$index = floor(df$index)
     df_num = aggregate(.~index , data =df[c("index",col_name_num)], mean)
-    df_cal = aggregate(.~index , data =df[c("index",col_name_cat)], Mode_cat)
+    if(exist_cat && !is_onehot){
+      df_cat = aggregate(.~index , data =df[c("index",col_name_cat)], Mode_cat)
+      ls_df_new[[i]] = merge(df_num,df_cat,by="index")
+    }
+    else{
+      ls_df_new[[i]] = df_num
+    }
+    
     # the expected number of rows is n(1-(n-1)^k/n^k) where k = n
     # expectation of unique rows for sampling with replacement
     # We need a varaince matrix here to pass ? No, see https://stats.stackexchange.com/questions/399382/bootstrap-rubins-rules-and-uncertainty-of-sub-estimates
-    ls_df_new[[i]] = merge(df_num,df_cal,by="index")
+    
     i = i + 1
   }
   
+  # Combine all imputed datasets together
   df_new_merge = Reduce(function(dtf1, dtf2) rbind(dtf1, dtf2),ls_df_new)
+  #Add the combined result for categorical variables deducted from the onehot result
+  if(exist_cat && is_onehot){
+    names_cat = names(dict_cat)
+    which_max_cat = function(x, name){
+      return(dict_cat[[name]][which.max(x)])
+    }
+    for(name in names_cat){
+      df_new_merge[[name]]=apply(df_new_merge[dict_cat[[name]]],1,which_max_cat,name)
+      df_new_merge[[name]]=unlist(df_new_merge[[name]])
+      df_new_merge[[name]]=factor(df_new_merge[[name]])
+    }
+  }
+  
   #By Bootstrap combining rules
   df_new_mean_num = aggregate(.~index , data =df_new_merge[c("index",col_name_num)], mean)
-  df_new_mode_cat = aggregate(.~index , data =df_new_merge[c("index",col_name_cat)], Mode_cat)
-  df_new = merge(df_new_mean_num,df_new_mode_cat,by="index")
-  df_new[col_name_dis] = round(df_new[col_name_dis]) # for the discret variables
-  df_new = factor_encode(df_new, col_cat+1) # +1 is for the index column
-  
   df_new_num_var = aggregate(.~index , data =df_new_merge[c("index",col_name_num)], var)
-  df_new_cat_unalike = aggregate(.~index , data =df_new_merge[c("index",col_name_cat)], unalike)
-  df_new_var = merge(df_new_num_var,df_new_cat_unalike,by="index")
-  # We need to use unalikeability to mesure the uncertainty of the categorical variables
+  if(exist_dis){
+    df_new_mean_num[col_name_dis] = round(df_new_mean_num[col_name_dis]) # for the discret variables
+  }
   
-  
+  if(exist_cat && !is_onehot){
+    df_new_merge=factor_encode(df_new_merge,col_cat+1)
+    df_new_mode_cat = aggregate(.~index , data =df_new_merge[c("index",col_name_cat)], Mode_cat)
+    df_new = merge(df_new_mean_num,df_new_mode_cat,by="index")
+    df_new = factor_encode(df_new, col_cat+1) # +1 is for the index column
+    if(is_unalike){
+      df_new_cat_var = aggregate(.~index , data =df_new_merge[c("index",col_name_cat)], unalike)
+    }
+    else{
+      df_new_cat_var = df_new_merge[c("index",col_name_cat)] %>% group_by(index) %>% summarise(across(col_name_cat, VA_fact))
+      #df_new_cat_var = aggregate(.~index , data =df_new_merge[c("index",col_name_cat)], VA_fact)
+    }
+    df_new_var = merge(df_new_num_var,df_new_cat_var,by="index")
+    # We need to use unalikeability to mesure the uncertainty of the categorical variables
+  }
+  else{
+    df_new = df_new_mean_num
+    df_new_var = df_new_num_var
+  }
+  #Add the combined result for categorical variables deducted from the onehot result to df_new
+  if(is_onehot && exist_cat){
+    for(name in names_cat){
+      df_new[[name]]=apply(df_new[dict_cat[[name]]],1,which_max_cat,name)
+      df_new[[name]]=unlist(df_new[[name]])
+    }
+    if(is_unalike){
+      df_new_cat_var = aggregate(.~index , data =df_new_merge[c("index",names_cat)], unalike)
+    }
+    else{
+      df_new_cat_var = df_new_merge[c("index",names_cat)] %>% group_by(index) %>% summarise(across(names_cat, VA_fact))
+      #df_new_cat_var = aggregate(.~index , simplify=FALSE, data =df_new_merge[c("index",names_cat)], VA_fact)
+    }
+    df_new_var = merge(df_new_num_var,df_new_cat_var,by="index")
+  }
+
+  # Add the uncovered rows, fill in with NA
   num_row_new = nrow(df_new)
   if(num_row_new<num_row_origin){
     print(paste0("Covered number of rows: ", num_row_new))
     print(paste0("Original number of rows: ", num_row_origin))
     warning("Warning: All the rows in the original dataset is not selected in the bootstrap samples. An increase on the number of bootstrap samples is suggested.\n")
   }
-  # Add the uncovered rows, fill in with NA
   df_idx = data.frame("index"=c(1:num_row_origin))
   df_result_with_idx = merge(x = df_idx, y = df_new, by = "index", all = TRUE)
   df_result_var_with_idx = merge(x = df_idx, y = df_new_var, by = "index", all = TRUE)
   
-  #remove index column
-  df_result=subset(df_result_with_idx, select=-c(1))
-  df_result_var=subset(df_result_var_with_idx, select=-c(1))
-  return(list("imp"=df_result,"uncertainty"=df_result_var))
+  #remove index column and the combined categorical columns
+  if(is_onehot && exist_cat){
+    df_result_disj=df_result_with_idx[,!(names(df_result_with_idx) %in% c(names_cat,'index'))]
+    df_result_var_disj=df_result_var_with_idx[,!(names(df_result_with_idx) %in% c(names_cat,'index'))]
+  }
+  else{
+    df_result_disj=df_result_with_idx[-c(1)]
+    df_result_var_disj=df_result_var_with_idx[-c(1)]
+  }
+  
+ 
+  
+  #Final result for the categorical variables
+  if(is_onehot){
+    df_result = df_result_with_idx[-c(1,col_cat+1)] #remove index and onehot columns, +1 is for the adjustment
+    df_result_var = df_result_var_with_idx[-c(1,col_cat+1)]
+  }
+  else{
+    df_result = df_result_disj
+    df_result_var = df_result_var_disj
+  }
+  
+  
+  
+  return(list("imp.disj"=df_result_disj,"uncertainty.disj"=df_result_var_disj, "imp"=df_result, "uncertainty"=df_result_var))
   
 }
 
 
-# Calculate the missing proportion in MAR3
+# Combine imputed jackknife datasets
+# Only coded for onehot categorical variables
+# Input: a list of imputed jackknifed dataset and a imputed whole dataset
+# Output: the final combined imputed dataset and the variance for each imputation
+combine_jack = function(ls_df, df_full, col_con, col_dis, col_cat, method='onehot',dict_cat=NULL,var_cat='unalike'){
+  ls_df_minus = list()
+  ls_col_name = colnames(ls_df[[1]])
+  exist_dis = !all(c(0,col_dis)==c(0))
+  if(exist_dis){
+    col_name_dis = ls_col_name[col_dis]
+  }
+  exist_cat = !all(c(0,col_cat)==c(0))
+  if(exist_cat){
+    col_name_cat = ls_col_name[col_cat]
+    var_cat = match.arg(var_cat, c("unalike","wilcox_va"))
+    is_unalike = (var_cat=='unalike')
+    if(is.null(dict_cat)){
+      stop("dict_cat is needed when there are onehot categorical columns")
+    }
+  }
+  i = 1
+  n_sample = length(ls_df)
+  df_full$index <- as.numeric(row.names(df_full))
+  while(i<=n_sample){
+    ls_df[[i]]$index <- as.numeric(row.names(ls_df[[i]]))
+    #only for numeric columns
+    ls_df_minus[[i]]= n_sample * df_full[which(df_full$index %in% ls_df[[i]]$index),] - (n_sample-1)*ls_df[[i]]
+    ls_df_minus[[i]]$index = ls_df[[i]]$index
+    i = i + 1
+  }
+  # Put all imputed datasets together
+  df_new_merge = Reduce(function(dtf1, dtf2) rbind(dtf1, dtf2),ls_df_minus)
+  #Add the combined result for categorical variables deducted from the onehot result
+  if(exist_cat){
+    names_cat = names(dict_cat)
+    which_max_cat = function(x, name){
+      return(dict_cat[[name]][which.max(x)])
+    }
+    for(name in names_cat){
+      df_new_merge[[name]]=apply(df_new_merge[dict_cat[[name]]],1,which_max_cat,name)
+      df_new_merge[[name]]=unlist(df_new_merge[[name]])
+      df_new_merge[[name]]=factor(df_new_merge[[name]])
+    }
+  }
+ 
+
+  
+  #By Jackknife combining rules for disjunctive part
+  df_new = aggregate(.~index , data =df_new_merge[c("index",ls_col_name)], mean)# Here for each indice, there are n_sample-1 values
+  if(exist_dis){
+    df_new[col_name_dis] = round(df_new[col_name_dis]) # round for the discret variables
+  }
+  df_new_var_disj = aggregate(.~index , data =df_new_merge[c("index",ls_col_name)], var)
+  df_new_var_disj[c(ls_col_name)] = df_new_var_disj[c(ls_col_name)]/(n_sample-1)
+  
+  
+  #Final result according to the mean of onehot probability
+  if(exist_cat){
+    for(name in names_cat){
+      df_new[[name]]=apply(df_new[dict_cat[[name]]],1,which_max_cat,name)
+      df_new[[name]]=unlist(df_new[[name]])
+      df_new[[name]]=factor(df_new[[name]])
+    }
+    df_result = df_new[-c(1,col_cat+1)] #remove the index and the onehot columns
+    if(is_unalike){
+      df_new_cat_var = aggregate(.~index , data =df_new_merge[c("index",names_cat)], unalike)
+    }
+    else{
+      df_new_cat_var = df_new_merge[c("index",names_cat)] %>% group_by(index) %>% summarise(across(names_cat, VA_fact))
+    }
+    
+    df_new_var = merge(df_new_var_disj,df_new_cat_var,by="index")
+    df_result_var = df_new_var[-c(1,col_cat+1)] #remove the index and the onehot columns
+    
+    
+    #remove index column and the combined categorical columns
+    df_result_disj=df_new[,!(names(df_new) %in% c(names_cat,'index'))]
+    df_result_var_disj=df_new_var[,!(names(df_new) %in% c(names_cat,'index'))]
+    return(list("imp.disj"=df_result_disj,"uncertainty.disj"=df_result_var_disj,"imp"=df_result, "uncertainty"=df_result_var))
+    
+  }
+  else{
+    return(list("imp"=df_new[-c(1)], "uncertainty"=df_new_var_disj[-c(1)]))
+    
+  }
+  
+  
+ }
+
+
+
+
+
+
+# Calculate the missing proportion in MAR3, used in 'generate_miss'
 # Solve (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1)
 # where m = miss_perc, p = num_co
 monot_quantil = function(miss_perc,num_col){
@@ -261,6 +333,9 @@ monot_quantil = function(miss_perc,num_col){
   
 }
 
+# Generate missing values with different mechanisms
+# Input: A complete dataset, the mechanism and the proportion of missingness
+# Output: A dataset with missing values according to the mechanism and the proportion of missingness
 generate_miss = function( df,
                           miss_perc,
                           mechanism="MCAR", # c("MCAR", "MAR1", "MAR2","MAR3","MNAR1","MNAR2")
@@ -368,7 +443,7 @@ generate_miss_ls = function(df, miss_perc){
 }
 
 
-
+# Encoding functions
 ordinal_encode = function(df, idx_col_cat){
   for(j in idx_col_cat){
     df[,j] = as.numeric(factor(df[,j], levels=levels(df[,j])))
@@ -389,7 +464,10 @@ normalize_num = function(df, idx_col_num){
 }
 
 
-#Create the matrix of p-value for dummy t-chi-test
+
+
+
+# Create the matrix of p-value for dummy t-chi-test
 dummy_test_matrix = function(df, col_cat){
   test_result_dummy = data.frame()
   df = factor_encode(df,col_cat)  # in case the categorical column is not a factor
@@ -458,9 +536,10 @@ dummy_test_matrix = function(df, col_cat){
   return(test_result_dummy)
 }
 
-#The combined p-value for dummy t-chi-test
-#(Assume that the tests are independent: a correct assumption under MCAR?)
-#Fisher's method
+# The combined p-value for dummy t-chi-test
+# (Assume that the tests are independent: a correct assumption under MCAR?)
+# Input: an incomplete dataset and the index of the categorical columns
+# Output: a matrix of p-values of the dummy tests and a final p-value combined by Fisher's method
 dummy_test = function(df, col_cat){
   p_matrix = dummy_test_matrix(df, col_cat)
   p_vector = as.vector(p_matrix)
@@ -473,7 +552,9 @@ dummy_test = function(df, col_cat){
 
 
 
-#There are density comparing functions for some of the imputation method, but here we try to define the function that could be used for every method
+# There are density comparing functions for some of the imputation method, but here we try to define the function that could be used for every method
+# Input: two datasets with same column names
+# Output: the comparison of the density distribution for each column
 dens_comp = function(df_comp,df_imp){
   ls_col_name = colnames(df_comp)
   ls_p = list()
@@ -485,9 +566,10 @@ dens_comp = function(df_comp,df_imp){
   }
 }
 
-#MSE ( average over missing number?)
-#As we did a scale operation on the complete dataset, we may need to rescale the output imputed data set then calculate the MSE
-#Input: Only the numeric part of dataframes
+# MSE ( average over missing number)
+# As we did a scale operation on the complete dataset, we may need to rescale the output imputed data set then calculate the MSE
+# Input: Original dataset, list of imputed dataset, mask of missingness, column index for numerical columns
+# Output: A list of MSE values for each imputation result, a average MSE value, variance of MSE
 ls_MSE = function(df_comp, ls_df_imp, mask, col_num) {
   ls_mse_result = c()
   mask_num = mask[,col_num]*1
@@ -505,9 +587,9 @@ ls_MSE = function(df_comp, ls_df_imp, mask, col_num) {
 }
 
 
-
-#F1
-# need to concate 
+# F1
+# Input: Original dataset, list of imputed dataset, mask of missingness, column index for categorical columns
+# Output: A list of F1-scores for each imputation result, a average F1-score, variance of F1-score
 ls_F1 =function(df_comp, ls_df_imp, mask, col_cat){
   ls_f1_result = c()
   i = 1

@@ -6,31 +6,31 @@ output:
 ---
 
 ```{r}
-suppressPackageStartupMessages(require(MASS))
-suppressPackageStartupMessages(require(norm))
-suppressPackageStartupMessages(require(VIM))
-suppressPackageStartupMessages(require(ggplot2))
-suppressPackageStartupMessages(require(ggpubr))
-suppressPackageStartupMessages(require(naniar))
-suppressPackageStartupMessages(require(usethis))
-suppressPackageStartupMessages(require(MissMech)) # removed from the CRAN repository.
-#suppressPackageStartupMessages(require(BaylorEdPsych)) # removed from the CRAN repository.
-#suppressPackageStartupMessages(require(mvnmle)) # cannot find 
-suppressPackageStartupMessages(require(rlist))
-suppressPackageStartupMessages(require(boot))
-suppressPackageStartupMessages(require(devtools))
-suppressPackageStartupMessages(require(Amelia))
-suppressPackageStartupMessages(require(abind))
-suppressPackageStartupMessages(require(missMethods))
-suppressPackageStartupMessages(require(gbutils))
-suppressPackageStartupMessages(require(pracma))
-suppressPackageStartupMessages(require(gdata))
-#suppressPackageStartupMessages(require(caret))
-suppressPackageStartupMessages(require(stats))
-suppressPackageStartupMessages(require(missForest))
-suppressPackageStartupMessages(require(missMDA))
-suppressPackageStartupMessages(require(uwo4419))
-
+library(MASS)
+library(norm)
+library(VIM)
+library(ggplot2)
+library(ggpubr)
+library(naniar)
+library(usethis)
+library(MissMech) # removed from the CRAN repository.
+#library(BaylorEdPsych) # removed from the CRAN repository.
+#library(mvnmle) # cannot find 
+library(rlist)
+library(boot)
+library(devtools)
+library(Amelia)
+library(abind)
+library(missMethods)
+library(gbutils)
+library(pracma)
+library(gdata)
+#library(caret)
+library(stats)
+library(missForest)
+library(missMDA)
+library(uwo4419)
+library(qualvar)
 source_url('https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R')
 source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/mcar-test.R')
 source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/utils.R')
@@ -236,56 +236,88 @@ final_result_mcar
 
 ```{r}
 # Create bootstrap and jackknife datasets
-
+# Bootstrap needs big number of samples
+# Jackknife has a problem with categorical variables
 df_with_mv = list_df.mix[[2]]
+# names_cat = names(dict_name_cat)
+# for(name in names_cat){
+#   df_with_mv[[name]]=factor(df_with_mv[[name]])
+#   levels(df_with_mv[[name]])=dict_name_cat[[name]]
+# }
 ls_boot = bootsample(df_with_mv,4)
 ls_jack = jacksample(df_with_mv,4)
 ```
 
 ```{r}
+#Create a dictionary {Y7:Y7_1,Y7_2,...}, {Y_7: Y_7_1, Y_7_2,...}
+dict_onehot = function(df, col_cat){
+  dict_name = list()
+  ls_col_name = colnames(df)
+  for(i in col_cat){
+    col_cat_name = ls_col_name[i]
+    dict_name[[col_cat_name]]=paste(col_cat_name, levels(df[[col_cat_name]]), sep = "_")
+  }
+  return(dict_name)
+}
+
+dict_name_cat = dict_onehot(df_with_mv, c(7:8))
+```
+
+
+
+```{r}
 #Imputation (for example PCA with 3 dimension)
-ls.imp.pca = list()
+ls.imp.pca.onehot = list()
+ls.imp.pca.fact = list()
+idx_col_cat = c(7:8)
 i = 1
 num_col = ncol(df_with_mv)
 for(df in ls_boot){
   df = factor_encode(df, idx_col_cat)
-  pca = imputeFAMD(df, ncp = 3, maxiter = 200)
-  ls.imp.pca[[i]] = pca$comp
+  pca = imputeFAMD(df, ncp = 3, maxiter = 20)
+  ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
+  ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
 }
-
 ```
 
 ```{r}
-combine_boot(ls.imp.pca,col_con=c(1:5),col_dis=c(6),col_cat=c(7:8), num_row_origin = 10000)
+rs0 = combine_boot(ls.imp.pca.fact,col_con=c(1:5),col_dis=c(6),col_cat=c(7:8), num_row_origin = 10000, method="factor",dict_cat=dict_name_cat, var_cat = 'wilcox_va')
+rs = combine_boot(ls.imp.pca.onehot,col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), num_row_origin = 10000, method="onehot", dict_cat=dict_name_cat, var_cat = 'unalike')
 ```
 
 
+
+
 ```{r}
-#Imputation (for example PCA with 3 dimension)
-ls.imp.pca = list()
+#Imputation for ls_jack (for example PCA with 3 dimension)
+ls.imp.pca.onehot = list()
+ls.imp.pca.fact = list()
 i = 1
 num_col = ncol(df_with_mv)
 for(df in ls_jack){
   df = factor_encode(df, idx_col_cat)
-  pca = imputeFAMD(df, ncp = 3, maxiter = 200)
-  ls.imp.pca[[i]] = pca$comp
+  #Input: an incomplete dataset
+  #Outout: an imputed dataset (onehot or factor for categorical)
+  pca = imputeFAMD(df, ncp = 3, maxiter = 20)
+  ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
+  ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
 }
 
 ```
 
-
 ```{r}
-ls.imp.pca
+df_full = df_with_mv
+df_full = factor_encode(df_with_mv, idx_col_cat)
+pca_full = imputeFAMD(df_full, ncp = 3, maxiter = 20)
+imp.pca_full.onehot = pca_full$tab.disj
+imp.pca_full.fact = pca_full$completeObs
 ```
 
-
-
 ```{r}
-combine_jack = function(ls_df, col_con, col_dis, col_cat, num_row_origin){
-  
-}
+rs_jack0=combine_jack(ls.imp.pca.onehot,data.frame(imp.pca_full.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'unalike')
+rs_jack1=combine_jack(ls.imp.pca.onehot,data.frame(imp.pca_full.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'wilcox_va')
 ```
 
 
@@ -337,10 +369,30 @@ ls_F1(df_comp,imp_amelia$imputations,mask,col_cat)
 
 
 #### (3)Missforest
+
+
 ```{r}
 list_df.mix[[2]] = factor_encode(list_df.mix[[2]], idx_col_cat)
-imp.forest = missForest(xmis = list_df.mix[[2]], maxiter = 20, ntree = 100)
+library(caret)
+data=list_df.mix[[2]]
+dummy <- dummyVars(" ~ .", data=data, sep = "_")
+newdata <- data.frame(predict(dummy, newdata = data)) 
+newdata
 ```
+
+
+
+```{r}
+# We could pass onehot-encoded categorical variables in 
+imp.forest = missForest(xmis = newdata, maxiter = 20, ntree = 100)
+```
+
+
+```{r}
+imp.forest$ximp
+```
+
+
 
 ```{r}
 ls_MSE(df_comp,list(imp.forest$ximp),mask,col_num)
@@ -352,8 +404,8 @@ ls_F1(df_comp,list(imp.forest$ximp),mask,col_cat)
 
 ```{r}
 list_df.mix[[2]] = factor_encode(list_df.mix[[2]], idx_col_cat)
-ncp.pca = estim_ncpFAMD(list_df.mix[[2]], method.cv="Kfold", verbose=T)$ncp
-pca = imputeFAMD(list_df.mix[[2]], ncp = 3)
+ncp.pca = estim_ncpFAMD(list_df.mix[[2]], method.cv="Kfold", verbose=T, maxiter = 50)$ncp
+pca = imputeFAMD(list_df.mix[[2]], ncp = 5)
 imp.pca = pca$comp
 ```
 
