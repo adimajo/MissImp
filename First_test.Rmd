@@ -373,26 +373,10 @@ ls_F1(df_comp,imp_amelia$imputations,mask,col_cat)
 
 ```{r}
 list_df.mix[[2]] = factor_encode(list_df.mix[[2]], idx_col_cat)
-library(caret)
-data=list_df.mix[[2]]
-dummy <- dummyVars(" ~ .", data=data, sep = "_")
-newdata <- data.frame(predict(dummy, newdata = data)) 
-newdata
-```
-
-
-
-```{r}
-# We could pass onehot-encoded categorical variables in 
-imp.forest = missForest(xmis = newdata, maxiter = 20, ntree = 100)
-```
-
-
-```{r}
+imp.forest = missForest(xmis = list_df.mix[[2]], maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
 imp.forest$ximp
+imp.forest$ximp.disj
 ```
-
-
 
 ```{r}
 ls_MSE(df_comp,list(imp.forest$ximp),mask,col_num)
