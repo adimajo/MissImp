@@ -1,0 +1,114 @@
+image: r-base:4.0.5
+
+stages:
+  - lint
+  - build
+  - document
+  - check
+  - test
+  - coverage
+  - checkrhub
+  - deploy
+
+variables:
+  _R_CHECK_CRAN_INCOMING_: "false"
+  _R_CHECK_FORCE_SUGGESTS_: "true"
+
+.before_script_template:
+  before_script:
+    - apt-get update
+    - apt-get -y install libxml2-dev
+    - apt-get -y install libssl-dev
+    - apt-get -y install libcurl4-openssl-dev
+    - apt-get -y install libgit2-dev
+    - apt-get -y install libssh2-1-dev
+    - apt-get -y install pandoc
+    - r -e "install.packages('devtools')"
+    - r -e 'devtools::install_deps()'
+
+lint:
+  extends: .before_script_template
+  stage: lint
+  script:
+    - r -e "install.packages('styler')"
+    - r inst/pipeline/lint.R
+
+buildbinary:
+  extends: .before_script_template
+  stage: build
+  script:
+    - r -e 'devtools::build(binary = TRUE)'
+
+documentation:
+  extends: .before_script_template
+  stage: document
+  script:
+    - apt-get -y install libfontconfig1-dev
+    - apt-get -y install libharfbuzz-dev libfribidi-dev
+    - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+    - r -e "install.packages('pkgdown')"
+    - r inst/pipeline/document.R
+
+checkerrors:
+  extends: .before_script_template
+  stage: check
+  script:
+    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
+
+checkwarnings:
+  extends: .before_script_template
+  stage: check
+  script:
+    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
+  allow_failure: true
+
+checknotes:
+  extends: .before_script_template
+  stage: check
+  script:
+    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
+  allow_failure: true
+
+unittestserrors:
+  extends: .before_script_template
+  stage: test
+  script:
+    - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
+
+unittestswarnings:
+  extends: .before_script_template
+  stage: test
+  script:
+    - r -e 'if (sum(as.data.frame(devtools::test())[["warning"]]) > 0) stop("Some tests yielded a warning.")'
+  allow_failure: true
+
+coverage:
+  extends: .before_script_template
+  stage: coverage
+  script:
+    - apt-get -y install libfontconfig1-dev
+    - apt-get -y install libharfbuzz-dev libfribidi-dev
+    - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+    - r -e "install.packages('renv')"
+    - r -e 'renv::load()'
+    - r -e 'renv::restore()'
+    - r -e 'print(devtools::test_coverage())'
+
+check_mswin:
+  extends: .before_script_template
+  stage: checkrhub
+  script:
+    - r -e 'devtools::install()'
+    - Rscript inst/pipeline/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
+
+check_macos:
+  extends: .before_script_template
+  stage: checkrhub
+  script:
+    - r -e 'devtools::install()'
+    - Rscript inst/pipeline/rhubcheck.R "macos-highsierra-release-cran" "$RHUB_TOKEN"
+
+deploy:
+  stage: deploy
+  script:
+    - exit 1
