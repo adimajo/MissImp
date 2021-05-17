@@ -1,5 +1,5 @@
 #' Create the matrix of p-value for dummy t-chi-test
-#'
+#' 
 #' @description
 #' \code{dummy_test_matrix} TODO
 #' @param df TODO
@@ -53,7 +53,7 @@ dummy_test_matrix = function(df, col_cat) {
             critc_0) {
           #the situation of critic_1 && critic_0 is discussed before
           if (critc_1 && !critc_0) {
-            test_result_dummy[i, col_test] = t.test(R_0[[col_test]] * 1, mu = 1)$p.value
+            test_result_dummy[i, col_test] = stats::t.test(R_0[[col_test]] * 1, mu = 1)$p.value
           }
           else{
             test_result_dummy[i, col_test] = t.test(R_1[[col_test]] * 1, mu = 1)$p.value
