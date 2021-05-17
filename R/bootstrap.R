@@ -116,7 +116,7 @@ combine_boot <- function(ls_df,
     else {
       df_new_cat_var <- df_new_merge[c("index", col_name_cat)] %>%
         group_by(index) %>%
-        summarise(across(col_name_cat, VA_fact))
+        dplyr::summarise(across(col_name_cat, VA_fact))
       # df_new_cat_var = aggregate(.~index , data =df_new_merge[c("index",col_name_cat)], VA_fact)
     }
     df_new_var <- merge(df_new_num_var, df_new_cat_var, by = "index")
@@ -138,7 +138,7 @@ combine_boot <- function(ls_df,
     else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         group_by(index) %>%
-        summarise(across(names_cat, VA_fact))
+        dplyr::summarise(across(names_cat, VA_fact))
       # df_new_cat_var = aggregate(.~index , simplify=FALSE, data =df_new_merge[c("index",names_cat)], VA_fact)
     }
     df_new_var <- merge(df_new_num_var, df_new_cat_var, by = "index")

@@ -45,8 +45,8 @@ jacksample <- function(df, num_sample) {
 combine_jack <- function(ls_df,
                          df_full,
                          col_con,
-                         col_dis,
-                         col_cat,
+                         col_dis = c(),
+                         col_cat = c(),
                          method = "onehot",
                          dict_cat = NULL,
                          var_cat = "unalike") {
@@ -73,6 +73,10 @@ combine_jack <- function(ls_df,
     # only for numeric columns
     ls_df_minus[[i]] <- n_sample * df_full[which(df_full$index %in% ls_df[[i]]$index), ] - (n_sample -
       1) * ls_df[[i]]
+    if(exist_cat){
+      ls_df_minus[[i]][col_name_cat][ls_df_minus[[i]][col_name_cat] < 0] <- 0
+    }
+    
     ls_df_minus[[i]]$index <- ls_df[[i]]$index
     i <- i + 1
   }
@@ -119,7 +123,7 @@ combine_jack <- function(ls_df,
     else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         group_by(index) %>%
-        summarise(across(names_cat, VA_fact))
+        summarise(across(all_of(names_cat), VA_fact))
     }
 
     df_new_var <- merge(df_new_var_disj, df_new_cat_var, by = "index")
