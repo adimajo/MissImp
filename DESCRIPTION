@@ -11,6 +11,15 @@ LazyData: true
 Language: en
 RoxygenNote: 7.1.1
 Imports:
-    stats
+    stats,
+    MASS,
+    norm,
+    gdata,
+    mice,
+    missMethods,
+    pracma,
+    mltools
 Suggests: 
-    testthat (>= 2.1.0)
+    testthat (>= 2.1.0),
+    mathjaxr
+RdMacros: mathjaxr

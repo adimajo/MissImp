@@ -1,3 +1,37 @@
+#' ordinal_encode
+#' @description Ordinal encode the categorical columns in a dataframe
+#' @param df Dataframe
+#' @param idx_col_cat Categorical columns index
+#' @return Dataframe after ordinal encoding the categorical columns
+ordinal_encode <- function(df, idx_col_cat) {
+  for (j in idx_col_cat) {
+    df[, j] <- as.numeric(factor(df[, j], levels = levels(df[, j])))
+  }
+  return(df)
+}
+
+#' factor_encode
+#' @description Factor encode the categorical columns in a dataframe
+#' @param df Dataframe
+#' @param idx_col_cat Categorical columns index
+#' @return Dataframe after factor encoding the categorical columns
+factor_encode <- function(df, idx_col_cat) {
+  for (j in idx_col_cat) {
+    df[, j] <- factor(df[, j])
+  }
+  return(df)
+}
+
+#' normalize_num
+#' @description Scale the numerical columns in a dataframe
+#' @param df Dataframe
+#' @param idx_col_num Numerical columns index
+#' @return Dataframe after scaling the numerical columns
+normalize_num <- function(df, idx_col_num) {
+  df[, idx_col_num] <- data.frame(apply(df[, idx_col_num], 2, scale))
+  return(df)
+}
+
 # The most frequent result for one categorical variable
 # Used in combine_boot with method = 'factor'
 Mode_cat <- function(x) {
@@ -13,18 +47,4 @@ VA_fact <- function(x) {
 }
 
 
-# Calculate the missing proportion in MAR3, used in 'generate_miss'
-# Solve (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1)
-# where m = miss_perc, p = num_co
-monot_quantil <- function(miss_perc, num_col) {
-  m <- miss_perc
-  p <- num_col
-  tmp_result <- c()
-  tempt <- linspace(0.01, 1, n = 1000)
-  i <- 1
-  for (x in tempt) {
-    tmp_result[i] <- abs((1 - x)^p + (1 - m) * p * x - 1)
-    i <- i + 1
-  }
-  return(tempt[which.min(tmp_result)])
-}
+

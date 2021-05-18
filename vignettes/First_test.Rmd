@@ -13,7 +13,7 @@ library(ggplot2)
 library(ggpubr)
 library(naniar)
 library(usethis)
-library(MissMech) # removed from the CRAN repository.
+#library(MissMech) # removed from the CRAN repository.
 #library(BaylorEdPsych) # removed from the CRAN repository.
 #library(mvnmle) # cannot find 
 library(rlist)
@@ -25,12 +25,13 @@ library(missMethods)
 library(gbutils)
 library(pracma)
 library(gdata)
-#library(caret)
+library(caret)
 library(stats)
 library(missForest)
 library(missMDA)
 library(uwo4419)
 library(qualvar)
+library(dplyr)
 source_url('https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R')
 source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/mcar-test.R')
 source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/utils.R')
@@ -38,7 +39,7 @@ source_url('https://raw.githubusercontent.com/LqNoob/Machine-Learning-Evaluation
 
 
 
-source("functions.R")
+source("../R/functions.R")
 set.seed(43)
 ```
 
@@ -54,21 +55,21 @@ mu.X = c(1, 2, 3)
 Sigma.X = matrix(c(9, 3, 2,
                     3, 4, 0,
                     2, 0, 1), nrow = 3)
-X.complete.cont = mvrnorm(n, mu.X, Sigma.X)#multivariate normal distribution
+X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)#multivariate normal distribution
 
 mu1.X = c(9, 8)
 Sigma1.X = matrix(c(16, 14,
                      14, 25), nrow = 2)
 
-X.complete.cont1 = mvrnorm(n, mu1.X, Sigma1.X)#multivariate normal distribution
+X.complete.cont1 = MASS::mvrnorm(n, mu1.X, Sigma1.X)#multivariate normal distribution
 
 lambda = 4.3
-X.complete.discr = rpois(n, lambda) #poisson distribution
+X.complete.discr = stats::rpois(n, lambda) #poisson distribution
 
 
-X.complete.cat = rbinom(n, size=5, prob = 0.4) #binomial
+X.complete.cat = stats::rbinom(n, size=5, prob = 0.4) #binomial
 
-X.complete.cat2 = rbinom(n, size=7, prob = 0.6) #binomial
+X.complete.cat2 = stats::rbinom(n, size=7, prob = 0.6) #binomial
 
 X.complete = data.frame(cbind(X.complete.cont,X.complete.cont1, X.complete.discr, X.complete.cat, X.complete.cat2))
 X.complete[,7] = as.factor(X.complete[,7])
@@ -369,10 +370,91 @@ ls_F1(df_comp,imp_amelia$imputations,mask,col_cat)
 
 
 #### (3)Missforest
+```{r}
+list_df.mix[[2]] = factor_encode(list_df.mix[[2]], idx_col_cat)
+df_with_mv = list_df.mix[[2]]
+ls_boot = bootsample(df_with_mv,4)
+ls_jack = jacksample(df_with_mv,4)
+```
+
+```{r}
+#Imputation
+ls.imp.forest.boot.onehot = list()
+ls.imp.forest.boot.fact = list()
+idx_col_cat = c(7:8)
+i = 1
+num_col = ncol(df_with_mv)
+for(df in ls_boot){
+  df = factor_encode(df, idx_col_cat)
+  imp.forest = missForest(xmis = df, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+  ls.imp.forest.boot.onehot[[i]] = imp.forest$ximp.disj
+  ls.imp.forest.boot.fact[[i]] = imp.forest$ximp
+  i = i + 1
+}
+```
 
 
 ```{r}
-list_df.mix[[2]] = factor_encode(list_df.mix[[2]], idx_col_cat)
+rs0 = combine_boot(ls.imp.forest.boot.fact,col_con=c(1:5),col_dis=c(6),col_cat=c(7:8), num_row_origin = 10000, method="factor",dict_cat=dict_name_cat, var_cat = 'wilcox_va')
+rs = combine_boot(ls.imp.forest.boot.onehot,col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), num_row_origin = 10000, method="onehot", dict_cat=dict_name_cat, var_cat = 'unalike')
+rs0
+rs
+```
+
+```{r}
+#Imputation for ls_jack (for example PCA with 3 dimension)
+ls.imp.forest.jack.onehot = list()
+ls.imp.forest.jack.fact = list()
+i = 1
+num_col = ncol(df_with_mv)
+for(df in ls_jack){
+  df = factor_encode(df, idx_col_cat)
+  #Input: an incomplete dataset
+  #Outout: an imputed dataset (onehot or factor for categorical)
+  imp.forest = missForest(xmis = df, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+  ls.imp.forest.jack.onehot[[i]] = imp.forest$ximp.disj
+  ls.imp.forest.jack.fact[[i]] = imp.forest$ximp
+  i = i + 1
+}
+
+```
+
+```{r}
+df_full = df_with_mv
+df_full = factor_encode(df_with_mv, idx_col_cat)
+imp.forest_full = missForest(xmis = df_full, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+ls.imp.forest_full.jack.onehot = imp.forest_full$ximp.disj
+ls.imp.forest_full.jack.fact = imp.forest_full$ximp
+```
+
+```{r}
+rs_jack0=combine_jack(ls.imp.forest.jack.onehot,data.frame(ls.imp.forest_full.jack.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'unalike')
+rs_jack1=combine_jack(ls.imp.forest.jack.onehot,data.frame(ls.imp.forest_full.jack.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'wilcox_va')
+rs_jack0
+rs_jack1
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
 imp.forest = missForest(xmis = list_df.mix[[2]], maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
 imp.forest$ximp
 imp.forest$ximp.disj
