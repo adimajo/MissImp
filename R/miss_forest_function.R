@@ -3,18 +3,53 @@
 ##
 ## This R script contains the actual missForest function.
 ##
-## Author: D.Stekhoven, stekhoven@stat.math.ethz.ch
+## Author: Daniel Stekhoven, stekhoven@stat.math.ethz.ch
 ##
 ## Acknowledgement: Steve Weston for input regarding parallel execution (2012)
 ##############################################################################
-
-missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
+#' missForest_mod: modified missForest with onehot probability
+#' 
+#' @description \code{missForest_mod} is a modified version of the function \code{missForest} by Daniel Stekhoven.
+#' Please find the detailed documentation of \code{missForest} in the missForest package. Only the modifications are explained on this page.
+#' The original \code{missForest} function returns the final imputation result after convergence or \code{maxiter} iterations. 
+#' The results of categorical columns are returned in form of vector. In \code{missForest_mod} function, during the last iteration,
+#' not only the final result, but also the onehot probability for each category is returned.
+#' @param xmis data matrix with missing values.
+#' @param maxiter stop after how many iterations (default = 10).
+#' @param ntree how many trees are grown in the forest (default = 100).
+#' @param col_cat index of categorical columns.
+#' @param variablewise (boolean) return OOB errors for each variable separately.
+#' @param decreasing (boolean) if TRUE the columns are sorted with decreasing amount of missing values.
+#' @param verbose (boolean) if TRUE then missForest returns error estimates, runtime and if available true error during iterations.
+#' @param mtry how many variables should be tried randomly at each node.
+#' @param replace (boolean) if TRUE bootstrap sampling (with replacements) is performed, else subsampling (without replacements).
+#' @param classwt list of priors of the classes in the categorical variables.
+#' @param cutoff list of class cutoffs for each categorical variable.
+#' @param strata list of (factor) variables used for stratified sampling.
+#' @param sampsize list of size(s) of sample to draw
+#' @param nodesize minimum size of terminal nodes, vector of length 2, with 
+#' number for continuous variables in the first entry and 
+#' number for categorical variables in the second entry.
+#' @param maxnodes maximum number of terminal nodes for individual trees
+#' @param xtrue complete data matrix
+#' @export
+#' @return \code{ximp} imputed data matrix of same type as 'xmis'.
+#' @return \code{ximp.disj} imputed data matrix of same type as 'xmis' for the numeric columns.
+#'  For the categorical columns, the prediction of probability for each category is shown in form of onehot vector.
+#' @return \code{OOBerror} estimated OOB imputation error. For the set of continuous variables in 'xmis' the NRMSE and 
+#' for the set of categorical variables the proportion of falsely classified entries is returned. 
+#' See Details for the exact definition of these error measures. 
+#' If 'variablewise' is set to 'TRUE' then this will be a vector of length 'p' where 'p' is the number of variables and the entries will be the OOB error for each variable separately.
+#' @return \code{error} true imputation error. This is only available if 'xtrue' was supplied. 
+#' The error measures are the same as for 'OOBerror'.
+#' 
+missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
                        decreasing = FALSE, verbose = FALSE,
                        mtry = floor(sqrt(ncol(xmis))), replace = TRUE,
                        classwt = NULL, cutoff = NULL, strata = NULL,
                        sampsize = NULL, nodesize = NULL, maxnodes = NULL,
                        xtrue = NA, parallelize = c('no', 'variables', 'forests')
-                       , dict_cat=NULL)
+                       , col_cat=c())
 { ## ----------------------------------------------------------------------
   ## Arguments:
   ## xmis         = data matrix with missing values
@@ -37,12 +72,21 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
   ##                number for categorical variables in the second entry
   ## maxnodes     = maximum number of terminal nodes for individual trees
   ## xtrue        = complete data matrix
-  ##
-  ## ----------------------------------------------------------------------
-  ## Author: Daniel Stekhoven, stekhoven@stat.math.ethz.ch
+  ## [add]col_cat      = index of categorical columns
+  ##----------------------------------------------------------------------
+  ## 
+  
+  ## Add: Create dict_cat with categroical columns
+  exist_cat <- !all(c(0, col_cat) == c(0))
+  if(exist_cat){
+    dict_cat = dict_onehot(xmis, col_cat)
+  }
+  print(exist_cat)
+  ##Add: Last iteration will be used to predict the onehot probability for the categorical columns
+  maxiter <- maxiter - 1
   
   ## stop in case of wrong inputs passed to randomForest
-  maxiter <- maxiter - 1
+  
   n <- nrow(xmis)
   p <- ncol(xmis)
   ls_colname <- colnames(xmis)
@@ -184,7 +228,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
           misX <- ximp[misi, seq(1, p)[-varInd]] # prediction variables
           typeY <- varType[varInd]
           if (typeY == 'numeric'){
-            RF <- randomForest(
+            RF <- randomForest::randomForest(
               x = obsX,
               y = obsY,
               ntree = ntree,
@@ -198,7 +242,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
             oerr <- RF$mse[ntree]
             #           }
             ## predict missing values in column varInd
-            misY <- predict(RF, misX)
+            misY <- stats::predict(RF, misX)
           } else { # if Y is categorical          
             obsY <- factor(obsY) ## remove empty classes
             summarY <- summary(obsY)
@@ -206,7 +250,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               oerr <- 0
               misY <- factor(rep(names(summarY), length(misi)))
             } else {
-              RF <- randomForest(
+              RF <- randomForest::randomForest(
                 x = obsX,
                 y = obsY,
                 ntree = ntree,
@@ -225,7 +269,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               oerr <- RF$err.rate[[ntree,1]]
               #             }
               ## predict missing values in column varInd
-              misY <- predict(RF, misX)
+              misY <- stats::predict(RF, misX)
             }
           }
           list(varInd=varInd, misY=misY, oerr=oerr)
@@ -253,7 +297,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               RF <- foreach(xntree=idiv(ntree, chunks=getDoParWorkers()),
                             .combine='combine', .multicombine=TRUE,
                             .packages='randomForest') %dopar% {
-                              randomForest( x = obsX,
+                              randomForest::randomForest( x = obsX,
                                             y = obsY,
                                             ntree = xntree,
                                             mtry = mtry,
@@ -267,7 +311,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               OOBerror[varInd] <- mean((predict(RF) - RF$y) ^ 2, na.rm=TRUE)
               #               OOBerror[varInd] <- RF$mse[ntree]
             } else {
-              RF <- randomForest( x = obsX,
+              RF <- randomForest::randomForest( x = obsX,
                                   y = obsY,
                                   ntree = ntree,
                                   mtry = mtry,
@@ -279,7 +323,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               ## record out-of-bag error
               OOBerror[varInd] <- RF$mse[ntree]
             }
-            misY <- predict(RF, misX)
+            misY <- stats::predict(RF, misX)
           } else {
             obsY <- factor(obsY)
             summarY <- summary(obsY)
@@ -290,7 +334,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
                 RF <- foreach(xntree=idiv(ntree, chunks=getDoParWorkers()),
                               .combine='combine', .multicombine=TRUE,
                               .packages='randomForest') %dopar% {
-                                randomForest(
+                                randomForest::randomForest(
                                   x = obsX,
                                   y = obsY,
                                   ntree = xntree,
@@ -311,7 +355,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
                 ne <- ne[! is.na(ne)]
                 OOBerror[varInd] <- sum(ne) / length(ne)
               } else {
-                RF <- randomForest(x = obsX, 
+                RF <- randomForest::randomForest(x = obsX, 
                                    y = obsY, 
                                    ntree = ntree, 
                                    mtry = mtry, 
@@ -329,7 +373,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
                 OOBerror[varInd] <- RF$err.rate[[ntree, 1]]
               }
               ## predict missing parts of Y
-              misY <- predict(RF, misX)
+              misY <- stats::predict(RF, misX)
             }
           }
           ximp[misi, varInd] <- misY
@@ -396,7 +440,9 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
   
   
   
-  #Calculate the one-hot probability from randomforest
+  #Add: Calculate the one-hot probability from randomforest
+  print(iter)
+  print(length(Ximp))
   if (iter == maxiter){
     ximp = Ximp[[iter-1]]
   }
@@ -425,7 +471,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
         misX <- ximp[misi, seq(1, p)[-varInd]] # prediction variables
         typeY <- varType[varInd]
         if (typeY == 'numeric'){
-          RF <- randomForest(
+          RF <- randomForest::randomForest(
             x = obsX,
             y = obsY,
             ntree = ntree,
@@ -439,7 +485,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
           oerr <- RF$mse[ntree]
           #           }
           ## predict missing values in column varInd
-          misY <- predict(RF, misX)
+          misY <- stats::predict(RF, misX)
         } else { # if Y is categorical          
           obsY <- factor(obsY) ## remove empty classes
           summarY <- summary(obsY)
@@ -447,7 +493,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
             oerr <- 0
             misY <- factor(rep(names(summarY), length(misi)))
           } else {
-            RF <- randomForest(
+            RF <- randomForest::randomForest(
               x = obsX,
               y = obsY,
               ntree = ntree,
@@ -466,8 +512,8 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
             oerr <- RF$err.rate[[ntree,1]]
             #             }
             ## predict missing values in column varInd
-            misY <- predict(RF, misX)
-            misY.disj <- predict.randomForest(RF,misX, type = 'prob')
+            misY <- stats::predict(RF, misX)
+            misY.disj <- randomForest::predict.randomForest(RF,misX, type = 'prob')
           }
         }
         list(varInd=varInd, misY=misY, oerr=oerr,misY.disj=misY.disj)
@@ -477,7 +523,10 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
         misi <- NAloc[,res$varInd]
         ximp[misi, res$varInd] <- res$misY
         OOBerror[res$varInd] <- res$oerr
-        ximp.disj[misi, dict_cat[[ls_colname[res$varInd]]]] <- res$misY.disj
+        if(exist_cat){
+          ximp.disj[misi, dict_cat[[ls_colname[res$varInd]]]] <- res$misY.disj
+        }
+        
       }
     }
   } else { # if parallelize != "variables"
@@ -533,7 +582,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               RF <- foreach(xntree=idiv(ntree, chunks=getDoParWorkers()),
                             .combine='combine', .multicombine=TRUE,
                             .packages='randomForest') %dopar% {
-                              randomForest(
+                              randomForest::randomForest(
                                 x = obsX,
                                 y = obsY,
                                 ntree = xntree,
@@ -554,7 +603,7 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               ne <- ne[! is.na(ne)]
               OOBerror[varInd] <- sum(ne) / length(ne)
             } else {
-              RF <- randomForest(x = obsX, 
+              RF <- randomForest::randomForest(x = obsX, 
                                  y = obsY, 
                                  ntree = ntree, 
                                  mtry = mtry, 
@@ -572,9 +621,12 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
               OOBerror[varInd] <- RF$err.rate[[ntree, 1]]
             }
             ## predict missing parts of Y
-            misY <- predict(RF, misX)
-            misY.disj <- predict.randomForest(RF,misX, type = 'prob')
-            ximp.disj[misi, dict_cat[[ls_colname[varInd]]]] <- misY.disj
+            misY <- stats::predict(RF, misX)
+            if(exist_cat){
+              misY.disj <- randomForest::predict.randomForest(RF,misX, type = 'prob')
+              ximp.disj[misi, dict_cat[[ls_colname[varInd]]]] <- misY.disj
+            }
+            
           }
         }
         ximp[misi, varInd] <- misY
@@ -628,16 +680,21 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
   }
   
   
-  
-  
+  ## Add: if there is no categorical columns, ximp.disj = ximp
   ## produce output w.r.t. stopping rule
   if (iter == maxiter+1){
+    if(!exist_cat){
+      ximp.disj=Ximp[[iter]]
+    }
     if (any(is.na(xtrue))){
       out <- list(ximp = Ximp[[iter]], OOBerror = OOBerr, ximp.disj=ximp.disj)
     } else {
       out <- list(ximp = Ximp[[iter]], OOBerror = OOBerr, ximp.disj=ximp.disj, error = err)
     }
   } else {
+    if(!exist_cat){
+      ximp.disj=Ximp[[iter-1]]
+    }
     if (any(is.na(xtrue))){
       out <- list(ximp = Ximp[[iter-1]], ximp.disj=ximp.disj, OOBerror = OOBerrOld)
     } else {

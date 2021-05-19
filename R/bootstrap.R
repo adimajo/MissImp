@@ -28,7 +28,7 @@ bootsample <- function(df, num_sample) {
   ls_df_new <- list()
   i <- 1
   while (i <= num_sample) {
-    chosen_idx <- resample(c(1:num_row), num_row, replace = TRUE)
+    chosen_idx <- gdata::resample(c(1:num_row), num_row, replace = TRUE)
     df_new <- df[chosen_idx, ]
     # df_new[["old_idx"]]=chosen_idx
     ls_df_new[[i]] <- df_new
@@ -99,9 +99,9 @@ combine_boot <- function(ls_df,
   for (df in ls_df) {
     df$index <- as.numeric(row.names(df))
     df$index <- floor(df$index)
-    df_num <- aggregate(. ~ index, data = df[c("index", col_name_num)], mean)
+    df_num <- stats::aggregate(. ~ index, data = df[c("index", col_name_num)], mean)
     if (exist_cat && !is_onehot) {
-      df_cat <- aggregate(. ~ index, data = df[c("index", col_name_cat)], Mode_cat)
+      df_cat <- stats::aggregate(. ~ index, data = df[c("index", col_name_cat)], Mode_cat)
       ls_df_new[[i]] <- merge(df_num, df_cat, by = "index")
     }
     else {
@@ -133,23 +133,23 @@ combine_boot <- function(ls_df,
   }
 
   # By Bootstrap combining rules
-  df_new_mean_num <- aggregate(. ~ index, data = df_new_merge[c("index", col_name_num)], mean)
-  df_new_num_var <- aggregate(. ~ index, data = df_new_merge[c("index", col_name_num)], var)
+  df_new_mean_num <- stats::aggregate(. ~ index, data = df_new_merge[c("index", col_name_num)], mean)
+  df_new_num_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", col_name_num)], var)
   if (exist_dis) {
     df_new_mean_num[col_name_dis] <- round(df_new_mean_num[col_name_dis]) # for the discret variables
   }
 
   if (exist_cat && !is_onehot) {
     df_new_merge <- factor_encode(df_new_merge, col_cat + 1)
-    df_new_mode_cat <- aggregate(. ~ index, data = df_new_merge[c("index", col_name_cat)], Mode_cat)
+    df_new_mode_cat <- stats::aggregate(. ~ index, data = df_new_merge[c("index", col_name_cat)], Mode_cat)
     df_new <- merge(df_new_mean_num, df_new_mode_cat, by = "index")
     df_new <- factor_encode(df_new, col_cat + 1) # +1 is for the index column
     if (is_unalike) {
-      df_new_cat_var <- aggregate(. ~ index, data = df_new_merge[c("index", col_name_cat)], unalike)
+      df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", col_name_cat)], uwo4419::unalike)
     }
     else {
       df_new_cat_var <- df_new_merge[c("index", col_name_cat)] %>%
-        group_by(index) %>%
+        dplyr::group_by(index) %>%
         dplyr::summarise(across(col_name_cat, VA_fact))
       # df_new_cat_var = aggregate(.~index , data =df_new_merge[c("index",col_name_cat)], VA_fact)
     }
@@ -167,11 +167,11 @@ combine_boot <- function(ls_df,
       df_new[[name]] <- unlist(df_new[[name]])
     }
     if (is_unalike) {
-      df_new_cat_var <- aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], unalike)
+      df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
     }
     else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
-        group_by(index) %>%
+        dplyr::group_by(index) %>%
         dplyr::summarise(across(names_cat, VA_fact))
       # df_new_cat_var = aggregate(.~index , simplify=FALSE, data =df_new_merge[c("index",names_cat)], VA_fact)
     }
@@ -233,4 +233,15 @@ combine_boot <- function(ls_df,
       "uncertainty" = df_result_var
     )
   )
+}
+
+
+#' Mode_cat
+#' @description Find the most frequent result for one categorical variable.
+#' This function is used in combine_boot with method = 'factor'
+#' @param x Vector of categorical results. For example c('A','B','A').
+#' @return Most frequent category in vector \code{x}.
+Mode_cat <- function(x) {
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
 }

@@ -18,7 +18,11 @@ Imports:
     mice,
     missMethods,
     pracma,
-    mltools
+    mltools,
+    uwo4419,
+    dplyr,
+    randomForest,
+    caret
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr

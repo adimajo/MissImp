@@ -39,7 +39,7 @@ source_url('https://raw.githubusercontent.com/LqNoob/Machine-Learning-Evaluation
 
 
 
-source("../R/functions.R")
+library(MissImp)
 set.seed(43)
 ```
 
@@ -250,16 +250,7 @@ ls_jack = jacksample(df_with_mv,4)
 ```
 
 ```{r}
-#Create a dictionary {Y7:Y7_1,Y7_2,...}, {Y_7: Y_7_1, Y_7_2,...}
-dict_onehot = function(df, col_cat){
-  dict_name = list()
-  ls_col_name = colnames(df)
-  for(i in col_cat){
-    col_cat_name = ls_col_name[i]
-    dict_name[[col_cat_name]]=paste(col_cat_name, levels(df[[col_cat_name]]), sep = "_")
-  }
-  return(dict_name)
-}
+
 
 dict_name_cat = dict_onehot(df_with_mv, c(7:8))
 ```
@@ -386,7 +377,7 @@ i = 1
 num_col = ncol(df_with_mv)
 for(df in ls_boot){
   df = factor_encode(df, idx_col_cat)
-  imp.forest = missForest(xmis = df, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+  imp.forest = missForest_mod(xmis = df, maxiter = 3, ntree = 100, col_cat = idx_col_cat)
   ls.imp.forest.boot.onehot[[i]] = imp.forest$ximp.disj
   ls.imp.forest.boot.fact[[i]] = imp.forest$ximp
   i = i + 1
@@ -411,7 +402,7 @@ for(df in ls_jack){
   df = factor_encode(df, idx_col_cat)
   #Input: an incomplete dataset
   #Outout: an imputed dataset (onehot or factor for categorical)
-  imp.forest = missForest(xmis = df, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+  imp.forest = missForest_mod(xmis = df, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
   ls.imp.forest.jack.onehot[[i]] = imp.forest$ximp.disj
   ls.imp.forest.jack.fact[[i]] = imp.forest$ximp
   i = i + 1
@@ -422,7 +413,7 @@ for(df in ls_jack){
 ```{r}
 df_full = df_with_mv
 df_full = factor_encode(df_with_mv, idx_col_cat)
-imp.forest_full = missForest(xmis = df_full, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+imp.forest_full = missForest_mod(xmis = df_full, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
 ls.imp.forest_full.jack.onehot = imp.forest_full$ximp.disj
 ls.imp.forest_full.jack.fact = imp.forest_full$ximp
 ```

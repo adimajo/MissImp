@@ -139,11 +139,11 @@ combine_jack <- function(ls_df,
 
 
   # By Jackknife combining rules for disjunctive part
-  df_new <- aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], mean) # Here for each indice, there are n_sample-1 values
+  df_new <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], mean) # Here for each indice, there are n_sample-1 values
   if (exist_dis) {
     df_new[col_name_dis] <- round(df_new[col_name_dis]) # round for the discret variables
   }
-  df_new_var_disj <- aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], var)
+  df_new_var_disj <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], var)
   df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (n_sample -
     1)
 
@@ -157,12 +157,12 @@ combine_jack <- function(ls_df,
     }
     df_result <- df_new[-c(1, col_cat + 1)] # remove the index and the onehot columns
     if (is_unalike) {
-      df_new_cat_var <- aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], unalike)
+      df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
     }
     else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
-        group_by(index) %>%
-        summarise(across(all_of(names_cat), VA_fact))
+        dplyr::group_by(index) %>%
+        dplyr::summarise(across(all_of(names_cat), VA_fact))
     }
 
     df_new_var <- merge(df_new_var_disj, df_new_cat_var, by = "index")
