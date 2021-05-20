@@ -32,18 +32,15 @@ normalize_num <- function(df, idx_col_num) {
   return(df)
 }
 
-# The most frequent result for one categorical variable
-# Used in combine_boot with method = 'factor'
-Mode_cat <- function(x) {
-  ux <- unique(x)
-  return(ux[which.max(tabulate(match(x, ux)))])
-}
 
-# Calculate the Wilcox's VarNC for a vector of categorical values
+#' VA_fact
+#' @description Calculate the Wilcox's VarNC for a vector of categorical values
+#' @param x A vector of categorical variable
+#' @return Wilcox's VarNC
 VA_fact <- function(x) {
   lev_miss <- length(levels(x)) - length(unique(x))
   freq <- table(x) / length(x)
-  return(VA(c(freq, rep(0, lev_miss))))
+  return(qualvar::VA(c(freq, rep(0, lev_miss))))
 }
 
 

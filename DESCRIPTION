@@ -22,7 +22,8 @@ Imports:
     uwo4419,
     dplyr,
     randomForest,
-    caret
+    FactoMineR,
+    qualvar
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr

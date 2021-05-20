@@ -277,7 +277,7 @@ estim_ncpFAMD_2 <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regulariz
 
 ################### estim_ncpFAMD_2 with some modifications on impute function##############################
 
-estim_ncpFAMD_3 <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"),
+estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"),
                             method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05, ind.sup = NULL, sup.var = NULL,
                             threshold = 1e-04, verbose = TRUE, maxiter = 1000) {
   tab.disjonctif.NA <- function(tab) {
@@ -296,7 +296,7 @@ estim_ncpFAMD_3 <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regulariz
       x[(1:n) + n * (unclass(moda) - 1)] <- 1
       x[indNA, ] <- NA
       if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) {
-        dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
+        dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "_"))
       } else {
         dimnames(x) <- list(row.names(tab), levels(moda))
       }
@@ -361,7 +361,7 @@ estim_ncpFAMD_3 <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regulariz
       #####################################
       for (nbaxes in ncp.min:ncp.max) {
         # print(paste("nbaxes:", nbaxes))
-        tab.disj.comp <- imputeFAMD_1(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter)$tab.disj
+        tab.disj.comp <- imputeFAMD_mod(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter)$tab.disj
         if (sum(is.na(jeuNA)) != sum(is.na(jeu))) {
           ######### Changed part 2##############
           # res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE)/(sum(is.na(tab.disjonctif.NA(jeuNA))) - sum(is.na(tab.disjonctif.NA(jeu))))
@@ -412,20 +412,30 @@ estim_ncpFAMD_3 <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regulariz
   }
 }
 
-
-imputeFAMD_1 <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-6,
+#' imputeFAMD_mod: modified imputeFAMD from missMDA
+#' 
+#' @description \code{imputeFAMD_mod} is a modified version of the function \code{imputeFAMD} by Francois Husson and Julie Josse.
+#' Please find the detailed documentation of \code{imputeFAMD} in the missMDA package. 
+#' The modified version of \code{imputeFAMD} ameliorates the convergence problem by modifying the function \code{impute}.
+#' @export
+imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-6,
                          ind.sup = NULL, sup.var = NULL, seed = NULL, maxiter = 1000, ...) {
   X <- as.data.frame(X)
   method <- match.arg(method, c("Regularized", "regularized", "EM", "em"), several.ok = T)[1]
   method <- tolower(method)
   type <- rep("s", ncol(X))
   type[!sapply(X, is.numeric)] <- "n"
-  res <- imputeMFA_1(X = X, group = rep(1, ncol(X)), type = type, ncp = ncp, method = method, row.w = row.w, coeff.ridge = coeff.ridge, ind.sup = ind.sup, num.group.sup = sup.var, threshold = threshold, seed = seed, maxiter = maxiter)
+  res <- imputeMFA_mod(X = X, group = rep(1, ncol(X)), type = type, ncp = ncp, method = method, row.w = row.w, coeff.ridge = coeff.ridge, ind.sup = ind.sup, num.group.sup = sup.var, threshold = threshold, seed = seed, maxiter = maxiter)
   return(res)
 }
 
-
-impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
+#' impute_mod: modified impute from missMDA
+#' 
+#' @description \code{impute_mod} is a modified version of the function \code{impute} by Francois Husson and Julie Josse.
+#' Please find the detailed documentation of \code{impute} in the missMDA package. 
+#' The modified version of \code{impute} ameliorates the convergence problem by restricting the onehot probabilities after PCA being positive.
+#' @export
+impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
                      method = NULL, threshold = 1e-06, ind.sup = NULL, num.group.sup = NULL, seed = NULL, maxiter = 1000,
                      row.w = NULL, coeff.ridge = 1, ...) {
   # print("in impute")
@@ -451,7 +461,7 @@ impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
         c(1:nlevels(moda), "n", "N", "y", "Y"))) {
         dimnames(x) <- list(row.names(tab), paste(nom,
           levels(moda),
-          sep = "."
+          sep = "_"
         ))
       } else {
         dimnames(x) <- list(row.names(tab), levels(moda))
@@ -539,7 +549,7 @@ impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
     }
     # quali
     result$completeObs <- X
-    if (!is.null(ind.quali)) result$completeObs[, ind.quali] <- find.category(X[, ind.quali, drop = F], tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w))
+    if (!is.null(ind.quali)) result$completeObs[, ind.quali] <- find.category(X[, ind.quali, drop = F], FactoMineR::tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w))
     # quanti
     if (!is.null(ind.quanti)) {
       tab.disj <- X[, ind.quanti, drop = F]
@@ -555,7 +565,7 @@ impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
       nbdummy[is.quali] <- unlist(lapply(X[, is.quali, drop = FALSE], nlevels))
       tabdisj <- matrix(NA, nrow(X), ncol = sum(nbdummy))
       tabdisj[, cumsum(nbdummy)[which(nbdummy == 1)]] <- as.matrix(result$completeObs[, ind.quanti, drop = F])
-      auxQuali <- tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w)
+      auxQuali <- FactoMineR::tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w)
       tabdisj[, -cumsum(nbdummy)[which(nbdummy == 1)]] <- auxQuali
       rownames(tabdisj) <- rownames(X)
       colnames(tabdisj) <- paste0("v", 1:ncol(tabdisj))
@@ -576,7 +586,7 @@ impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
       }
 
       if (type[g] == "n") {
-        tab.disj <- tab.disjonctif.prop(aux.base, seed, row.w = row.w)
+        tab.disj <- FactoMineR::tab.disjonctif.prop(aux.base, seed, row.w = row.w)
         tab.disj.comp[[g]] <- tab.disj
         group.mod[g] <- ncol(tab.disj)
       }
@@ -626,7 +636,7 @@ impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
       if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- rnorm(length(missing))
     }
     if (type[g] == "n") {
-      tab.disj <- tab.disjonctif.prop(data.frame(aux.base), seed, row.w = row.w)
+      tab.disj <- FactoMineR::tab.disjonctif.prop(data.frame(aux.base), seed, row.w = row.w)
       ####### Change: add the index of observation############
       obs_cat <- data.frame(!is.na(tab.disjonctif.NA(data.frame(aux.base))))
       idx_obs[[g]] <- which(apply(obs_cat, 1, any))
@@ -662,7 +672,6 @@ impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
   missing <- which(is.na(as.matrix(Xhat2)))
   nb.iter <- 1
   old <- Inf
-
 
   while (nb.iter > 0) {
     # print(paste("nb.iter:",nb.iter))
@@ -829,7 +838,13 @@ impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
 }
 
 
-imputeMFA_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
+#' imputeMFA_mod: modified imputeMFA from missMDA
+#' 
+#' @description \code{imputeMFA_mod} is a modified version of the function \code{imputeMFA} by Francois Husson and Julie Josse.
+#' Please find the detailed documentation of \code{imputeMFA} in the missMDA package. 
+#' The modified version of \code{impute} ameliorates the convergence problem by modifying the function \code{impute}.
+#' @export
+imputeMFA_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
                         method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1,
                         threshold = 1e-06, ind.sup = NULL, num.group.sup = NULL, seed = NULL, maxiter = 1000, ...) {
   # print("in imputeMFA")
@@ -838,7 +853,7 @@ imputeMFA_1 <- function(X, group, ncp = 2, type = rep("s", length(group)),
   if (is.null(row.w)) row.w <- rep(1, nrow(X)) / nrow(X)
   if (length(ind.sup) > 0) row.w[ind.sup] <- row.w[ind.sup] * 1e-08
   if (!any(is.na(X))) stop("no missing values in X, this function is not useful. Perform MFA on X.")
-  res.impute <- impute_1(X,
+  res.impute <- impute_mod(X,
     group = group, ncp = ncp, type = type,
     method = method, threshold = threshold, seed = seed,
     maxiter = maxiter, row.w = row.w, ind.sup = ind.sup,

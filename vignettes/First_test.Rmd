@@ -240,20 +240,19 @@ final_result_mcar
 # Bootstrap needs big number of samples
 # Jackknife has a problem with categorical variables
 df_with_mv = list_df.mix[[2]]
-# names_cat = names(dict_name_cat)
-# for(name in names_cat){
-#   df_with_mv[[name]]=factor(df_with_mv[[name]])
-#   levels(df_with_mv[[name]])=dict_name_cat[[name]]
-# }
+
 ls_boot = bootsample(df_with_mv,4)
 ls_jack = jacksample(df_with_mv,4)
 ```
 
+
+
+
 ```{r}
-
-
+df_with_mv = factor_encode(df_with_mv, c(7:8))
 dict_name_cat = dict_onehot(df_with_mv, c(7:8))
 ```
+
 
 
 
@@ -266,18 +265,25 @@ i = 1
 num_col = ncol(df_with_mv)
 for(df in ls_boot){
   df = factor_encode(df, idx_col_cat)
-  pca = imputeFAMD(df, ncp = 3, maxiter = 20)
+  #n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
+  #for imputeFAMD_mod, the categorical data need to be ordinal encoded then factor encoded
+  pca = imputeFAMD_mod(df, ncp = 3, maxiter = 100)
   ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
   ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
 }
 ```
 
+
 ```{r}
 rs0 = combine_boot(ls.imp.pca.fact,col_con=c(1:5),col_dis=c(6),col_cat=c(7:8), num_row_origin = 10000, method="factor",dict_cat=dict_name_cat, var_cat = 'wilcox_va')
 rs = combine_boot(ls.imp.pca.onehot,col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), num_row_origin = 10000, method="onehot", dict_cat=dict_name_cat, var_cat = 'unalike')
 ```
 
+```{r}
+rs0
+rs
+```
 
 
 
@@ -291,7 +297,7 @@ for(df in ls_jack){
   df = factor_encode(df, idx_col_cat)
   #Input: an incomplete dataset
   #Outout: an imputed dataset (onehot or factor for categorical)
-  pca = imputeFAMD(df, ncp = 3, maxiter = 20)
+  pca = imputeFAMD_mod(df, ncp = 3, maxiter = 100)
   ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
   ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
@@ -302,7 +308,7 @@ for(df in ls_jack){
 ```{r}
 df_full = df_with_mv
 df_full = factor_encode(df_with_mv, idx_col_cat)
-pca_full = imputeFAMD(df_full, ncp = 3, maxiter = 20)
+pca_full = imputeFAMD_mod(df_full, ncp = 3, maxiter = 20)
 imp.pca_full.onehot = pca_full$tab.disj
 imp.pca_full.fact = pca_full$completeObs
 ```
@@ -313,6 +319,10 @@ rs_jack1=combine_jack(ls.imp.pca.onehot,data.frame(imp.pca_full.onehot),col_con=
 ```
 
 
+```{r}
+rs_jack0
+rs_jack1
+```
 
 
 
