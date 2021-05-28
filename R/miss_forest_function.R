@@ -81,7 +81,6 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   if(exist_cat){
     dict_cat = dict_onehot(xmis, col_cat)
   }
-  print(exist_cat)
   ##Add: Last iteration will be used to predict the onehot probability for the categorical columns
   maxiter <- maxiter - 1
   
@@ -438,19 +437,16 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
     }
   }#end while((convNew<convOld)&(iter<maxiter)){
   
-  
-  
+
   #Add: Calculate the one-hot probability from randomforest
-  print(iter)
-  print(length(Ximp))
   if (iter == maxiter){
-    ximp = Ximp[[iter-1]]
+    ximp = Ximp[[iter]]
   }
   else{
-    ximp = Ximp[[iter-2]]
+    ximp = Ximp[[iter-1]]
   }
   
-  dummy <- caret::dummyVars(" ~ .", data=ximp, sep = '_')
+  dummy <- dummyVars(" ~ .", data=ximp, sep = '_')
   ximp.disj <- data.frame(predict(dummy, newdata = ximp))
   
   if (iter != 0){
@@ -513,7 +509,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             #             }
             ## predict missing values in column varInd
             misY <- stats::predict(RF, misX)
-            misY.disj <- randomForest::predict.randomForest(RF,misX, type = 'prob')
+            misY.disj <- predict.randomForest(RF,misX, type = 'prob')
           }
         }
         list(varInd=varInd, misY=misY, oerr=oerr,misY.disj=misY.disj)
@@ -623,7 +619,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             ## predict missing parts of Y
             misY <- stats::predict(RF, misX)
             if(exist_cat){
-              misY.disj <- randomForest::predict.randomForest(RF,misX, type = 'prob')
+              misY.disj <- predict.randomForest(RF,misX, type = 'prob')
               ximp.disj[misi, dict_cat[[ls_colname[varInd]]]] <- misY.disj
             }
             
@@ -636,7 +632,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   cat('done!\n')
   
   iter <- iter+1
-  Ximp[[iter]] <- ximp
+  Ximp_final <- ximp
   
   t.co2 <- 1
   
@@ -681,25 +677,22 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   
   
   ## Add: if there is no categorical columns, ximp.disj = ximp
+  if(!exist_cat){
+    ximp.disj=Ximp_final
+  }
   ## produce output w.r.t. stopping rule
   if (iter == maxiter+1){
-    if(!exist_cat){
-      ximp.disj=Ximp[[iter]]
-    }
     if (any(is.na(xtrue))){
-      out <- list(ximp = Ximp[[iter]], OOBerror = OOBerr, ximp.disj=ximp.disj)
+      out <- list(ximp = Ximp_final, OOBerror = OOBerr, ximp.disj=ximp.disj)
     } else {
-      out <- list(ximp = Ximp[[iter]], OOBerror = OOBerr, ximp.disj=ximp.disj, error = err)
+      out <- list(ximp = Ximp_final, OOBerror = OOBerr, ximp.disj=ximp.disj, error = err)
     }
   } else {
-    if(!exist_cat){
-      ximp.disj=Ximp[[iter-1]]
-    }
     if (any(is.na(xtrue))){
-      out <- list(ximp = Ximp[[iter-1]], ximp.disj=ximp.disj, OOBerror = OOBerrOld)
+      out <- list(ximp = Ximp_final, ximp.disj=ximp.disj, OOBerror = OOBerrOld)
     } else {
-      out <- list(ximp = Ximp[[iter-1]], ximp.disj=ximp.disj, OOBerror = OOBerrOld,
-                  error = suppressWarnings(mixError(Ximp[[iter-1]], xmis, xtrue)))
+      out <- list(ximp = Ximp_final, ximp.disj=ximp.disj, OOBerror = OOBerrOld,
+                  error = suppressWarnings(mixError(Ximp_final, xmis, xtrue)))
     }
   }
   class(out) <- 'missForest'

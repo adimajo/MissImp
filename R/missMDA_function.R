@@ -276,7 +276,12 @@ estim_ncpFAMD_2 <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regulariz
 }
 
 ################### estim_ncpFAMD_2 with some modifications on impute function##############################
-
+#' estim_ncpFAMD_mod: modified estim_ncpFAMD from missMDA
+#' 
+#' @description \code{estim_ncpFAMD_mod} is a modified version of the function \code{estim_ncpFAMD} by Francois Husson and Julie Josse.
+#' Please find the detailed documentation of \code{estim_ncpFAMD} in the missMDA package. 
+#' The modified version of \code{estim_ncpFAMD} ameliorates the convergence problem by modifying the function \code{impute}, and resolve the memory error problem.
+#' @export
 estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"),
                             method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05, ind.sup = NULL, sup.var = NULL,
                             threshold = 1e-04, verbose = TRUE, maxiter = 1000) {

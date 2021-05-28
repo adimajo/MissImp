@@ -54,3 +54,5 @@ dict_onehot = function(df, col_cat){
   }
   return(dict_name)
 }
+
+

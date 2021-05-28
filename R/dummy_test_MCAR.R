@@ -11,7 +11,7 @@
 #' There are four situations:
 #' \itemize{
 #'  \item Yj is completely missing. In this case, no test will be done.
-#'  \item Yj is partially observed, but Yj_1 (or Yj_0) is completely missing. 
+#'  \item Yj is partially observed, but Yj_1 (or Yj_0) is completely missing(or with only one observed data). 
 #'  In this case, a t-test is performed to test if the mean of Mj_0 (or Mj_1) is 1.
 #'  \item Yj is numerical, Yj_1 and Yj_0 are both partially observed. 
 #'  In this case, a paired t-test is performed to test if Yj_1 and Yj_0 have the same mean.
@@ -31,10 +31,13 @@
 #' X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
 #' rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 #' dummy_test_matrix(rs$X.incomp, c())
+#' 
+#' dummy_test_matrix(airquality, col_cat = c(5:6))
+#' 
 dummy_test_matrix = function(df, col_cat=c()) {
   test_result_dummy = data.frame()
   df = factor_encode(df, col_cat)  # in case the categorical column is not a factor
-  R_df = data.frame(is.na(df))
+  R_df = data.frame(is.na(df))*1.0
   ls_col_name = colnames(df)
   ls_row_name = c()
   num_col = length(ls_col_name)
@@ -51,6 +54,7 @@ dummy_test_matrix = function(df, col_cat=c()) {
     if (row1 == 0 |
         row0 == 0) {
       # if one column contains only NA or doesn't contain any NA
+      test_result_dummy[i,] = NA
       i = i + 1
       next
     }
@@ -65,11 +69,11 @@ dummy_test_matrix = function(df, col_cat=c()) {
           next
         }
         
-        # if when the control column is NA, the test column is all NA
-        # or when the control column is observed , the test column is all NA
+        # if when the control column is NA, the test column is all NA(or with only one value)
+        # or when the control column is observed , the test column is all NA(or with only one value)
         # the paired t-test is done on the indicator matrix R_1 an R_0
-        critc_1 = all(is.na(df_1[[col_test]]))
-        critc_0 = all(is.na(df_0[[col_test]]))
+        critc_1 = all(is.na(df_1[[col_test]])) || (sum(!is.na(df_1[[col_test]]))==1)
+        critc_0 = all(is.na(df_0[[col_test]])) || (sum(!is.na(df_0[[col_test]]))==1)
         if (critc_1 ||
             critc_0) {
           #the situation of critic_1 && critic_0 is discussed before
@@ -92,7 +96,6 @@ dummy_test_matrix = function(df, col_cat=c()) {
           j = j + 1
           next
         }
-        
         test_result_dummy[i, col_test] = stats::t.test(df_1[[col_test]], df_0[[col_test]])$p.value
       }
       j = j + 1
@@ -102,12 +105,6 @@ dummy_test_matrix = function(df, col_cat=c()) {
   row.names(test_result_dummy) = ls_row_name
   return(test_result_dummy)
 }
-
-
-
-
-
-
 
 
 
@@ -151,7 +148,10 @@ dummy_test_matrix = function(df, col_cat=c()) {
 #' X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
 #' rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 #' dummy_test(rs$X.incomp, c())
-dummy_test = function(df, col_cat) {
+#' 
+#' dummy_test(airquality, col_cat = c(5:6))
+#' 
+dummy_test = function(df, col_cat=c()) {
   p_matrix = dummy_test_matrix(df, col_cat)
   p_vector = as.vector(p_matrix)
   p_vector = p_vector[!is.na(p_vector)]

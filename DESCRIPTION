@@ -23,7 +23,9 @@ Imports:
     dplyr,
     randomForest,
     FactoMineR,
-    qualvar
+    qualvar,
+    VIM,
+    data.table
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr
