@@ -25,7 +25,7 @@ For example, if Yi[3] is missing and Yj[3] is observed, then Mj_1[3]=0, Mi[3]=1.
 There are four situations:
 \itemize{
  \item Yj is completely missing. In this case, no test will be done.
- \item Yj is partially observed, but Yj_1 (or Yj_0) is completely missing. 
+ \item Yj is partially observed, but Yj_1 (or Yj_0) is completely missing(or with only one observed data). 
  In this case, a t-test is performed to test if the mean of Mj_0 (or Mj_1) is 1.
  \item Yj is numerical, Yj_1 and Yj_0 are both partially observed. 
  In this case, a paired t-test is performed to test if Yj_1 and Yj_0 have the same mean.
@@ -40,6 +40,9 @@ Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
 X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
 rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 dummy_test_matrix(rs$X.incomp, c())
+
+dummy_test_matrix(airquality, col_cat = c(5:6))
+
 }
 \references{
 Missing value analysis & Data imputation, G. David Garson, 2015.

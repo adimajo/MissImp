@@ -321,8 +321,6 @@ rs_jack1=combine_jack(ls.imp.pca.onehot,data.frame(imp.pca_full.onehot),col_con=
 
 
 
-
-
 ### Imputation
 
 ```{r}

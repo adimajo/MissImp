@@ -4,7 +4,7 @@
 \alias{dummy_test}
 \title{dummy_test: dummy t-chi-test for MCAR}
 \usage{
-dummy_test(df, col_cat)
+dummy_test(df, col_cat = c())
 }
 \arguments{
 \item{df}{An incomplete dataframe.}
@@ -48,6 +48,9 @@ Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
 X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
 rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 dummy_test(rs$X.incomp, c())
+
+dummy_test(airquality, col_cat = c(5:6))
+
 }
 \references{
 Missing value analysis & Data imputation, G. David Garson, 2015
