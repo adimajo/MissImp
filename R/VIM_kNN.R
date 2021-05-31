@@ -121,12 +121,12 @@ check_data <- function(data) {
 #'
 #' @export
 kNN_mod <- function(data, variable=colnames(data), metric=NULL, k=5, dist_var=colnames(data),weights=NULL,
-                numFun = median, catFun=maxCat,
+                numFun = median, catFun=VIM::maxCat,
                 makeNA=NULL,NAcond=NULL, impNA=TRUE, donorcond=NULL,mixed=vector(),mixed.constant=NULL,trace=FALSE,
                 imp_var=TRUE,imp_suffix="imp", addRF=FALSE, onlyRF=FALSE,addRandom=FALSE,useImputedDist=TRUE,weightDist=FALSE,
                 col_cat=c()) {
   check_data(data)
-  data_df <- !is.data.table(data)
+  data_df <- !data.table::is.data.table(data)
   ## Add: Create dict_cat with categroical columns 
   exist_cat <- !all(c(0, col_cat) == c(0))
   if(exist_cat){
@@ -142,7 +142,7 @@ kNN_mod <- function(data, variable=colnames(data), metric=NULL, k=5, dist_var=co
   force(variable)
   force(dist_var)
   if (data_df) {
-    data <- as.data.table(data)
+    data <- data.table::as.data.table(data)
   } else {
     data <- data.table::copy(data)
   }

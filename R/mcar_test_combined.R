@@ -25,8 +25,14 @@
 #' mcar_test_combined(oceanbuoys)$test_result
 #' 
 mcar_test_combined <- function(df, col_cat=c(), p_val=0.1){
+  
   out_dummy <- dummy_test(df,col_cat)
   out_little <- naniar::mcar_test(df)
+  exist_cat <- !all(c(0, col_cat) == c(0))
+  if(exist_cat){
+    warning("The normality test is written for numerical dataframes. Here the test is performed on only the numerical part of the input dataframe.\n")
+    df = subset(df,select = -col_cat)
+  }
   out_missmech <- TestMCARNormality(df)
   p_values <- data.frame("Dummy variable test" = out_dummy$p.value,
                                "Little's MCAR test" = out_little$p.value,
@@ -39,3 +45,4 @@ mcar_test_combined <- function(df, col_cat=c(), p_val=0.1){
   return(list(test_results=test_results ,p_values=p_values,
               result_dummy_test=out_dummy, result_little_test=out_little, result_missmech=out_missmech ))
 }
+

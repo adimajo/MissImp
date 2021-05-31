@@ -22,7 +22,7 @@ bootsample <- function(df, num_sample) {
   num_row <- nrow(df)
   if (num_sample < log(num_row)) {
     warning(
-      "Warning: We suggest that the bootstrap number > log(number of rows), if not, all the rows may not be covered in the bootstrap samples"
+      "Warning: We suggest that the bootstrap number > log(number of rows), if not, all the rows may not be covered in the bootstrap samples.\n"
     )
   }
   ls_df_new <- list()

@@ -25,7 +25,8 @@ Imports:
     FactoMineR,
     qualvar,
     VIM,
-    data.table
+    data.table,
+    ranger
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr

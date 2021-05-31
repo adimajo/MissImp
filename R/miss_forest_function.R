@@ -541,7 +541,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             RF <- foreach(xntree=idiv(ntree, chunks=getDoParWorkers()),
                           .combine='combine', .multicombine=TRUE,
                           .packages='randomForest') %dopar% {
-                            randomForest( x = obsX,
+                            randomForest::randomForest( x = obsX,
                                           y = obsY,
                                           ntree = xntree,
                                           mtry = mtry,

@@ -12,8 +12,8 @@ output:
 library(MASS)
 library(norm)
 library(VIM)
-library(ggplot2)
-library(ggpubr)
+# library(ggplot2)
+# library(ggpubr)
 library(naniar)
 library(usethis)
 #library(MissMech) # removed from the CRAN repository.
@@ -30,27 +30,34 @@ library(pracma)
 library(gdata)
 library(caret)
 library(stats)
-library(missForest)
 library(missMDA)
 library(uwo4419)
 library(qualvar)
 library(dplyr)
 library(data.table)
 library(mix)
-source_url('https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R')
-source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/mcar-test.R')
-source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/utils.R')
-source_url('https://raw.githubusercontent.com/LqNoob/Machine-Learning-Evaluation-Metrics/master/R/Classification.R')
+library(ranger)
+library(FactoMineR)
+# source_url('https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R')
+# source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/mcar-test.R')
+# source_url('https://raw.githubusercontent.com/njtierney/naniar/master/R/utils.R')
+# source_url('https://raw.githubusercontent.com/LqNoob/Machine-Learning-Evaluation-Metrics/master/R/Classification.R')
 
 
 
-#library(MissImp)
-source("../R/utils.R")
-source("../R/generate_missingness.R")
-source("../R/produce_NA.R")
-source("../R/dummy_test_MCAR.R")
-source("../R/MissMech_TestNormality.R")
-source("../R/miss_ranger_function.R")
+library(MissImp)
+# source("../R/utils.R")
+# source("../R/generate_missingness.R")
+# source("../R/produce_NA.R")
+# source("../R/dummy_test_MCAR.R")
+# source("../R/MissMech_TestNormality.R")
+# source("../R/miss_ranger_function.R")
+# source("../R/bootstrap.R")
+# source("../R/jackknife.R")
+# source("../R/missMDA_function.R")
+# source("../R/mcar_test_combined.R")
+# source("../R/VIM_kNN.R")
+
 set.seed(43)
 ```
 
@@ -108,6 +115,8 @@ rs.mix = generate_miss_ls(X.complete,0.4)
 ```
 
 
+
+
 ### Preprocessing
 ```{r list_of_incomplete_dataframes}
 list_df.con = list(rs.con$mcar$X.incomp,rs.con$mar1$X.incomp,rs.con$mar2$X.incomp,rs.con$mar3$X.incomp,rs.con$mnar1$X.incomp,rs.con$mnar2$X.incomp)
@@ -140,7 +149,7 @@ for(df in list_df.mix){
 ### Statistical test for MCAR 
 ```{r p_val}
 p_val = 0.05
-mcar_test_combined(list_df.mix[[1]],col_cat=c(7:8),p_val=0.05)
+mcar_test_combined(list_df.mix[[3]],col_cat=c(7:8),p_val=p_val)$test_results
 ```
 
 #### Test with dummy variables
@@ -241,6 +250,46 @@ final_result_mcar
 
 ### Create several datasets
 
+```{r}
+# source("../R/single_imp_combined.R")
+df=list_df.mix[[2]]
+col_cat=c(7:8) 
+col_dis=c(6)
+n_resample=4     #2*log(nrow(df))
+maxiter_tree=3
+maxiter_pca=10
+ncp_pca=ncol(df)/2
+learn_ncp=TRUE
+
+imp_method='missForest'
+resample_method='bootstrap'
+cat_combine_by='onehot'
+var_cat='wilcox_va'
+
+```
+
+
+```{r}
+res=single_imp(df=df, imp_method=imp_method, resample_method=resample_method,
+               n_resample=n_resample, col_cat=col_cat, col_dis=col_dis,
+               maxiter_tree=maxiter_tree, maxiter_pca=maxiter_pca, ncp_pca=ncp_pca,
+               learn_ncp=learn_ncp, cat_combine_by=cat_combine_by, var_cat=var_cat)
+```
+
+
+
+```{r}
+head(res$imp)
+head(res$imp.disj)
+head(res$uncertainty)
+head(res$uncertainty.disj)
+```
+
+
+
+
+
+
 ```{r bootstrap_and_jackknife}
 # Create bootstrap and jackknife datasets
 # Bootstrap needs big number of samples
@@ -264,6 +313,8 @@ dict_name_cat = dict_onehot(df_with_mv, c(7:8))
 
 ```{r imputation_boot_FAMD}
 #Imputation (for example PCA with 3 dimension)
+df_with_mv = ordinal_encode(df_with_mv,c(7:8))
+df_with_mv = factor_encode(df_with_mv,c(7:8))
 ls.imp.pca.onehot = list()
 ls.imp.pca.fact = list()
 idx_col_cat = c(7:8)
@@ -271,9 +322,9 @@ i = 1
 num_col = ncol(df_with_mv)
 for(df in ls_boot){
   df = factor_encode(df, idx_col_cat)
-  #n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
+  n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
   #for imputeFAMD_mod, the categorical data need to be ordinal encoded then factor encoded
-  pca = imputeFAMD_mod(df, ncp = 3, maxiter = 100)
+  pca = imputeFAMD_mod(df, ncp = n_opt, maxiter = 100)
   ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
   ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
@@ -318,6 +369,8 @@ imp.pca_full.fact = pca_full$completeObs
 rs_jack0=combine_jack(ls.imp.pca.onehot,data.frame(imp.pca_full.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'unalike')
 rs_jack1=combine_jack(ls.imp.pca.onehot,data.frame(imp.pca_full.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'wilcox_va')
 ```
+
+
 
 
 
@@ -549,7 +602,6 @@ ls_F1(df_comp,list(imp.forest$ximp),mask,col_cat)
 
 #### (4)MissRanger
 ```{r}
-library(missRanger)
 list_df.mix[[2]] = factor_encode(list_df.mix[[2]], idx_col_cat)
 df_with_mv = list_df.mix[[2]]
 ```
@@ -558,7 +610,7 @@ df_with_mv = list_df.mix[[2]]
 
 
 ```{r}
-library(ranger)
+
 res = missRanger_mod(df_with_mv,col_cat = c(7:8))
 ```
 
@@ -594,7 +646,7 @@ ls_F1(df_comp,list(imp.pca),mask,col_cat)
 
 #### (6)KNN
 ```{r}
-list_df.mix[[2]] = factor_encode(list_df.mix[[2]], idx_col_cat)
+list_df.mix[[2]] = factor_encode(list_df.mix[[2]], c(7:8))
 df_with_mv = list_df.mix[[2]]
 ```
 
@@ -602,7 +654,10 @@ df_with_mv = list_df.mix[[2]]
 
 
 ```{r}
-res=kNN_mod(df_with_mv, col_cat = c(7:8))
+for(df in ls_boot){
+  res=kNN_mod(df, col_cat = c(7:8))
+}
+
 ```
 
 
