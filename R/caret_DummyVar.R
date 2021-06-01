@@ -85,41 +85,53 @@
 #' \url{https://cran.r-project.org/doc/manuals/R-intro.html#Formulae-for-statistical-models}
 #' @keywords models
 #' @examples
-#' when <- data.frame(time = c("afternoon", "night", "afternoon",
-#'                             "morning", "morning", "morning",
-#'                             "morning", "afternoon", "afternoon"),
-#'                    day = c("Mon", "Mon", "Mon",
-#'                            "Wed", "Wed", "Fri",
-#'                            "Sat", "Sat", "Fri"),
-#'                            stringsAsFactors = TRUE)
+#' when <- data.frame(
+#'   time = c(
+#'     "afternoon", "night", "afternoon",
+#'     "morning", "morning", "morning",
+#'     "morning", "afternoon", "afternoon"
+#'   ),
+#'   day = c(
+#'     "Mon", "Mon", "Mon",
+#'     "Wed", "Wed", "Fri",
+#'     "Sat", "Sat", "Fri"
+#'   ),
+#'   stringsAsFactors = TRUE
+#' )
 #'
-#' levels(when$time) <- list(morning="morning",
-#'                           afternoon="afternoon",
-#'                           night="night")
-#' levels(when$day) <- list(Mon="Mon", Tue="Tue", Wed="Wed", Thu="Thu",
-#'                          Fri="Fri", Sat="Sat", Sun="Sun")
+#' levels(when$time) <- list(
+#'   morning = "morning",
+#'   afternoon = "afternoon",
+#'   night = "night"
+#' )
+#' levels(when$day) <- list(
+#'   Mon = "Mon", Tue = "Tue", Wed = "Wed", Thu = "Thu",
+#'   Fri = "Fri", Sat = "Sat", Sun = "Sun"
+#' )
 #'
 #' ## Default behavior:
 #' model.matrix(~day, when)
 #'
 #' mainEffects <- dummyVars(~ day + time, data = when)
 #' mainEffects
-#' predict(mainEffects, when[1:3,])
+#' predict(mainEffects, when[1:3, ])
 #'
 #' when2 <- when
 #' when2[1, 1] <- NA
-#' predict(mainEffects, when2[1:3,])
-#' predict(mainEffects, when2[1:3,], na.action = na.omit)
+#' predict(mainEffects, when2[1:3, ])
+#' predict(mainEffects, when2[1:3, ], na.action = na.omit)
 #'
 #'
 #' interactionModel <- dummyVars(~ day + time + day:time,
-#'                               data = when,
-#'                               sep = ".")
-#' predict(interactionModel, when[1:3,])
+#'   data = when,
+#'   sep = "."
+#' )
+#' predict(interactionModel, when[1:3, ])
 #'
 #' noNames <- dummyVars(~ day + time + day:time,
-#'                      data = when,
-#'                      levelsOnly = TRUE)
+#'   data = when,
+#'   levelsOnly = TRUE
+#' )
 #' predict(noNames, when)
 #'
 #' head(class2ind(iris$Species))
@@ -129,7 +141,7 @@
 #' class2ind(two_levels, drop2nd = TRUE)
 #' @export dummyVars
 "dummyVars" <-
-  function(formula, ...){
+  function(formula, ...) {
     UseMethod("dummyVars")
   }
 
@@ -137,31 +149,28 @@
 #' @method dummyVars default
 #' @importFrom stats as.formula model.frame
 #' @export
-dummyVars.default <- function (formula, data, sep = ".", levelsOnly = FALSE, fullRank = FALSE, ...)
-{
+dummyVars.default <- function(formula, data, sep = ".", levelsOnly = FALSE, fullRank = FALSE, ...) {
   formula <- as.formula(formula)
-  if(!is.data.frame(data)) data <- as.data.frame(data, stringsAsFactors = FALSE)
-  
+  if (!is.data.frame(data)) data <- as.data.frame(data, stringsAsFactors = FALSE)
+
   vars <- all.vars(formula)
-  if(any(vars == "."))
-  {
+  if (any(vars == ".")) {
     vars <- vars[vars != "."]
     vars <- unique(c(vars, colnames(data)))
   }
-  isFac <- unlist(lapply(data[,vars,drop = FALSE], is.factor))
-  if(sum(isFac) > 0)
-  {
+  isFac <- unlist(lapply(data[, vars, drop = FALSE], is.factor))
+  if (sum(isFac) > 0) {
     facVars <- vars[isFac]
-    lvls <- lapply(data[,facVars,drop = FALSE], levels)
-    if(levelsOnly)
-    {
+    lvls <- lapply(data[, facVars, drop = FALSE], levels)
+    if (levelsOnly) {
       tabs <- table(unlist(lvls))
-      if(any(tabs > 1))
-      {
-        stop(paste("You requested `levelsOnly = TRUE` but",
-                   "the following levels are not unique",
-                   "across predictors:",
-                   paste(names(tabs)[tabs > 1], collapse = ", ")))
+      if (any(tabs > 1)) {
+        stop(paste(
+          "You requested `levelsOnly = TRUE` but",
+          "the following levels are not unique",
+          "across predictors:",
+          paste(names(tabs)[tabs > 1], collapse = ", ")
+        ))
       }
     }
   } else {
@@ -169,33 +178,37 @@ dummyVars.default <- function (formula, data, sep = ".", levelsOnly = FALSE, ful
     lvls <- NULL
   }
   trms <- attr(model.frame(formula, data), "terms")
-  out <- list(call = match.call(),
-              form = formula,
-              vars = vars,
-              facVars = facVars,
-              lvls = lvls,
-              sep = sep,
-              terms = trms,
-              levelsOnly = levelsOnly,
-              fullRank = fullRank)
+  out <- list(
+    call = match.call(),
+    form = formula,
+    vars = vars,
+    facVars = facVars,
+    lvls = lvls,
+    sep = sep,
+    terms = trms,
+    levelsOnly = levelsOnly,
+    fullRank = fullRank
+  )
   class(out) <- "dummyVars"
   out
-  
 }
 
 #' @rdname dummyVars
 #' @method print dummyVars
 #' @export
-print.dummyVars <- function(x, ...)
-{
+print.dummyVars <- function(x, ...) {
   cat("Dummy Variable Object\n\n")
   cat("Formula: ")
   print(x$form)
-  cat(length(x$vars),  " variables, ", length(x$facVars), " factors\n", sep = "")
-  if(!is.null(x$sep) & !x$levelsOnly) cat("Variables and levels will be separated by '",
-                                          x$sep, "'\n", sep = "")
-  if(x$levelsOnly) cat("Factor variable names will be removed\n")
-  if(x$fullRank) cat("A full rank encoding is used") else cat("A less than full rank encoding is used")
+  cat(length(x$vars), " variables, ", length(x$facVars), " factors\n", sep = "")
+  if (!is.null(x$sep) & !x$levelsOnly) {
+    cat("Variables and levels will be separated by '",
+      x$sep, "'\n",
+      sep = ""
+    )
+  }
+  if (x$levelsOnly) cat("Factor variable names will be removed\n")
+  if (x$fullRank) cat("A full rank encoding is used") else cat("A less than full rank encoding is used")
   cat("\n")
   invisible(x)
 }
@@ -204,20 +217,25 @@ print.dummyVars <- function(x, ...)
 #' @method predict dummyVars
 #' @importFrom stats delete.response model.frame model.matrix na.pass
 #' @export
-predict.dummyVars <- function(object, newdata, na.action = na.pass, ...)
-{
-  if(is.null(newdata)) stop("newdata must be supplied")
-  if(!is.data.frame(newdata)) newdata <- as.data.frame(newdata, stringsAsFactors = FALSE)
-  if(!all(object$vars %in% names(newdata))) stop(
-    paste("Variable(s)",
-          paste("'", object$vars[!object$vars %in% names(newdata)],
-                "'", sep = "",
-                collapse = ", "),
-          "are not in newdata"))
+predict.dummyVars <- function(object, newdata, na.action = na.pass, ...) {
+  if (is.null(newdata)) stop("newdata must be supplied")
+  if (!is.data.frame(newdata)) newdata <- as.data.frame(newdata, stringsAsFactors = FALSE)
+  if (!all(object$vars %in% names(newdata))) {
+    stop(
+      paste(
+        "Variable(s)",
+        paste("'", object$vars[!object$vars %in% names(newdata)],
+          "'",
+          sep = "",
+          collapse = ", "
+        ),
+        "are not in newdata"
+      )
+    )
+  }
   Terms <- object$terms
   Terms <- delete.response(Terms)
-  if(!object$fullRank)
-  {
+  if (!object$fullRank) {
     oldContr <- options("contrasts")$contrasts
     newContr <- oldContr
     newContr["unordered"] <- "contr.ltfr"
@@ -225,34 +243,34 @@ predict.dummyVars <- function(object, newdata, na.action = na.pass, ...)
     on.exit(options(contrasts = oldContr))
   }
   m <- model.frame(Terms, newdata, na.action = na.action, xlev = object$lvls)
-  
+
   x <- model.matrix(Terms, m)
-  
+
   cnames <- colnames(x)
-  if(object$levelsOnly) {
-    for(i in object$facVars) {
-      for(j in object$lvls[[i]]) {
+  if (object$levelsOnly) {
+    for (i in object$facVars) {
+      for (j in object$lvls[[i]]) {
         from_text <- paste0(i, j)
         cnames[which(cnames == from_text)] <- j
       }
     }
   }
-  if(!is.null(object$sep) & !object$levelsOnly) {
-    for(i in object$facVars[order(-nchar(object$facVars))]) {
+  if (!is.null(object$sep) & !object$levelsOnly) {
+    for (i in object$facVars[order(-nchar(object$facVars))]) {
       ## the default output form model.matrix is NAMElevel with no separator.
-      for(j in object$lvls[[i]]) {
+      for (j in object$lvls[[i]]) {
         from_text <- paste0(i, j)
         to_text <- paste(i, j, sep = object$sep)
-        pos = which(cnames == from_text)
+        pos <- which(cnames == from_text)
         # If there are several identical NAMElevel matching (example: "X1" with level "11" and "X11" with level "1")
         if (length(pos) > 1) {
           # If the level j is not the first level of the feature i
           if (which(object$lvls[[i]] == j) > 1) {
             # Then we just have to test for the preceding NAMElevel being NAME(level-1)
-            cnames[pos][cnames[pos-1] == paste(i, object$lvls[[i]][which(object$lvls[[i]] == j)-1], sep = object$sep)] <- to_text
+            cnames[pos][cnames[pos - 1] == paste(i, object$lvls[[i]][which(object$lvls[[i]] == j) - 1], sep = object$sep)] <- to_text
           } else {
             # Otherwise, we have to test for the preceding NAMElevel being (NAME-1)(last_level)
-            cnames[pos][cnames[pos-1] == paste(object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1], utils::tail(object$lvls[[object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1]]],n=1), sep = object$sep)] <- to_text
+            cnames[pos][cnames[pos - 1] == paste(object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1], utils::tail(object$lvls[[object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1]]], n = 1), sep = object$sep)] <- to_text
           }
         } else {
           # Otherwise simply replace the last occurence of the pattern
@@ -267,12 +285,13 @@ predict.dummyVars <- function(object, newdata, na.action = na.pass, ...)
 
 #' @rdname dummyVars
 #' @export
-contr.ltfr <- function (n, contrasts = TRUE, sparse = FALSE)
-{
+contr.ltfr <- function(n, contrasts = TRUE, sparse = FALSE) {
   if (is.numeric(n) && length(n) == 1L) {
-    if (n > 1L)
+    if (n > 1L) {
       levels <- as.character(seq_len(n))
-    else stop("not enough degrees of freedom to define contrasts")
+    } else {
+      stop("not enough degrees of freedom to define contrasts")
+    }
   }
   else {
     levels <- as.character(n)
@@ -286,12 +305,13 @@ contr.ltfr <- function (n, contrasts = TRUE, sparse = FALSE)
 }
 
 #' @export
-contr.dummy <- function(n, ...)
-{
+contr.dummy <- function(n, ...) {
   if (is.numeric(n) && length(n) == 1L) {
-    if (n > 1L)
+    if (n > 1L) {
       levels <- as.character(seq_len(n))
-    else stop("not enough degrees of freedom to define contrasts")
+    } else {
+      stop("not enough degrees of freedom to define contrasts")
+    }
   }
   else {
     levels <- as.character(n)
@@ -308,13 +328,13 @@ contr.dummy <- function(n, ...)
 #' @export
 #' @param drop2nd A logical: if the factor has two levels, should a single binary vector be returned?
 class2ind <- function(x, drop2nd = FALSE) {
-  if(!is.factor(x)) stop("'x' should be a factor")
+  if (!is.factor(x)) stop("'x' should be a factor")
   y <- model.matrix(~ x - 1)
   colnames(y) <- gsub("^x", "", colnames(y))
   attributes(y)$assign <- NULL
   attributes(y)$contrasts <- NULL
-  if(length(levels(x)) == 2 & drop2nd) {
-    y <- y[,1]
+  if (length(levels(x)) == 2 & drop2nd) {
+    y <- y[, 1]
   }
   y
 }
@@ -340,7 +360,7 @@ class2ind <- function(x, drop2nd = FALSE) {
 ## a fast version of diag(n, .) / sparse-Diagonal() + dimnames
 ## Originally .Diag in stats:contrast.R
 
-.RDiag <- function (nms, sparse) {
+.RDiag <- function(nms, sparse) {
   n <- as.integer(length(nms))
   d <- c(n, n)
   dn <- list(nms, nms)

@@ -15,17 +15,16 @@ jacksample(df, num_sample)
 A list of jackknifed dataframes.
 }
 \description{
-\code{jacksample} function creates \code{num_sample} samples without the group of observation k (k=1,...,\code{num_sample}). 
+\code{jacksample} function creates \code{num_sample} samples without the group of observation k (k=1,...,\code{num_sample}).
 We regroup the original data into \code{num_sample} groups by their index.
 }
 \examples{
-n = 10000
-mu.X = c(1, 2, 3)
-Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
-ls_boot = jacksample(rs$X.incomp,4)
-
+n <- 10000
+mu.X <- c(1, 2, 3)
+Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+ls_boot <- jacksample(rs$X.incomp, 4)
 }
 \references{
 Statistical Analysis with Missing Data, by Little and Rubin, 2002

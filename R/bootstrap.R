@@ -1,9 +1,9 @@
 #' bootsample: create several dataframes by bootstrap resampling
-#' 
+#'
 #' @description
 #' \code{bootsample} function generates several dataframes by drawing samples of size n by simple random sampling with replacement.
-#' 
-#' In average, if we want to cover all the n rows in the original dataframe, 
+#'
+#' In average, if we want to cover all the n rows in the original dataframe,
 #' the number of samples should be greater than log(n).
 #' @param df A complete or incomplete dataframe
 #' @param num_sample Number of bootstrapped samples. We suggest that num_sample > Log(n), where n is the number of rows.
@@ -11,13 +11,12 @@
 #' @export
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
 #' @examples
-#' n = 10000
-#' mu.X = c(1, 2, 3)
-#' Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-#' X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
-#' ls_boot = bootsample(rs$X.incomp,4)
-#' 
+#' n <- 10000
+#' mu.X <- c(1, 2, 3)
+#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+#' ls_boot <- bootsample(rs$X.incomp, 4)
 bootsample <- function(df, num_sample) {
   num_row <- nrow(df)
   if (num_sample < log(num_row)) {
@@ -39,20 +38,20 @@ bootsample <- function(df, num_sample) {
 
 
 #' combine_boot: combine imputed bootstrap datasets
-#' 
+#'
 #' @description
-#' \code{combine_boot} function combines several imputed bootstrapped dataframes 
+#' \code{combine_boot} function combines several imputed bootstrapped dataframes
 #' into the final imputed dataframe and provide the variance for each imputed value.
 #' @param ls_df A list of imputed bootstrapped dataframes.
 #' @param col_con Continous columns index.
 #' @param col_dis Discret columns index.
 #' @param col_cat Categorical columns index.
 #' @param num_row_origin Number of rows in the original incomplete dataframe before bootstrapping.
-#' @param method The encoded method of categorical columns in the imputed dataframes. 
+#' @param method The encoded method of categorical columns in the imputed dataframes.
 #' This function is coded for both "onehot" and "factor" encoded situations.
 #' @param dict_cat The dictionary of categorical columns names if "onehot" method is applied.
 #' For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3")).
-#' @param var_cat The method of variance calculation for the categorical columns. 
+#' @param var_cat The method of variance calculation for the categorical columns.
 #' "unalike" will lead to the calculation of unalikeability, while "wilcox_va" will lead to the calculation of Wilcox index: VarNC.
 #' @return \code{df_result_disj} The final imputed dataframe with the categorical columns in onehot form.
 #' @return \code{df_result_var_disj} The variance matrix for the final imputation dataframe with the categorical columns in onehot form.
@@ -62,8 +61,8 @@ bootsample <- function(df, num_sample) {
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
 combine_boot <- function(ls_df,
                          col_con,
-                         col_dis=c(),
-                         col_cat=c(),
+                         col_dis = c(),
+                         col_cat = c(),
                          num_row_origin,
                          method = "onehot",
                          dict_cat = NULL,

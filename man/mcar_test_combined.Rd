@@ -14,8 +14,8 @@ mcar_test_combined(df, col_cat = c(), p_val = 0.1)
 \item{p_val}{Significance level.}
 }
 \value{
-\code{test_results} The final results from the three tests mentioned in 'Description'. 
-\code{True} means that we don't have enough evidence to reject our H0: the missing data mechanism is MCAR. 
+\code{test_results} The final results from the three tests mentioned in 'Description'.
+\code{True} means that we don't have enough evidence to reject our H0: the missing data mechanism is MCAR.
 And \code{False} means that H0 is rejected, the missing data mechanism is not MCAR.
 
 \code{p_values} The p-values of our three tests.
@@ -28,18 +28,17 @@ And \code{False} means that H0 is rejected, the missing data mechanism is not MC
 }
 \description{
 \code{mcar_test_combined} shows if a missing data mechanism is MCAR by performing three classical statistic tests:
- the dummy variable test \code{dummy_test}, Little's MCAR test \code{mcar_test} from package \code{naniar} and 
- the normality tests (Hawkin's test and non-parametric test included) \code{TestMCARNormality} from package \code{MissMech}. 
- Our null hypothesis H0 is that the missing data mechanism is MCAR. 
- These three tests focus on testing different aspects of MCAR mechanism. 
- The dummy variable test is to verify if the value of one variable is correlated with the missingnness of another variable. 
- Little's MCAR tet focus on testing the if the mean vector for each missig pattern is part of the total mean vector. And the normality tests 
- focus on testing the normality and homoscedasticity according to the variance matrix. 
+ the dummy variable test \code{dummy_test}, Little's MCAR test \code{mcar_test} from package \code{naniar} and
+ the normality tests (Hawkin's test and non-parametric test included) \code{TestMCARNormality} from package \code{MissMech}.
+ Our null hypothesis H0 is that the missing data mechanism is MCAR.
+ These three tests focus on testing different aspects of MCAR mechanism.
+ The dummy variable test is to verify if the value of one variable is correlated with the missingnness of another variable.
+ Little's MCAR tet focus on testing the if the mean vector for each missig pattern is part of the total mean vector. And the normality tests
+ focus on testing the normality and homoscedasticity according to the variance matrix.
  The conclusion of these three tests as well as their statistics will be returned.
 }
 \examples{
- 
+
 mcar_test_combined(airquality, col_cat = c(5:6))$test_result
 mcar_test_combined(oceanbuoys)$test_result
-
 }

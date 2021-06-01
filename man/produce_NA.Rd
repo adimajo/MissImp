@@ -2,7 +2,7 @@
 % Please edit documentation in R/produce_NA.R
 \name{produce_NA}
 \alias{produce_NA}
-\title{generation of missing values on complete or incomplete data 
+\title{generation of missing values on complete or incomplete data
 according to different missingness mechanisms and patterns}
 \usage{
 produce_NA(
@@ -58,6 +58,6 @@ A list with the following elements
 \item{idx_newNA}{a boolean data.frame indicating the indices of the newly generated missing values}
 }
 \description{
-generation of missing values on complete or incomplete data 
+generation of missing values on complete or incomplete data
 according to different missingness mechanisms and patterns
 }

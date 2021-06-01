@@ -9,13 +9,13 @@ generate_miss_ls(df, miss_perc)
 \arguments{
 \item{df}{Complete dataframe.}
 
-\item{miss_perc}{Desired percentage of missing values. Note that all the mechanisms could only 
+\item{miss_perc}{Desired percentage of missing values. Note that all the mechanisms could only
 approach this proportion. The real proportion of missingness will be returned with the incomplete dataframe.
 When the number of columns is small, some mechanisms could be incompatible with large missing percentage.}
 }
 \value{
-\code{mcar} Incomplete dataframe object with MCAR mechanism. The detailed description could be 
-found in \code{generate_miss} documentation. Each object contains three attributes: 
+\code{mcar} Incomplete dataframe object with MCAR mechanism. The detailed description could be
+found in \code{generate_miss} documentation. Each object contains three attributes:
 \code{X.incomp}, \code{R.mask}, and \code{real_miss_perc}
 
 \code{mar1} Incomplete dataframe object with MAR1 mechanism.
@@ -29,15 +29,15 @@ found in \code{generate_miss} documentation. Each object contains three attribut
 \code{mnar2} Incomplete dataframe object with MNAR2 mechanism.
 }
 \description{
-\code{generate_miss_ls} function generates a list of incomplete dataframes. Missing values are generated in the given complete 
+\code{generate_miss_ls} function generates a list of incomplete dataframes. Missing values are generated in the given complete
 dataframe with the all mechanisms in \code{generate_miss} function and the chosen proportion of missingness.
 }
 \examples{
-n = 10000
-mu.X = c(1, 2, 3)
-Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-rs = generate_miss_ls(X.complete.cont, 0.4)
+n <- 10000
+mu.X <- c(1, 2, 3)
+Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+rs <- generate_miss_ls(X.complete.cont, 0.4)
 rs$mcar$X.incomp
 }
 \references{

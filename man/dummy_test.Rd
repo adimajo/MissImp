@@ -26,31 +26,30 @@ dummy_test(df, col_cat = c())
 \code{dummy_test_matrix} generates a matrix of p-values for dummy t-chi-test. The null hypothesis(H0) is that the missing mechanism is MCAR.
 The position [i,j] of this matrix shows the p-value of the test that the missigness in Yi does not depend on the value of Yj.
 
-We note Yj_1 as the part of Yj where Yi is missing, and Yj_0 as the part of Yj where Yi is observed. 
+We note Yj_1 as the part of Yj where Yi is missing, and Yj_0 as the part of Yj where Yi is observed.
 Mj_1 and Mj_0 correspond to the mask of missingness where Yi is missing or observed. Mi is the mask of missingness for Yi.
 For example, if Yi[3] is missing and Yj[3] is observed, then Mj_1[3]=0, Mi[3]=1.
 
 There are four situations:
 \itemize{
  \item Yj is completely missing. In this case, no test will be done.
- \item Yj is partially observed, but Yj_1 (or Yj_0) is completely missing. 
+ \item Yj is partially observed, but Yj_1 (or Yj_0) is completely missing.
  In this case, a t-test is performed to test if the mean of Mj_0 (or Mj_1) is 1.
- \item Yj is numerical, Yj_1 and Yj_0 are both partially observed. 
+ \item Yj is numerical, Yj_1 and Yj_0 are both partially observed.
  In this case, a paired t-test is performed to test if Yj_1 and Yj_0 have the same mean.
- \item Yj is categorical, Yj_1 and Yj_0 are both partially observed. 
+ \item Yj is categorical, Yj_1 and Yj_0 are both partially observed.
  In this case, a chi-squared test is performed to test if Yj and Mi are independent.
 }
 }
 \examples{
-n = 10000
-mu.X = c(1, 2, 3)
-Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+n <- 10000
+mu.X <- c(1, 2, 3)
+Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 dummy_test(rs$X.incomp, c())
 
 dummy_test(airquality, col_cat = c(5:6))
-
 }
 \references{
 Missing value analysis & Data imputation, G. David Garson, 2015

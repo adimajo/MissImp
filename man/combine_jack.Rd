@@ -26,13 +26,13 @@ combine_jack(
 
 \item{col_cat}{Categorical columns index.}
 
-\item{method}{The encoded method of categorical columns in the imputed dataframes. 
+\item{method}{The encoded method of categorical columns in the imputed dataframes.
 This function is only coded for "onehot" situation.}
 
 \item{dict_cat}{The dictionary of categorical columns names if "onehot" method is applied.
 For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3")).}
 
-\item{var_cat}{The method of variance calculation for the categorical columns. 
+\item{var_cat}{The method of variance calculation for the categorical columns.
 "unalike" will lead to the calculation of unalikeability, while "wilcox_va" will lead to the calculation of Wilcox index: VarNC.}
 
 \item{num_row_origin}{Number of rows in the original incomplete dataframe before bootstrapping.}
@@ -47,7 +47,7 @@ For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3"
 \code{df_result_var} The variance matrix for the final imputation dataframe with the categorical columns in factor form.
 }
 \description{
-\code{combine_jack} function combines several imputed jackknifed dataframes 
+\code{combine_jack} function combines several imputed jackknifed dataframes
 into the final imputed dataframe and provide the variance for each imputed value.
 }
 \references{

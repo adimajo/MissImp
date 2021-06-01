@@ -44,15 +44,13 @@ VA_fact <- function(x) {
 }
 
 
-#Create a dictionary {Y7:Y7_1,Y7_2,...}, {Y_7: Y_7_1, Y_7_2,...}
-dict_onehot = function(df, col_cat){
-  dict_name = list()
-  ls_col_name = colnames(df)
-  for(i in col_cat){
-    col_cat_name = ls_col_name[i]
-    dict_name[[col_cat_name]]=paste(col_cat_name, levels(df[[col_cat_name]]), sep = "_")
+# Create a dictionary {Y7:Y7_1,Y7_2,...}, {Y_7: Y_7_1, Y_7_2,...}
+dict_onehot <- function(df, col_cat) {
+  dict_name <- list()
+  ls_col_name <- colnames(df)
+  for (i in col_cat) {
+    col_cat_name <- ls_col_name[i]
+    dict_name[[col_cat_name]] <- paste(col_cat_name, levels(df[[col_cat_name]]), sep = "_")
   }
   return(dict_name)
 }
-
-
