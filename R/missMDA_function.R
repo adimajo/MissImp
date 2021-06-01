@@ -1,7 +1,7 @@
 
 ###################estim_ncpFAMD_2 with some modifications on impute function##############################
 
-estim_ncpFAMD_3<-function (don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"), 
+estim_ncpFAMD_mod<-function (don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"), 
                            method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05,ind.sup=NULL,sup.var=NULL,
                            threshold = 1e-04, verbose=TRUE, maxiter=1000) 
 {
@@ -87,7 +87,7 @@ estim_ncpFAMD_3<-function (don, ncp.min = 0, ncp.max = 5, method = c("Regularize
       #####################################
       for (nbaxes in ncp.min:ncp.max) {
         #print(paste("nbaxes:", nbaxes))
-        tab.disj.comp <- imputeFAMD_1(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter)$tab.disj
+        tab.disj.comp <- imputeFAMD_mod(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter)$tab.disj
         if (sum(is.na(jeuNA)) != sum(is.na(jeu))){ 
           #########Changed part 2##############
           #original code:
@@ -138,7 +138,7 @@ estim_ncpFAMD_3<-function (don, ncp.min = 0, ncp.max = 5, method = c("Regularize
 }
 
 
-imputeFAMD_1 <- function (X, ncp = 2, method=c("Regularized","EM"),row.w=NULL,coeff.ridge=1,threshold = 1e-6,
+imputeFAMD_mod <- function (X, ncp = 2, method=c("Regularized","EM"),row.w=NULL,coeff.ridge=1,threshold = 1e-6,
                         ind.sup=NULL, sup.var=NULL, seed = NULL,maxiter=1000,...){
   
   X <- as.data.frame(X)
@@ -146,12 +146,12 @@ imputeFAMD_1 <- function (X, ncp = 2, method=c("Regularized","EM"),row.w=NULL,co
   method <- tolower(method)
   type = rep("s",ncol(X))
   type[!sapply(X,is.numeric)]="n"
-  res <- imputeMFA_1(X=X,group=rep(1,ncol(X)),type=type, ncp = ncp, method=method,row.w=row.w,coeff.ridge=coeff.ridge,ind.sup=ind.sup, num.group.sup=sup.var,threshold = threshold,seed = seed,maxiter=maxiter)
+  res <- imputeMFA_mod(X=X,group=rep(1,ncol(X)),type=type, ncp = ncp, method=method,row.w=row.w,coeff.ridge=coeff.ridge,ind.sup=ind.sup, num.group.sup=sup.var,threshold = threshold,seed = seed,maxiter=maxiter)
   return(res)
 }
 
 
-imputeMFA_1<-function (X, group, ncp = 2, type = rep("s", length(group)), 
+imputeMFA_mod<-function (X, group, ncp = 2, type = rep("s", length(group)), 
                        method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, 
                        threshold = 1e-06, ind.sup = NULL, num.group.sup = NULL, seed = NULL, maxiter = 1000, ...) 
 {
@@ -161,7 +161,7 @@ imputeMFA_1<-function (X, group, ncp = 2, type = rep("s", length(group)),
   if (is.null(row.w)) row.w = rep(1, nrow(X))/nrow(X)
   if (length(ind.sup)>0) row.w[ind.sup] <- row.w[ind.sup] * 1e-08
   if (!any(is.na(X))) stop("no missing values in X, this function is not useful. Perform MFA on X.")
-  res.impute <- impute_1(X, group = group, ncp = ncp, type = type, 
+  res.impute <- impute_mod(X, group = group, ncp = ncp, type = type, 
                          method = method, threshold = threshold, seed = seed, 
                          maxiter = maxiter, row.w = row.w, ind.sup = ind.sup, 
                          num.group.sup=num.group.sup, coeff.ridge = coeff.ridge)
@@ -169,7 +169,7 @@ imputeMFA_1<-function (X, group, ncp = 2, type = rep("s", length(group)),
 }
 
 
-impute_1 <- function(X, group, ncp = 2, type = rep("s", length(group)), 
+impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)), 
                    method = NULL, threshold = 1e-06, ind.sup = NULL, num.group.sup = NULL, seed = NULL, maxiter = 1000, 
                    row.w = NULL, coeff.ridge = 1, ...) {
   #print("in impute")

@@ -257,14 +257,14 @@ col_cat=c(7:8)
 col_dis=c(6)
 n_resample=4     #2*log(nrow(df))
 maxiter_tree=3
-maxiter_pca=10
+maxiter_pca=30
 ncp_pca=ncol(df)/2
 learn_ncp=TRUE
 
-imp_method='missForest'
-resample_method='bootstrap'
+imp_method='PCA'
+resample_method='jackknife'
 cat_combine_by='onehot'
-var_cat='wilcox_va'
+var_cat='unalike'
 
 ```
 
@@ -279,6 +279,7 @@ res=single_imp(df=df, imp_method=imp_method, resample_method=resample_method,
 
 
 ```{r}
+head(df)
 head(res$imp)
 head(res$imp.disj)
 head(res$uncertainty)

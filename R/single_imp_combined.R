@@ -1,4 +1,4 @@
-single_imp <- function(df, imp_method='missRanger', resample_method='bootstrap', n_resample=2*log(nrow(df)), col_cat=c(), col_dis=c(), maxiter_tree=10, maxiter_pca=100, ncp_pca=ncol(df)/2, learn_ncp=TRUE, cat_combine_by='factor',var_cat='wilcox_va'){
+single_imp <- function(df, imp_method='missRanger', resample_method='bootstrap', n_resample=2*round(log(nrow(df))), col_cat=c(), col_dis=c(), maxiter_tree=10, maxiter_pca=100, ncp_pca=ncol(df)/2, learn_ncp=TRUE, cat_combine_by='factor',var_cat='wilcox_va'){
   
   if(all(!is.na(df))){
     stop("The input dataframe is complete. Imputation is not needed.")
@@ -102,7 +102,7 @@ single_imp <- function(df, imp_method='missRanger', resample_method='bootstrap',
     else{
       ls.imp.tmp <- ls.imp.onehot
       # With onehot form, the categorical column index has changed. Y7 -> Y7_1,...Y7_6
-      col_cat_boot <- c(1:ncol(ls.imp.tmp[[1]]))
+      col_cat_boot <- c(1:ncol(ls.imp.onehot[[1]]))
       col_cat_boot <- col_cat_boot[!col_cat_boot %in% c(col_con,col_dis)]
     }
     res <- combine_boot(ls.imp.tmp, col_con=col_con, col_dis=col_dis, col_cat=col_cat_boot,
@@ -113,7 +113,7 @@ single_imp <- function(df, imp_method='missRanger', resample_method='bootstrap',
     if(cat_combine_by=='factor'){
       stop("Please choose cat_combine_by='onehot' when resample_method=='jackknife'.")
     }
-    col_cat_jack <- c(1:ncol(ls.imp.tmp[[1]]))
+    col_cat_jack <- c(1:ncol(ls.imp.onehot[[1]]))
     col_cat_jack <- col_cat_jack[!col_cat_jack %in% c(col_con,col_dis)]
     res <- combine_jack(ls.imp.onehot, imp.full.onehot, col_con=col_con,
                         col_dis=col_dis, col_cat=col_cat_jack, method=cat_combine_by,
