@@ -37,7 +37,7 @@ buildbinary:
   extends: .before_script_template
   stage: build
   script:
-    - r -e 'devtools::build(binary = TRUE)'
+    - r -e 'devtools::build(binary = TRUE, args="--no-multiarch")'
 
 documentation:
   extends: .before_script_template

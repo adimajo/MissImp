@@ -49,8 +49,8 @@ missForest_mod(
 
 \item{sampsize}{list of size(s) of sample to draw}
 
-\item{nodesize}{minimum size of terminal nodes, vector of length 2, with 
-number for continuous variables in the first entry and 
+\item{nodesize}{minimum size of terminal nodes, vector of length 2, with
+number for continuous variables in the first entry and
 number for categorical variables in the second entry.}
 
 \item{maxnodes}{maximum number of terminal nodes for individual trees}
@@ -65,18 +65,18 @@ number for categorical variables in the second entry.}
 \code{ximp.disj} imputed data matrix of same type as 'xmis' for the numeric columns.
  For the categorical columns, the prediction of probability for each category is shown in form of onehot vector.
 
-\code{OOBerror} estimated OOB imputation error. For the set of continuous variables in 'xmis' the NRMSE and 
-for the set of categorical variables the proportion of falsely classified entries is returned. 
-See Details for the exact definition of these error measures. 
+\code{OOBerror} estimated OOB imputation error. For the set of continuous variables in 'xmis' the NRMSE and
+for the set of categorical variables the proportion of falsely classified entries is returned.
+See Details for the exact definition of these error measures.
 If 'variablewise' is set to 'TRUE' then this will be a vector of length 'p' where 'p' is the number of variables and the entries will be the OOB error for each variable separately.
 
-\code{error} true imputation error. This is only available if 'xtrue' was supplied. 
+\code{error} true imputation error. This is only available if 'xtrue' was supplied.
 The error measures are the same as for 'OOBerror'.
 }
 \description{
 \code{missForest_mod} is a modified version of the function \code{missForest} by Daniel Stekhoven.
 Please find the detailed documentation of \code{missForest} in the missForest package. Only the modifications are explained on this page.
-The original \code{missForest} function returns the final imputation result after convergence or \code{maxiter} iterations. 
+The original \code{missForest} function returns the final imputation result after convergence or \code{maxiter} iterations.
 The results of categorical columns are returned in form of vector. In \code{missForest_mod} function, during the last iteration,
 not only the final result, but also the onehot probability for each category is returned.
 }

@@ -99,7 +99,7 @@ aggregation step}
 }
 \description{
 k-Nearest Neighbour Imputation based on a variation of the Gower Distance
-for numerical, categorical, ordered and semi-continous variables. 
+for numerical, categorical, ordered and semi-continous variables.
 The original function is kNN in package VIM by Alexander Kowarik and Statistik Austria
 }
 \examples{
@@ -107,8 +107,7 @@ The original function is kNN in package VIM by Alexander Kowarik and Statistik A
 data(sleep)
 kNN(sleep)
 library(laeken)
-kNN(sleep, numFun = weightedMean, weightDist=TRUE)
-
+kNN(sleep, numFun = weightedMean, weightDist = TRUE)
 }
 \references{
 A. Kowarik, M. Templ (2016) Imputation with

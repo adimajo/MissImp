@@ -17,17 +17,16 @@ A list of bootstrapped dataframes.
 \description{
 \code{bootsample} function generates several dataframes by drawing samples of size n by simple random sampling with replacement.
 
-In average, if we want to cover all the n rows in the original dataframe, 
+In average, if we want to cover all the n rows in the original dataframe,
 the number of samples should be greater than log(n).
 }
 \examples{
-n = 10000
-mu.X = c(1, 2, 3)
-Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
-ls_boot = bootsample(rs$X.incomp,4)
-
+n <- 10000
+mu.X <- c(1, 2, 3)
+Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+ls_boot <- bootsample(rs$X.incomp, 4)
 }
 \references{
 Statistical Analysis with Missing Data, by Little and Rubin, 2002

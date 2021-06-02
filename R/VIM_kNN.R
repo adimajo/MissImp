@@ -1,70 +1,79 @@
-lengthL <- function(x){
-  if(is.list(x)){
-    return(sapply(x,length))
-  }else{
+lengthL <- function(x) {
+  if (is.list(x)) {
+    return(sapply(x, length))
+  } else {
     return(length(x))
   }
 }
 
-dist_single <- function(don_dist_var,imp_dist_var,numericalX,factorsX,ordersX,mixedX,levOrdersX,
-                        don_index,imp_index,weightsx,k,mixed.constant,provideMins=TRUE){
-  #gd <- distance(don_dist_var,imp_dist_var,weights=weightsx)
-  if(is.null(mixed.constant))
-    mixed.constant <- rep(0,length(mixedX))
-  
-  if(provideMins){
-    gd <- VIM::gowerD(don_dist_var,imp_dist_var,weights=weightsx,numericalX,
-                 factorsX,ordersX,mixedX,levOrdersX,mixed.constant=mixed.constant,returnIndex=TRUE,
-                 nMin=as.integer(k),returnMin=TRUE);
+dist_single <- function(don_dist_var, imp_dist_var, numericalX, factorsX, ordersX, mixedX, levOrdersX,
+                        don_index, imp_index, weightsx, k, mixed.constant, provideMins = TRUE) {
+  # gd <- distance(don_dist_var,imp_dist_var,weights=weightsx)
+  if (is.null(mixed.constant)) {
+    mixed.constant <- rep(0, length(mixedX))
+  }
+
+  if (provideMins) {
+    gd <- VIM::gowerD(don_dist_var, imp_dist_var,
+      weights = weightsx, numericalX,
+      factorsX, ordersX, mixedX, levOrdersX, mixed.constant = mixed.constant, returnIndex = TRUE,
+      nMin = as.integer(k), returnMin = TRUE
+    )
     colnames(gd$mins) <- imp_index
     erg2 <- as.matrix(gd$mins)
-  }else{
-    gd <- VIM::gowerD(don_dist_var,imp_dist_var,weights=weightsx,numericalX,
-                 factorsX,ordersX,mixedX,levOrdersX,mixed.constant=mixed.constant,returnIndex=TRUE,
-                 nMin=as.integer(k));
+  } else {
+    gd <- VIM::gowerD(don_dist_var, imp_dist_var,
+      weights = weightsx, numericalX,
+      factorsX, ordersX, mixedX, levOrdersX, mixed.constant = mixed.constant, returnIndex = TRUE,
+      nMin = as.integer(k)
+    )
     erg2 <- NA
   }
   colnames(gd$ind) <- imp_index
-  gd$ind[,] <- don_index[gd$ind]
+  gd$ind[, ] <- don_index[gd$ind]
   erg <- as.matrix(gd$ind)
-  
-  if(k==1){
+
+  if (k == 1) {
     erg <- t(erg)
     erg2 <- t(erg2)
   }
-  list(erg,erg2)
+  list(erg, erg2)
 }
 
-probCat <- function(x,col_names,weights = NULL){
-  #return the probability for each category
-  df <- data.frame(matrix(rep(0,length(col_names)),nrow = 1))
-  colnames(df)=col_names
+probCat <- function(x, col_names, weights = NULL) {
+  # return the probability for each category
+  df <- data.frame(matrix(rep(0, length(col_names)), nrow = 1))
+  colnames(df) <- col_names
   is_logical <- is.logical(x)
-  if(!is.factor(x))
+  if (!is.factor(x)) {
     x <- as.factor(x)
+  }
   s <- summary(x)
-  if(!is.null(weights)){
-    tmpTab <- merge(aggregate(weights,list(x),sum), data.frame("Group.1"=names(s),prob=s))
-    s <- tmpTab$prob*tmpTab$x
+  if (!is.null(weights)) {
+    tmpTab <- merge(aggregate(weights, list(x), sum), data.frame("Group.1" = names(s), prob = s))
+    s <- tmpTab$prob * tmpTab$x
     names(s) <- tmpTab$Group.1
   }
-  df[names(s)]=s/sum(s)
+  df[names(s)] <- s / sum(s)
   return(df)
 }
 
 check_data <- function(data) {
-  if (inherits(data, "survey.design"))
-    stop("support for survey.design objects was removed in VIM",
-         " 6.0.0. Use data.frame or data.table instead")
+  if (inherits(data, "survey.design")) {
+    stop(
+      "support for survey.design objects was removed in VIM",
+      " 6.0.0. Use data.frame or data.table instead"
+    )
+  }
 }
 
 
 
 
 #' k-Nearest Neighbour Imputation (Modified)
-#' @description 
+#' @description
 #' k-Nearest Neighbour Imputation based on a variation of the Gower Distance
-#' for numerical, categorical, ordered and semi-continous variables. 
+#' for numerical, categorical, ordered and semi-continous variables.
 #' The original function is kNN in package VIM by Alexander Kowarik and Statistik Austria
 #'
 #'
@@ -117,26 +126,25 @@ check_data <- function(data) {
 #' data(sleep)
 #' kNN(sleep)
 #' library(laeken)
-#' kNN(sleep, numFun = weightedMean, weightDist=TRUE)
-#'
+#' kNN(sleep, numFun = weightedMean, weightDist = TRUE)
 #' @export
-kNN_mod <- function(data, variable=colnames(data), metric=NULL, k=5, dist_var=colnames(data),weights=NULL,
-                numFun = median, catFun=VIM::maxCat,
-                makeNA=NULL,NAcond=NULL, impNA=TRUE, donorcond=NULL,mixed=vector(),mixed.constant=NULL,trace=FALSE,
-                imp_var=TRUE,imp_suffix="imp", addRF=FALSE, onlyRF=FALSE,addRandom=FALSE,useImputedDist=TRUE,weightDist=FALSE,
-                col_cat=c()) {
+kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_var = colnames(data), weights = NULL,
+                    numFun = median, catFun = VIM::maxCat,
+                    makeNA = NULL, NAcond = NULL, impNA = TRUE, donorcond = NULL, mixed = vector(), mixed.constant = NULL, trace = FALSE,
+                    imp_var = TRUE, imp_suffix = "imp", addRF = FALSE, onlyRF = FALSE, addRandom = FALSE, useImputedDist = TRUE, weightDist = FALSE,
+                    col_cat = c()) {
   check_data(data)
   data_df <- !data.table::is.data.table(data)
-  ## Add: Create dict_cat with categroical columns 
+  ## Add: Create dict_cat with categroical columns
   exist_cat <- !all(c(0, col_cat) == c(0))
-  if(exist_cat){
-    dict_cat = dict_onehot(data, col_cat)
+  if (exist_cat) {
+    dict_cat <- dict_onehot(data, col_cat)
   }
-  ## Add: data.disj 
-  dummy <- dummyVars(" ~ .", data=data, sep = '_')
+  ## Add: data.disj
+  dummy <- dummyVars(" ~ .", data = data, sep = "_")
   data.disj <- data.frame(predict(dummy, newdata = data))
   # check for colnames before forcing variable
-  if (is.null(colnames(data))) { 
+  if (is.null(colnames(data))) {
     colnames(data) <- colnames(data, do.NULL = FALSE)
   }
   force(variable)
@@ -146,356 +154,360 @@ kNN_mod <- function(data, variable=colnames(data), metric=NULL, k=5, dist_var=co
   } else {
     data <- data.table::copy(data)
   }
-  #basic checks
-  if(!is.null(mixed.constant)){
-    if(length(mixed.constant)!=length(mixed))
+  # basic checks
+  if (!is.null(mixed.constant)) {
+    if (length(mixed.constant) != length(mixed)) {
       stop("length 'mixed.constant' and length 'mixed' differs")
+    }
   }
   startTime <- Sys.time()
   nvar <- length(variable)
   ndat <- nrow(data)
-  #impNA==FALSE -> NAs should remain NAs (Routing NAs!?)
+  # impNA==FALSE -> NAs should remain NAs (Routing NAs!?)
   indexNAs <- is.na(data)
-  if(!is.null(donorcond)){
-    if(length(donorcond)!=nvar){
+  if (!is.null(donorcond)) {
+    if (length(donorcond) != nvar) {
       stop("The list 'donorcond' must have the same length as the 'variable' vector")
     }
   }
-  if(!is.null(makeNA)){
-    if(length(makeNA)!=nvar)
+  if (!is.null(makeNA)) {
+    if (length(makeNA) != nvar) {
       stop("The vector 'variable' must have the same length as the 'makeNA' list")
-    else{
-      for(i in 1:nvar){
-        data[data[,sapply(.SD,function(x)x%in%makeNA[[i]])[,1],.SDcols=variable[i]],variable[i]:=NA]#,with=FALSE]
+    } else {
+      for (i in 1:nvar) {
+        data[data[, sapply(.SD, function(x) x %in% makeNA[[i]])[, 1], .SDcols = variable[i]], variable[i] := NA] # ,with=FALSE]
       }
     }
-    if(!impNA){
-      indexNA2s <- is.na(data)&!indexNAs
-    }else
+    if (!impNA) {
+      indexNA2s <- is.na(data) & !indexNAs
+    } else {
       indexNA2s <- is.na(data)
-  }else{
+    }
+  } else {
     indexNA2s <- is.na(data)
   }
-  if(sum(indexNA2s)<=0){
+  if (sum(indexNA2s) <= 0) {
     warning("Nothing to impute, because no NA are present (also after using makeNA)")
     invisible(data)
   }
-  if(imp_var){
-    imp_vars <- paste(variable,"_",imp_suffix,sep="")
-    index_imp_vars <- which(!imp_vars%in%colnames(data))
-    index_imp_vars2 <- which(imp_vars%in%colnames(data))
-    if(length(index_imp_vars)>0){
-      data[,imp_vars[index_imp_vars]:=FALSE]#,with=FALSE]
-      for(i in index_imp_vars){
-        data[indexNA2s[,variable[i]],imp_vars[i]:=TRUE]
-        #if(!any(indexNA2s[,variable[i]]))
-        #data<-data[,-which(names(data)==paste(variable[i],"_",imp_suffix,sep=""))]
+  if (imp_var) {
+    imp_vars <- paste(variable, "_", imp_suffix, sep = "")
+    index_imp_vars <- which(!imp_vars %in% colnames(data))
+    index_imp_vars2 <- which(imp_vars %in% colnames(data))
+    if (length(index_imp_vars) > 0) {
+      data[, imp_vars[index_imp_vars] := FALSE] # ,with=FALSE]
+      for (i in index_imp_vars) {
+        data[indexNA2s[, variable[i]], imp_vars[i] := TRUE]
+        # if(!any(indexNA2s[,variable[i]]))
+        # data<-data[,-which(names(data)==paste(variable[i],"_",imp_suffix,sep=""))]
       }
     }
-    if(length(index_imp_vars2)>0){
-      warning(paste("The following TRUE/FALSE imputation status variables will be updated:",
-                    paste(imp_vars[index_imp_vars2],collapse=" , ")))
-      for(i in index_imp_vars2)
-        data[,imp_vars[i]:=as.logical(data[,imp_vars[i]])]#,with=FALSE]
+    if (length(index_imp_vars2) > 0) {
+      warning(paste(
+        "The following TRUE/FALSE imputation status variables will be updated:",
+        paste(imp_vars[index_imp_vars2], collapse = " , ")
+      ))
+      for (i in index_imp_vars2) {
+        data[, imp_vars[i] := as.logical(data[, imp_vars[i]])]
+      } # ,with=FALSE]
     }
   }
-  for(v in variable){
-    if(data[,sapply(.SD,function(x)all(is.na(x))),.SDcols=v]){
-      warning(paste("All observations of",v,"are missing, therefore the variable will not be imputed!\n"))
-      variable <- variable[variable!=v]
+  for (v in variable) {
+    if (data[, sapply(.SD, function(x) all(is.na(x))), .SDcols = v]) {
+      warning(paste("All observations of", v, "are missing, therefore the variable will not be imputed!\n"))
+      variable <- variable[variable != v]
     }
   }
-  if(length(variable)==0){
+  if (length(variable) == 0) {
     warning(paste("Nothing is imputed, because all variables to be imputed only contains missings."))
-    if (data_df)
+    if (data_df) {
       data <- as.data.frame(data)
+    }
     return(data)
   }
-  orders <- data[,sapply(.SD,is.ordered)]
+  orders <- data[, sapply(.SD, is.ordered)]
   orders <- colnames(data)[orders]
   levOrders <- vector()
-  if(length(orders)>0){
-    levOrders <- data[,sapply(.SD,function(x)length(levels(x))),.SDcols=orders]
+  if (length(orders) > 0) {
+    levOrders <- data[, sapply(.SD, function(x) length(levels(x))), .SDcols = orders]
   }
-  factors <- data[,sapply(.SD,function(x)is.factor(x)|is.character(x)|is.logical(x))]
+  factors <- data[, sapply(.SD, function(x) is.factor(x) | is.character(x) | is.logical(x))]
   factors <- colnames(data)[factors]
-  factors <- factors[!factors%in%orders]
-  
-  numerical <- data[,sapply(.SD,function(x)is.numeric(x)|is.integer(x))]
+  factors <- factors[!factors %in% orders]
+
+  numerical <- data[, sapply(.SD, function(x) is.numeric(x) | is.integer(x))]
   numerical <- colnames(data)[numerical]
-  numerical <- numerical[!numerical%in%mixed]
-  if(trace){
+  numerical <- numerical[!numerical %in% mixed]
+  if (trace) {
     message("Detected as categorical variable:\n")
-    message(paste(factors,collapse=","))
+    message(paste(factors, collapse = ","))
     message("Detected as ordinal variable:\n")
-    message(paste(orders,collapse=","))
+    message(paste(orders, collapse = ","))
     message("Detected as numerical variable:\n")
-    message(paste(numerical,collapse=","))
+    message(paste(numerical, collapse = ","))
   }
-  
-  ###Make an index for selecting donors
+
+  ### Make an index for selecting donors
   INDEX <- 1:ndat
-  ##START DISTANCE IMPUTATION
+  ## START DISTANCE IMPUTATION
   ## if(is.null(metric))
   ##   metric <- c("euclidean", "manhattan", "gower")
   ## else if(!metric%in%c("euclidean", "manhattan", "gower"))
   ##   stop("metric is unknown")
-  
+
   # add features using random forest (ranger)
-  if(addRF){
-    
+  if (addRF) {
     features_added <- c()
     dist_var_new <- list()
     weights_new <- list()
     # create data set without missings for regressors
     # seems to be most efficient way
     # can still be improved...?
-    dataRF <- suppressWarnings(kNN(data[,unique(c(unlist(dist_var)
-                                                  ,variable)),with=FALSE],imp_var = FALSE))
-    
-    for(i in 1:nvar){
-      
-      if(any(indexNA2s[,variable[i]])){
-        if(is.list(dist_var)){
+    dataRF <- suppressWarnings(kNN(data[, unique(c(
+      unlist(dist_var),
+      variable
+    )), with = FALSE], imp_var = FALSE))
+
+    for (i in 1:nvar) {
+      if (any(indexNA2s[, variable[i]])) {
+        if (is.list(dist_var)) {
           dist_var_cur <- dist_var[[i]]
-        }else{
+        } else {
           dist_var_cur <- dist_var
         }
-        regressors <- dist_var_cur[dist_var_cur!=variable[i]]
-        index.miss <- data[is.na(get(variable[i])),which=TRUE]
-        
-        data.mod <- dataRF[-c(index.miss),unique(c(dist_var_cur,variable[i])),with=FALSE]
-        
-        if(nrow(data.mod)==0){
-          warning("cannot use random forest for ",variable[i],"\n too many missing values in the data")
-          next;
+        regressors <- dist_var_cur[dist_var_cur != variable[i]]
+        index.miss <- data[is.na(get(variable[i])), which = TRUE]
+
+        data.mod <- dataRF[-c(index.miss), unique(c(dist_var_cur, variable[i])), with = FALSE]
+
+        if (nrow(data.mod) == 0) {
+          warning("cannot use random forest for ", variable[i], "\n too many missing values in the data")
+          next
         }
-        ranger.formula <- as.formula(paste(variable[i],paste(regressors,collapse = "+"),sep="~"))
-        class_data.mod <- sapply(data.mod,function(x)class(x)[1])
-        if("character"%in%class_data.mod){
-          for(cn in colnames(data.mod)[class_data.mod=="character"]){
+        ranger.formula <- as.formula(paste(variable[i], paste(regressors, collapse = "+"), sep = "~"))
+        class_data.mod <- sapply(data.mod, function(x) class(x)[1])
+        if ("character" %in% class_data.mod) {
+          for (cn in colnames(data.mod)[class_data.mod == "character"]) {
             data.mod[[cn]] <- as.factor(data.mod[[cn]])
           }
         }
-        ranger.mod <- ranger(ranger.formula,data=data.mod)
-        
-        new_feature <- c(paste0(variable[i],"randomForestFeature"))
-        data[,c(new_feature):=predict(ranger.mod,data=dataRF)$predictions]
-        
-        features_added <- c(features_added,new_feature)
-        
-        if(variable[i]%in%mixed){
-          mixed <- c(mixed,new_feature)
-        }else if(variable[i]%in%numerical){
-          numerical <- c(numerical,new_feature)
-        }else if(variable[i]%in%orders){
-          orders <- c(orders,new_feature)
-        }else if(variable[i]%in%factors){
-          factors <- c(factors,new_feature)
+        ranger.mod <- ranger(ranger.formula, data = data.mod)
+
+        new_feature <- c(paste0(variable[i], "randomForestFeature"))
+        data[, c(new_feature) := predict(ranger.mod, data = dataRF)$predictions]
+
+        features_added <- c(features_added, new_feature)
+
+        if (variable[i] %in% mixed) {
+          mixed <- c(mixed, new_feature)
+        } else if (variable[i] %in% numerical) {
+          numerical <- c(numerical, new_feature)
+        } else if (variable[i] %in% orders) {
+          orders <- c(orders, new_feature)
+        } else if (variable[i] %in% factors) {
+          factors <- c(factors, new_feature)
         }
-        
-        if(onlyRF){
+
+        if (onlyRF) {
           dist_var_new[[i]] <- c(new_feature)
-        }else{
-          dist_var_new[[i]] <- c(dist_var_cur,new_feature)
-          if(!is.null(weights)&&weights[1]!="auto"){
-            if(is.list(weights)){
-              weights_new[[i]] <- c(weights[[i]],median(weights[[i]]))
-            }else{
-              weights_new[[i]] <- c(weights,median(weights))
+        } else {
+          dist_var_new[[i]] <- c(dist_var_cur, new_feature)
+          if (!is.null(weights) && weights[1] != "auto") {
+            if (is.list(weights)) {
+              weights_new[[i]] <- c(weights[[i]], median(weights[[i]]))
+            } else {
+              weights_new[[i]] <- c(weights, median(weights))
             }
-            
           }
         }
-        
       }
     }
     rm(dataRF)
     # create sets for distance variables
     dist_var <- dist_var_new
-    if(!is.null(weights)&&weights[1]!="auto"){
+    if (!is.null(weights) && weights[1] != "auto") {
       weights <- weights_new
     }
-  }else{
-    if(onlyRF){
+  } else {
+    if (onlyRF) {
       onlyRF <- FALSE
       warning("The onlyRF is automatically set to FALSE, because addRF=FALSE.")
     }
     features_added <- NULL
   }
   # set weights vector
-  if(is.null(weights)){
-    if(is.list(dist_var)){
-      weights <- lapply(dist_var,function(z){rep(1,length(z))})
-    }else{
-      weights <- rep(1,length(dist_var))
+  if (is.null(weights)) {
+    if (is.list(dist_var)) {
+      weights <- lapply(dist_var, function(z) {
+        rep(1, length(z))
+      })
+    } else {
+      weights <- rep(1, length(dist_var))
     }
-    
-  }else if(weights[1]=="auto"){
+  } else if (weights[1] == "auto") {
     # use random forest and importance values for automatic weighting
     # setup dist_var and weights as lists
     # for each model different weights
     weights_new <- list()
     dist_var_new <- list()
-    
-    for(i in 1:nvar){
-      if(any(indexNA2s[,variable[i]])){
-        
-        if(is.list(dist_var)){
-          regressors <- dist_var[[i]][dist_var!=variable[i]]
-          data.mod <- na.omit(subset(data,select=unique(c(variable[i],dist_var[[i]]))))
-        }else{
-          regressors <- dist_var[dist_var!=variable[i]]
-          data.mod <- na.omit(subset(data,select=unique(c(variable[i],dist_var))))
+
+    for (i in 1:nvar) {
+      if (any(indexNA2s[, variable[i]])) {
+        if (is.list(dist_var)) {
+          regressors <- dist_var[[i]][dist_var != variable[i]]
+          data.mod <- na.omit(subset(data, select = unique(c(variable[i], dist_var[[i]]))))
+        } else {
+          regressors <- dist_var[dist_var != variable[i]]
+          data.mod <- na.omit(subset(data, select = unique(c(variable[i], dist_var))))
         }
-        
-        ranger.formula <- as.formula(paste(variable[i],paste(regressors,collapse = "+"),sep="~"))
-        ranger.mod <- ranger::ranger(ranger.formula,data=data.mod,importance="impurity")
+
+        ranger.formula <- as.formula(paste(variable[i], paste(regressors, collapse = "+"), sep = "~"))
+        ranger.mod <- ranger::ranger(ranger.formula, data = data.mod, importance = "impurity")
         dist_var_new[[i]] <- regressors
         weights_new[[i]] <- ranger::importance(ranger.mod)
-        
       }
     }
     weights <- weights_new
     dist_var <- dist_var_new
-    rm(weights_new,dist_var_new)
-  }else if(any(lengthL(weights)!=lengthL(dist_var))){
+    rm(weights_new, dist_var_new)
+  } else if (any(lengthL(weights) != lengthL(dist_var))) {
     stop("length of weights must be equal the number of distance variables")
   }
-  if(addRandom){
+  if (addRandom) {
     numerical <- c(numerical, "RandomVariableForImputation")
-    data[,"RandomVariableForImputation":=rnorm(ndat)]#,with=FALSE]
-    if(is.list(dist_var)){
-      for(i in 1:length(dist_var)){
-        dist_var[[i]] <- c(dist_var[[i]],"RandomVariableForImputation")
-        weights[[i]] <- c(weights[[i]],min(weights[[i]])/(sum(weights[[i]])+1))
+    data[, "RandomVariableForImputation" := rnorm(ndat)] # ,with=FALSE]
+    if (is.list(dist_var)) {
+      for (i in 1:length(dist_var)) {
+        dist_var[[i]] <- c(dist_var[[i]], "RandomVariableForImputation")
+        weights[[i]] <- c(weights[[i]], min(weights[[i]]) / (sum(weights[[i]]) + 1))
       }
-    }else{
-      dist_var <- c(dist_var,"RandomVariableForImputation")
-      weights <- c(weights,min(weights)/(sum(weights)+1))
+    } else {
+      dist_var <- c(dist_var, "RandomVariableForImputation")
+      weights <- c(weights, min(weights) / (sum(weights) + 1))
     }
   }
-  for(j in 1:nvar){
-    
-    if(any(indexNA2s[,variable[j]])){
-      if(is.list(dist_var)){
-        if(!is.list(weights))
+  for (j in 1:nvar) {
+    if (any(indexNA2s[, variable[j]])) {
+      if (is.list(dist_var)) {
+        if (!is.list(weights)) {
           stop("if dist_var is a list weights must be a list")
+        }
         dist_varx <- dist_var[[j]]
         weightsx <- weights[[j]]
-      }else{
-        dist_varx <- dist_var[dist_var!=variable[j]]
-        weightsx <- weights[dist_var%in%dist_varx]
+      } else {
+        dist_varx <- dist_var[dist_var != variable[j]]
+        weightsx <- weights[dist_var %in% dist_varx]
       }
-      if(!is.null(donorcond)){
-        cmd <- paste0("TF <- data[,sapply(.SD,function(x)!is.na(x)&x",donorcond[[j]],"),.SDcols=variable[j]][,1]")
-        eval(parse(text=cmd))
-        don_dist_var <- data[TF,dist_varx,with=FALSE]
+      if (!is.null(donorcond)) {
+        cmd <- paste0("TF <- data[,sapply(.SD,function(x)!is.na(x)&x", donorcond[[j]], "),.SDcols=variable[j]][,1]")
+        eval(parse(text = cmd))
+        don_dist_var <- data[TF, dist_varx, with = FALSE]
         don_index <- INDEX[TF]
-      }else{
-        TF <- data[,sapply(.SD,function(x)!is.na(x)),.SDcols=variable[j]][,1]
-        don_dist_var <- data[TF,dist_varx,with=FALSE]
+      } else {
+        TF <- data[, sapply(.SD, function(x) !is.na(x)), .SDcols = variable[j]][, 1]
+        don_dist_var <- data[TF, dist_varx, with = FALSE]
         don_index <- INDEX[TF]
       }
-      TF_imp <- indexNA2s[,variable[j]]
-      imp_dist_var <- data[TF_imp,dist_varx,with=FALSE]
+      TF_imp <- indexNA2s[, variable[j]]
+      imp_dist_var <- data[TF_imp, dist_varx, with = FALSE]
       imp_index <- INDEX[TF_imp]
-      
+
       #
-      if(!useImputedDist&&any(dist_varx%in%variable)){
-        for(dvar in dist_varx[dist_varx%in%variable]){
+      if (!useImputedDist && any(dist_varx %in% variable)) {
+        for (dvar in dist_varx[dist_varx %in% variable]) {
           ## setting the value for original missing variables to NA
-          don_dist_var[indexNA2s[TF,dvar],c(dvar):=NA]#,with=FALSE]
-          imp_dist_var[indexNA2s[TF_imp,dvar],c(dvar):=NA]#,with=FALSE]
+          don_dist_var[indexNA2s[TF, dvar], c(dvar) := NA] # ,with=FALSE]
+          imp_dist_var[indexNA2s[TF_imp, dvar], c(dvar) := NA] # ,with=FALSE]
         }
       }
-      
-      numericalX <-numerical[numerical%in%dist_varx]
-      factorsX <-factors[factors%in%dist_varx]
-      ordersX <-orders[orders%in%dist_varx]
-      levOrdersX <- levOrders[orders%in%dist_varx]
-      #print(levOrdersX)
-      mixedX <-mixed[mixed%in%dist_varx]
-      #dist_single provide the rows of the k nearest neighbours and the corresponding distances
-      mindi <- dist_single(as.data.frame(don_dist_var),as.data.frame(imp_dist_var),numericalX,factorsX,ordersX,mixedX,levOrdersX,
-                           don_index,imp_index,weightsx,k,mixed.constant,provideMins=weightDist)
-      getI <- function(x)data[x,variable[j],with=FALSE]
-      if(trace)
-        message(sum(indexNA2s[,variable[j]]),"items of","variable:",variable[j]," imputed\n")
-      #Fetching the actual values of the kNNs for the indices provided by dist_single
-      getI <- function(x)data[x,variable[j],with=FALSE]
-      kNNs <- do.call("cbind",apply(mindi[[1]],2,getI))
-      if(k==1){
+
+      numericalX <- numerical[numerical %in% dist_varx]
+      factorsX <- factors[factors %in% dist_varx]
+      ordersX <- orders[orders %in% dist_varx]
+      levOrdersX <- levOrders[orders %in% dist_varx]
+      # print(levOrdersX)
+      mixedX <- mixed[mixed %in% dist_varx]
+      # dist_single provide the rows of the k nearest neighbours and the corresponding distances
+      mindi <- dist_single(as.data.frame(don_dist_var), as.data.frame(imp_dist_var), numericalX, factorsX, ordersX, mixedX, levOrdersX,
+        don_index, imp_index, weightsx, k, mixed.constant,
+        provideMins = weightDist
+      )
+      getI <- function(x) data[x, variable[j], with = FALSE]
+      if (trace) {
+        message(sum(indexNA2s[, variable[j]]), "items of", "variable:", variable[j], " imputed\n")
+      }
+      # Fetching the actual values of the kNNs for the indices provided by dist_single
+      getI <- function(x) data[x, variable[j], with = FALSE]
+      kNNs <- do.call("cbind", apply(mindi[[1]], 2, getI))
+      if (k == 1) {
         kNNs <- t(kNNs)
       }
-      
-      if(weightDist&k>1){
-        if(length(factors)<length(variable)&!"weights"%in%names(as.list(args(numFun)))){
+
+      if (weightDist & k > 1) {
+        if (length(factors) < length(variable) & !"weights" %in% names(as.list(args(numFun)))) {
           warning("There is no explicit 'weights' argument in your numeric aggregation function.")
         }
-        if(length(factors)>0&&!"weights"%in%names(as.list(args(catFun)))){
+        if (length(factors) > 0 && !"weights" %in% names(as.list(args(catFun)))) {
           warning("There is no explicit 'weights' argument in your categorical aggregation function.")
         }
-        #1-dist because dist is between 0 and 1
-        mindi[[2]] <- 1-mindi[[2]]
+        # 1-dist because dist is between 0 and 1
+        mindi[[2]] <- 1 - mindi[[2]]
         ### warning if there is no argument named weights
-        if(variable[j]%in%factors){
-          data[indexNA2s[,variable[j]],variable[j]] <- sapply(1:ncol(kNNs),function(x)do.call("catFun",list(unlist(kNNs[,x,with=FALSE]),mindi[[2]][,x])))
-          ###Add the disj result###
-          tmp=sapply(1:ncol(kNNs),function(x)do.call("probCat",list(unlist(kNNs[,x,with=FALSE]),levels(data[[variable[j]]]),mindi[[2]][,x])))
-          df_tmp=data.frame(t(data.frame(tmp)))
-          data.disj[indexNA2s[,variable[j]],dict_cat[[variable[j]]]] <- df_tmp
+        if (variable[j] %in% factors) {
+          data[indexNA2s[, variable[j]], variable[j]] <- sapply(1:ncol(kNNs), function(x) do.call("catFun", list(unlist(kNNs[, x, with = FALSE]), mindi[[2]][, x])))
+          ### Add the disj result###
+          tmp <- sapply(1:ncol(kNNs), function(x) do.call("probCat", list(unlist(kNNs[, x, with = FALSE]), levels(data[[variable[j]]]), mindi[[2]][, x])))
+          df_tmp <- data.frame(t(data.frame(tmp)))
+          data.disj[indexNA2s[, variable[j]], dict_cat[[variable[j]]]] <- df_tmp
           #########################
         }
-        else if(is.integer(data[,variable[j]])){
-          data[indexNA2s[,variable[j]],variable[j]] <- round(sapply(1:ncol(kNNs),function(x)do.call("numFun",list(unlist(kNNs[,x,with=FALSE]),mindi[[2]][,x]))))
-          data.disj[indexNA2s[,variable[j]],variable[j]] <- round(sapply(1:ncol(kNNs),function(x)do.call("numFun",list(unlist(kNNs[,x,with=FALSE]),mindi[[2]][,x]))))
-        }else{
-          data[indexNA2s[,variable[j]],variable[j]] <- sapply(1:ncol(kNNs),function(x)do.call("numFun",list(unlist(kNNs[,x,with=FALSE]),mindi[[2]][,x])))
-          data.disj[indexNA2s[,variable[j]],variable[j]] <-sapply(1:ncol(kNNs),function(x)do.call("numFun",list(unlist(kNNs[,x,with=FALSE]),mindi[[2]][,x])))
-          
-          }
-        }else{
-        if(variable[j]%in%factors){
-          data[indexNA2s[,variable[j]],variable[j]] <- apply(kNNs,2,catFun)
-          ###Add the disj result###
-          tmp=apply(kNNs,2,probCat,levels(data[[variable[j]]]))
-          df_tmp = data.frame(matrix(unlist(tmp), nrow=length(tmp), byrow=TRUE))
-          data.disj[indexNA2s[,variable[j]],dict_cat[[variable[j]]]] <- df_tmp
+        else if (is.integer(data[, variable[j]])) {
+          data[indexNA2s[, variable[j]], variable[j]] <- round(sapply(1:ncol(kNNs), function(x) do.call("numFun", list(unlist(kNNs[, x, with = FALSE]), mindi[[2]][, x]))))
+          data.disj[indexNA2s[, variable[j]], variable[j]] <- round(sapply(1:ncol(kNNs), function(x) do.call("numFun", list(unlist(kNNs[, x, with = FALSE]), mindi[[2]][, x]))))
+        } else {
+          data[indexNA2s[, variable[j]], variable[j]] <- sapply(1:ncol(kNNs), function(x) do.call("numFun", list(unlist(kNNs[, x, with = FALSE]), mindi[[2]][, x])))
+          data.disj[indexNA2s[, variable[j]], variable[j]] <- sapply(1:ncol(kNNs), function(x) do.call("numFun", list(unlist(kNNs[, x, with = FALSE]), mindi[[2]][, x])))
+        }
+      } else {
+        if (variable[j] %in% factors) {
+          data[indexNA2s[, variable[j]], variable[j]] <- apply(kNNs, 2, catFun)
+          ### Add the disj result###
+          tmp <- apply(kNNs, 2, probCat, levels(data[[variable[j]]]))
+          df_tmp <- data.frame(matrix(unlist(tmp), nrow = length(tmp), byrow = TRUE))
+          data.disj[indexNA2s[, variable[j]], dict_cat[[variable[j]]]] <- df_tmp
           #########################
         }
-        else if(is.integer(data[,variable[j]])){
-          data[indexNA2s[,variable[j]],variable[j]] <- round(apply(kNNs,2,numFun))
-          data.disj[indexNA2s[,variable[j]],variable[j]] <- round(apply(kNNs,2,numFun))
-        }else{
-          data[indexNA2s[,variable[j]],variable[j]] <- apply(kNNs,2,numFun)
-          data.disj[indexNA2s[,variable[j]],variable[j]] <- apply(kNNs,2,numFun)
+        else if (is.integer(data[, variable[j]])) {
+          data[indexNA2s[, variable[j]], variable[j]] <- round(apply(kNNs, 2, numFun))
+          data.disj[indexNA2s[, variable[j]], variable[j]] <- round(apply(kNNs, 2, numFun))
+        } else {
+          data[indexNA2s[, variable[j]], variable[j]] <- apply(kNNs, 2, numFun)
+          data.disj[indexNA2s[, variable[j]], variable[j]] <- apply(kNNs, 2, numFun)
         }
-          
       }
-      
-    }else{
-      if(trace)
-        message("0 items of","variable:",variable[j]," imputed\n")
+    } else {
+      if (trace) {
+        message("0 items of", "variable:", variable[j], " imputed\n")
+      }
     }
-    
   }
-  if(trace){
-    print(difftime(Sys.time(),startTime))
+  if (trace) {
+    print(difftime(Sys.time(), startTime))
   }
-  if(addRandom){
+  if (addRandom) {
     RandomVariableForImputation <- NULL # for satisfying CRAN check
-    data <- data[,RandomVariableForImputation:=NULL]
+    data <- data[, RandomVariableForImputation := NULL]
   }
-  if(!is.null(features_added)){
-    data[,c(features_added):=NULL]
+  if (!is.null(features_added)) {
+    data[, c(features_added) := NULL]
   }
-  if (data_df)
+  if (data_df) {
     data <- as.data.frame(data)
-  ##Add: change return form
+  }
+  ## Add: change return form
   data <- data.frame(data)
-  colnum = length(colnames(data))
-  dataimp = data[,1:(colnum/2)]
-  R.mask = data[,(colnum/2+1):colnum]
-  return(list(ximp=dataimp,ximp.disj=data.disj,R.mask=R.mask))
+  colnum <- length(colnames(data))
+  dataimp <- data[, 1:(colnum / 2)]
+  R.mask <- data[, (colnum / 2 + 1):colnum]
+  return(list(ximp = dataimp, ximp.disj = data.disj, R.mask = R.mask))
 }

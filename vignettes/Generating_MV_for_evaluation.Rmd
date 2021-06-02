@@ -14,7 +14,7 @@ suppressPackageStartupMessages(require(ggplot2))
 suppressPackageStartupMessages(require(naniar))
 suppressPackageStartupMessages(require(usethis))
 library("devtools")
-source_url('https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R')
+source_url("https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R")
 set.seed(1)
 ```
 
@@ -29,10 +29,10 @@ X.complete.cont <- mvrnorm(n, mu.X, Sigma.X)
 lambda <- 0.5
 X.complete.discr <- rpois(n, lambda)
 n.cat <- 5
-X.complete.cat <- rbinom(n, size=5, prob = 0.5)
+X.complete.cat <- rbinom(n, size = 5, prob = 0.5)
 X.complete <- data.frame(cbind(X.complete.cont, X.complete.discr, X.complete.cat))
-X.complete[,4] <- as.factor(X.complete[,4])
-levels(X.complete[,4]) <- c("F", "E", "D", "C", "B", "A")
+X.complete[, 4] <- as.factor(X.complete[, 4])
+levels(X.complete[, 4]) <- c("F", "E", "D", "C", "B", "A")
 head(X.complete)
 ```
 
@@ -43,11 +43,11 @@ Missing values are generated using a Bernoulli distribution of parameter perc.mi
 The missing proportion of the generated incomplete dataset will be at least perc.missing.
 ```{r}
 # Sample mcar missing data -----------------------------------------
-mcar <- produce_NA(X.complete, mechanism="MCAR", perc.missing = 0.2) 
+mcar <- produce_NA(X.complete, mechanism = "MCAR", perc.missing = 0.2)
 X.mcar <- mcar$data.incomp
 R.mcar <- mcar$idx_newNA
-#writeLines(paste0("Percentage of newly generated missing values: ", 100*sum(R.mcar)/prod(dim(R.mcar)), " %"))
-#matrixplot(X.mcar,  cex.axis = 0.5, interactive = F)# red parts show the positions of the missing values
+# writeLines(paste0("Percentage of newly generated missing values: ", 100*sum(R.mcar)/prod(dim(R.mcar)), " %"))
+# matrixplot(X.mcar,  cex.axis = 0.5, interactive = F)# red parts show the positions of the missing values
 ```
 #### (2)MAR
 Two methods:
@@ -56,8 +56,8 @@ Two methods:
 
 2. Using patterns (One missing value per row or user-defined patterns).
 ```{r}
-#Method 1
-mar <- produce_NA(X.complete, mechanism="MAR", perc.missing = 0.2, by.patterns= F)
+# Method 1
+mar <- produce_NA(X.complete, mechanism = "MAR", perc.missing = 0.2, by.patterns = F)
 ```
 #### (3)MNAR
 Two methods:
@@ -66,10 +66,10 @@ Two methods:
 
 2. Self-masked.
 ```{r}
-#Method 1 -----------------------------------------
-mnar <- produce_NA(X.complete, mechanism="MNAR", perc.missing = 0.2, by.patterns= F)
+# Method 1 -----------------------------------------
+mnar <- produce_NA(X.complete, mechanism = "MNAR", perc.missing = 0.2, by.patterns = F)
 # Method2 -----------------------------------------
-mnar <- produce_NA(X.complete, mechanism="MNAR", perc.missing = 0.2, self.mask="lower", idx.incomplete = c(1,1,0,0))
+mnar <- produce_NA(X.complete, mechanism = "MNAR", perc.missing = 0.2, self.mask = "lower", idx.incomplete = c(1, 1, 0, 0))
 ```
 
 ## 3.Parameters of produce_NA function
@@ -87,7 +87,7 @@ The default pattern gives one missing value per row.
 patterns gives possible case of missing values. In the example below, the situation of (1,1,NA,1) is impossible. we could also specify the frequency of each pattern with freq.patterns.
 ```{r}
 # Sample missing data by using the by.patterns option and user-specified patterns ----
-miss <- produce_NA(X.complete, mechanism="MAR", perc.missing = 0.2, idx.incomplete = c(1,0,1,1), by.patterns = T, patterns  = matrix(c(0,1,1,1,                                                                                                                  1,1,0,0), ncol = 4, byrow=T), freq.patterns = c(0.2, 0.8))
+miss <- produce_NA(X.complete, mechanism = "MAR", perc.missing = 0.2, idx.incomplete = c(1, 0, 1, 1), by.patterns = T, patterns = matrix(c(0, 1, 1, 1, 1, 1, 0, 0), ncol = 4, byrow = T), freq.patterns = c(0.2, 0.8))
 X.miss <- miss$data.incomp
 R.miss <- miss$idx_newNA
 ```

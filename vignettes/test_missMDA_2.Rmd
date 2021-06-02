@@ -10,7 +10,6 @@ output:
 ```{r setup, echo=FALSE, cache=FALSE}
 
 knitr::opts_chunk$set(error = TRUE, cache = TRUE)
-
 ```
 
 Les dépendances (voir fichier `missMDA_function` pour les fonctions modifiées) :
@@ -34,10 +33,9 @@ library(stats)
 library(missMDA)
 library(FactoMineR)
 
-source_url('https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R')
+source_url("https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R")
 
 source("missMDA_function.R")
-
 ```
 
 # Generate data
@@ -48,34 +46,37 @@ We generate a complete data set (Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8) with (Y1, Y2, Y
 
 ```{r generate_complete}
 
-n = 10000
-mu.X = c(1, 2, 3)
-Sigma.X = matrix(c(9, 3, 2,
-                    3, 4, 0,
-                    2, 0, 1), nrow = 3)
-X.complete.cont = mvrnorm(n, mu.X, Sigma.X)#multivariate normal distribution
+n <- 10000
+mu.X <- c(1, 2, 3)
+Sigma.X <- matrix(c(
+  9, 3, 2,
+  3, 4, 0,
+  2, 0, 1
+), nrow = 3)
+X.complete.cont <- mvrnorm(n, mu.X, Sigma.X) # multivariate normal distribution
 
-mu1.X = c(9, 8)
-Sigma1.X = matrix(c(16, 14,
-                     14, 25), nrow = 2)
+mu1.X <- c(9, 8)
+Sigma1.X <- matrix(c(
+  16, 14,
+  14, 25
+), nrow = 2)
 
-X.complete.cont1 = mvrnorm(n, mu1.X, Sigma1.X)#multivariate normal distribution
+X.complete.cont1 <- mvrnorm(n, mu1.X, Sigma1.X) # multivariate normal distribution
 
-lambda = 4.3
-X.complete.discr = rpois(n, lambda) #poisson distribution
+lambda <- 4.3
+X.complete.discr <- rpois(n, lambda) # poisson distribution
 
 
-X.complete.cat = rbinom(n, size=5, prob = 0.4) #binomial
+X.complete.cat <- rbinom(n, size = 5, prob = 0.4) # binomial
 
-X.complete.cat2 = rbinom(n, size=7, prob = 0.6) #binomial
+X.complete.cat2 <- rbinom(n, size = 7, prob = 0.6) # binomial
 
-X.complete = data.frame(cbind(X.complete.cont,X.complete.cont1, X.complete.discr, X.complete.cat, X.complete.cat2))
-X.complete[,7] = as.factor(X.complete[,7])
-levels(X.complete[,7]) = c("F", "E", "D", "C", "B", "A")
-X.complete[,8] = as.factor(X.complete[,8])
-colnames(X.complete) = c("Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8")
+X.complete <- data.frame(cbind(X.complete.cont, X.complete.cont1, X.complete.discr, X.complete.cat, X.complete.cat2))
+X.complete[, 7] <- as.factor(X.complete[, 7])
+levels(X.complete[, 7]) <- c("F", "E", "D", "C", "B", "A")
+X.complete[, 8] <- as.factor(X.complete[, 8])
+colnames(X.complete) <- c("Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8")
 head(X.complete)
-
 ```
 
 ## Add missingness
@@ -84,12 +85,11 @@ We produce some NA using the `produce_NA` routine advertised [here](https://rmis
 
 ```{r add_missingness}
 
-miss_perc = 0.4
-mar1 = produce_NA(X.complete, mechanism="MAR", perc.missing = miss_perc, by.patterns = F, logit.model = 'MID')
-X.mar1 = mar1$data.incomp
-R.mar1 = data.frame(mar1$idx_newNA)
+miss_perc <- 0.4
+mar1 <- produce_NA(X.complete, mechanism = "MAR", perc.missing = miss_perc, by.patterns = F, logit.model = "MID")
+X.mar1 <- mar1$data.incomp
+R.mar1 <- data.frame(mar1$idx_newNA)
 head(X.mar1)
-
 ```
 
 # Imputation
@@ -100,8 +100,7 @@ The following leads to a memory error :
 
 ```{r estim_ncpFAMD_memory_error}
 
-ncp.pca = estim_ncpFAMD(X.mar1, method.cv="Kfold", verbose=T)$ncp
-
+ncp.pca <- estim_ncpFAMD(X.mar1, method.cv = "Kfold", verbose = T)$ncp
 ```
 
 ## `estim_ncpFAMD` function with some print functions (`estim_ncpFAMD_1` function in `missMDA_function.R`)
@@ -110,22 +109,21 @@ We add some prints to the function and we can see that the **numeric** colmuns (
 
 ```{r estim_ncpFAMD_error_print}
 
-ncp.pca = estim_ncpFAMD_1(X.mar1, method.cv="Kfold", verbose=T)$ncp
-
+ncp.pca <- estim_ncpFAMD_1(X.mar1, method.cv = "Kfold", verbose = T)$ncp
 ```
 
 The error comes from this calculation of MSE, where the whole dataset of `jeu` and `jeuNA` are passed to the `tab.disjonctif.NA` function:
 
 ```{r error_disj, eval=FALSE}
-res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE)/(sum(is.na(tab.disjonctif.NA(jeuNA))) - sum(is.na(tab.disjonctif.NA(jeu))))
+res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE) / (sum(is.na(tab.disjonctif.NA(jeuNA))) - sum(is.na(tab.disjonctif.NA(jeu))))
 ```
 
 In order to avoid this memory error, we propose to use the combination of the quantitative columns and onehot form of the categorical columns. Here only the categorical variables are passed to the `tab.disjonctif.NA` function:
 
 ```{r correct_disj, eval=FALSE}
-jeuNA.tab <- cbind(jeuNA[,1:nbquanti,drop=F],tab.disjonctif.NA(jeuNA[,(nbquanti+1):ncol(jeuNA),drop=F]))
-res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE)/(sum(is.na(jeuNA.tab)) - sum(is.na(vrai.tab)))
-#vrai.tab = cbind(jeu[,1:nbquanti,drop=F],tab.disjonctif.NA(jeu[,(nbquanti+1):ncol(jeu),drop=F])) is defined in the original code
+jeuNA.tab <- cbind(jeuNA[, 1:nbquanti, drop = F], tab.disjonctif.NA(jeuNA[, (nbquanti + 1):ncol(jeuNA), drop = F]))
+res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE) / (sum(is.na(jeuNA.tab)) - sum(is.na(vrai.tab)))
+# vrai.tab = cbind(jeu[,1:nbquanti,drop=F],tab.disjonctif.NA(jeu[,(nbquanti+1):ncol(jeu),drop=F])) is defined in the original code
 ```
 
 ## Changed `estim_ncpFAMD` function with `maxiter` (marked in `estim_ncpFAMD_2` function)
@@ -134,8 +132,7 @@ We could see from the result that the original error is not there anymore. Howev
 
 ```{r estim_ncpFAMD_error}
 
-ncp.pca = estim_ncpFAMD_2(X.mar1, method.cv="Kfold", verbose=T, maxiter=100)$ncp
-
+ncp.pca <- estim_ncpFAMD_2(X.mar1, method.cv = "Kfold", verbose = T, maxiter = 100)$ncp
 ```
 
 ## Changed `estim_ncpFAMD` function with `maxiter` (marked in `estim_ncpFAMD_2` function)
@@ -149,7 +146,6 @@ So we dug deeper into the code. The error is generated in the `impute` function 
 if (any(MM[[g]] < 0)) {
   stop(paste("The algorithm fails to converge. Choose a number of components (ncp) less or equal than ", ncp - 1, " or a number of iterations (maxiter) less or equal than ", maxiter - 1, sep = ""))
 }
-
 ```
 
 Then we compared the implementation of this function with the algorithm mentioned in the original paper : *Handling missing values in multiple factor analysis*, François Husson, Julie Josse, 2013.
@@ -160,11 +156,10 @@ We have also noticed that due to the computational error during the matrix calcu
 
 ```{r added_line, eval=FALSE}
 
-#######correct some computational error e-17######
-tab.disj[idx_obs[[g]],] = tab.disj.comp[[g]][idx_obs[[g]],]
-#idx_obs[[g]] is the set of index of the observed part
+####### correct some computational error e-17######
+tab.disj[idx_obs[[g]], ] <- tab.disj.comp[[g]][idx_obs[[g]], ]
+# idx_obs[[g]] is the set of index of the observed part
 #################################################
-
 ```
 
 However, these changes still could not explain the divergence error. So, we tried to print the disjunctive table and the MM matrix.
@@ -181,6 +176,5 @@ For now we have only roughly modified the code with the first proposition, which
 
 ```{r pca_modification}
 
-ncp.pca = estim_ncpFAMD_3(X.mar1, method.cv="Kfold", verbose=T, maxiter=100, nbsim = 20)$ncp
-
+ncp.pca <- estim_ncpFAMD_3(X.mar1, method.cv = "Kfold", verbose = T, maxiter = 100, nbsim = 20)$ncp
 ````

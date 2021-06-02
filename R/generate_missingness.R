@@ -1,17 +1,17 @@
 #' generate_miss: Generate missing values with different mechanisms
-#' 
+#'
 #' @description
-#' \code{generate_miss} function generates missing values in a complete 
+#' \code{generate_miss} function generates missing values in a complete
 #' dataframe with the chosen mechanism and the chosen proportion of missingness.
 #' @param df Complete dataframe.
-#' @param miss_perc Desired percentage of missing values. Note that all the mechanisms could only 
+#' @param miss_perc Desired percentage of missing values. Note that all the mechanisms could only
 #' approach this proportion. The real proportion of missingness will be returned with the incomplete dataframe.
-#' When the number of columns is small, some mechanisms could be incompatible with large missing percentage. 
+#' When the number of columns is small, some mechanisms could be incompatible with large missing percentage.
 #' @param mechanism Desired missing mechanism.
 #' \itemize{
-#'  \item \strong{MCAR} generates missing values by missing completely at random mechanism with Bernouilli distribution. 
+#'  \item \strong{MCAR} generates missing values by missing completely at random mechanism with Bernouilli distribution.
 #'  \item \strong{MAR1} generates missing values by missing at random mechanism with logistic regression on the observed data.
-#'  \item \strong{MAR2} generates missing values by missing at random mechanism with censoring algorithm. 
+#'  \item \strong{MAR2} generates missing values by missing at random mechanism with censoring algorithm.
 #' The missingness in every other column depends on the quantile of one specified complete column \code{mar2.col.ctrl}.
 #' For example, on row i, Y2[i] will be removed if Y1[i]<q(30\%) of Y1.
 #'  \item \strong{MAR3} generates missing values by missing at random mechanism with monotone censoring mechanism.
@@ -23,7 +23,7 @@
 #'  For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Y1.
 #' }
 #' @param mar2.col.ctrl Control column in mechanism MAR2
-#' 
+#'
 #' @return \code{X.incomp} Generated incomplete dataframe.
 #' @return \code{R.mask} Mask of missingness. R[2,3]=1 means that df[2,3] is missing.
 #' @return \code{real_miss_perc} Real proportion of missingness.
@@ -35,11 +35,11 @@
 #' \item Santos, M. S., R. C. Pereira, A. F. Costa, J. P. Soares, J. Santos, and P. H. Abreu. 2019. Generating Synthetic Missing Data: A Review by Missing Mechanism. IEEE Access 7: 11651–67. \url{https://doi.org/10.1109/ACCESS.2019.2891360}.
 #' }
 #' @examples
-#' n = 10000
-#' mu.X = c(1, 2, 3)
-#' Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-#' X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+#' n <- 10000
+#' mu.X <- c(1, 2, 3)
+#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 #' rs$X.incomp
 generate_miss <- function(df,
                           miss_perc,
@@ -120,7 +120,7 @@ generate_miss <- function(df,
       ls_row <- which(!is.na(X.mar3[, ls_col_name[i]]))
       # if(i != num_col-1){
       for (coll in ls_col_name[(i + 1):num_col]) {
-        X.mar3[ls_row, coll] <-  missMethods::delete_MAR_censoring(X.mar3[ls_row, ], perc, coll,
+        X.mar3[ls_row, coll] <- missMethods::delete_MAR_censoring(X.mar3[ls_row, ], perc, coll,
           cols_ctrl = ls_col_name[i]
         )[ls_row, coll]
       }
@@ -166,7 +166,7 @@ generate_miss <- function(df,
     # A missing value in "X", if the x-value is below the miss_perc % quantile of "the first column "X"
     X.mnar2 <- df
     for (coll in ls_col_name) {
-      X.mnar2[, coll] <-  missMethods::delete_MNAR_censoring(X.mnar2, miss_perc, coll)[, coll]
+      X.mnar2[, coll] <- missMethods::delete_MNAR_censoring(X.mnar2, miss_perc, coll)[, coll]
     }
     R.mnar2 <- data.frame(is.na(X.mnar2))
     real_miss_perc <- sum(R.mnar2 * 1) / prod(dim(R.mnar2 * 1))
@@ -181,17 +181,17 @@ generate_miss <- function(df,
 
 
 #' generate_miss_ls: Generate a list of incomplete dataframes with different missing mechanisms
-#' 
+#'
 #' @description
-#' \code{generate_miss_ls} function generates a list of incomplete dataframes. Missing values are generated in the given complete 
+#' \code{generate_miss_ls} function generates a list of incomplete dataframes. Missing values are generated in the given complete
 #' dataframe with the all mechanisms in \code{generate_miss} function and the chosen proportion of missingness.
 #' @param df Complete dataframe.
-#' @param miss_perc Desired percentage of missing values. Note that all the mechanisms could only 
+#' @param miss_perc Desired percentage of missing values. Note that all the mechanisms could only
 #' approach this proportion. The real proportion of missingness will be returned with the incomplete dataframe.
-#' When the number of columns is small, some mechanisms could be incompatible with large missing percentage. 
-#' 
-#' @return \code{mcar} Incomplete dataframe object with MCAR mechanism. The detailed description could be 
-#' found in \code{generate_miss} documentation. Each object contains three attributes: 
+#' When the number of columns is small, some mechanisms could be incompatible with large missing percentage.
+#'
+#' @return \code{mcar} Incomplete dataframe object with MCAR mechanism. The detailed description could be
+#' found in \code{generate_miss} documentation. Each object contains three attributes:
 #' \code{X.incomp}, \code{R.mask}, and \code{real_miss_perc}
 #' @return \code{mar1} Incomplete dataframe object with MAR1 mechanism.
 #' @return \code{mar2} Incomplete dataframe object with MAR2 mechanism.
@@ -201,11 +201,11 @@ generate_miss <- function(df,
 #' @export
 #' @references
 #' @examples
-#' n = 10000
-#' mu.X = c(1, 2, 3)
-#' Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-#' X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs = generate_miss_ls(X.complete.cont, 0.4)
+#' n <- 10000
+#' mu.X <- c(1, 2, 3)
+#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+#' rs <- generate_miss_ls(X.complete.cont, 0.4)
 #' rs$mcar$X.incomp
 generate_miss_ls <- function(df, miss_perc) {
   return(
@@ -222,7 +222,7 @@ generate_miss_ls <- function(df, miss_perc) {
 
 
 #' monot_quantil
-#' @description Calculate the missing proportion in MAR3, used in 'generate_miss'. 
+#' @description Calculate the missing proportion in MAR3, used in 'generate_miss'.
 #' Solve the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1), where m = miss_perc, p = num_co
 #' @param miss_perc Desired proportion of missingness
 #' @param num_col Number of columns
@@ -239,4 +239,3 @@ monot_quantil <- function(miss_perc, num_col) {
   }
   return(tempt[which.min(tmp_result)])
 }
-

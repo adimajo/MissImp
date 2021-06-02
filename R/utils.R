@@ -85,3 +85,4 @@ dict_level <- function(df, col_cat){
   }
   return(res)
 }
+

@@ -11,6 +11,8 @@ LazyData: true
 Language: en
 RoxygenNote: 7.1.1
 Imports:
+    glmnet,
+    LiblineaR,
     stats,
     MASS,
     norm,
@@ -29,5 +31,6 @@ Imports:
     ranger
 Suggests: 
     testthat (>= 2.1.0),
-    mathjaxr
+    mathjaxr,
+    misaem
 RdMacros: mathjaxr

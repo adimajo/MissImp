@@ -9,15 +9,15 @@ generate_miss(df, miss_perc, mechanism = "MCAR", mar2.col.ctrl = 1)
 \arguments{
 \item{df}{Complete dataframe.}
 
-\item{miss_perc}{Desired percentage of missing values. Note that all the mechanisms could only 
+\item{miss_perc}{Desired percentage of missing values. Note that all the mechanisms could only
 approach this proportion. The real proportion of missingness will be returned with the incomplete dataframe.
 When the number of columns is small, some mechanisms could be incompatible with large missing percentage.}
 
 \item{mechanism}{Desired missing mechanism.
 \itemize{
- \item \strong{MCAR} generates missing values by missing completely at random mechanism with Bernouilli distribution. 
+ \item \strong{MCAR} generates missing values by missing completely at random mechanism with Bernouilli distribution.
  \item \strong{MAR1} generates missing values by missing at random mechanism with logistic regression on the observed data.
- \item \strong{MAR2} generates missing values by missing at random mechanism with censoring algorithm. 
+ \item \strong{MAR2} generates missing values by missing at random mechanism with censoring algorithm.
 The missingness in every other column depends on the quantile of one specified complete column \code{mar2.col.ctrl}.
 For example, on row i, Y2[i] will be removed if Y1[i]<q(30\%) of Y1.
  \item \strong{MAR3} generates missing values by missing at random mechanism with monotone censoring mechanism.
@@ -39,15 +39,15 @@ And then on row s, Y3[s],...,Yn[s] will be removed if Y2[s]<q(30\%) of observed 
 \code{real_miss_perc} Real proportion of missingness.
 }
 \description{
-\code{generate_miss} function generates missing values in a complete 
+\code{generate_miss} function generates missing values in a complete
 dataframe with the chosen mechanism and the chosen proportion of missingness.
 }
 \examples{
-n = 10000
-mu.X = c(1, 2, 3)
-Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+n <- 10000
+mu.X <- c(1, 2, 3)
+Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 rs$X.incomp
 }
 \references{

@@ -15,6 +15,6 @@ monot_quantil(miss_perc, num_col)
 The required percentage for the quantil in MAR3. Solution to the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1)
 }
 \description{
-Calculate the missing proportion in MAR3, used in 'generate_miss'. 
+Calculate the missing proportion in MAR3, used in 'generate_miss'.
 Solve the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1), where m = miss_perc, p = num_co
 }

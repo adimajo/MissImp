@@ -1,7 +1,7 @@
 #' jacksample: create several dataframes by jackknife resampling
-#' 
+#'
 #' @description
-#' \code{jacksample} function creates \code{num_sample} samples without the group of observation k (k=1,...,\code{num_sample}). 
+#' \code{jacksample} function creates \code{num_sample} samples without the group of observation k (k=1,...,\code{num_sample}).
 #' We regroup the original data into \code{num_sample} groups by their index.
 #' @param df A complete or incomplete dataframe
 #' @param num_sample Number of jackknifed samples.
@@ -9,13 +9,12 @@
 #' @export
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
 #' @examples
-#' n = 10000
-#' mu.X = c(1, 2, 3)
-#' Sigma.X = matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-#' X.complete.cont = MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs = generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
-#' ls_boot = jacksample(rs$X.incomp,4)
-#' 
+#' n <- 10000
+#' mu.X <- c(1, 2, 3)
+#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+#' ls_boot <- jacksample(rs$X.incomp, 4)
 jacksample <- function(df, num_sample) {
   num_row <- nrow(df)
   row_tranch <- num_row %/% num_sample
@@ -58,9 +57,9 @@ jacksample <- function(df, num_sample) {
 
 
 #' combine_jack: combine imputed jackknife datasets
-#' 
+#'
 #' @description
-#' \code{combine_jack} function combines several imputed jackknifed dataframes 
+#' \code{combine_jack} function combines several imputed jackknifed dataframes
 #' into the final imputed dataframe and provide the variance for each imputed value.
 #' @param ls_df A list of imputed jackknifed dataframes.
 #' @param df_full Imputation result on the original dataframe before jackknife resampling.
@@ -68,11 +67,11 @@ jacksample <- function(df, num_sample) {
 #' @param col_dis Discret columns index.
 #' @param col_cat Categorical columns index.
 #' @param num_row_origin Number of rows in the original incomplete dataframe before bootstrapping.
-#' @param method The encoded method of categorical columns in the imputed dataframes. 
+#' @param method The encoded method of categorical columns in the imputed dataframes.
 #' This function is only coded for "onehot" situation.
 #' @param dict_cat The dictionary of categorical columns names if "onehot" method is applied.
 #' For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3")).
-#' @param var_cat The method of variance calculation for the categorical columns. 
+#' @param var_cat The method of variance calculation for the categorical columns.
 #' "unalike" will lead to the calculation of unalikeability, while "wilcox_va" will lead to the calculation of Wilcox index: VarNC.
 #' @return \code{df_result_disj} The final imputed dataframe with the categorical columns in onehot form.
 #' @return \code{df_result_var_disj} The variance matrix for the final imputation dataframe with the categorical columns in onehot form.
@@ -112,10 +111,10 @@ combine_jack <- function(ls_df,
     # only for numeric columns
     ls_df_minus[[i]] <- n_sample * df_full[which(df_full$index %in% ls_df[[i]]$index), ] - (n_sample -
       1) * ls_df[[i]]
-    if(exist_cat){
+    if (exist_cat) {
       ls_df_minus[[i]][col_name_cat][ls_df_minus[[i]][col_name_cat] < 0] <- 0
     }
-    
+
     ls_df_minus[[i]]$index <- ls_df[[i]]$index
     i <- i + 1
   }
