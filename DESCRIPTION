@@ -31,5 +31,6 @@ Imports:
     ranger
 Suggests: 
     testthat (>= 2.1.0),
-    mathjaxr
+    mathjaxr,
+    misaem
 RdMacros: mathjaxr
