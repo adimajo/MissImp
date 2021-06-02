@@ -259,7 +259,7 @@ n_resample=4     #2*log(nrow(df))
 maxiter_tree=3
 maxiter_pca=30
 ncp_pca=ncol(df)/2
-learn_ncp=TRUE
+learn_ncp=FALSE
 
 imp_method='PCA'
 resample_method='jackknife'
@@ -296,7 +296,7 @@ head(res$uncertainty.disj)
 # Bootstrap needs big number of samples
 # Jackknife has a problem with categorical variables
 df_with_mv = list_df.mix[[2]]
-
+df_with_mv = factor_encode(df_with_mv, c(7:8))
 ls_boot = bootsample(df_with_mv,4)
 ls_jack = jacksample(df_with_mv,4)
 ```
@@ -305,11 +305,9 @@ ls_jack = jacksample(df_with_mv,4)
 
 
 ```{r dict_cat}
-df_with_mv = factor_encode(df_with_mv, c(7:8))
+
 dict_name_cat = dict_onehot(df_with_mv, c(7:8))
 ```
-
-
 
 
 ```{r imputation_boot_FAMD}
@@ -321,15 +319,27 @@ ls.imp.pca.fact = list()
 idx_col_cat = c(7:8)
 i = 1
 num_col = ncol(df_with_mv)
+n_opt =3
 for(df in ls_boot){
   df = factor_encode(df, idx_col_cat)
-  n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
+  #n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
   #for imputeFAMD_mod, the categorical data need to be ordinal encoded then factor encoded
-  pca = imputeFAMD_mod(df, ncp = n_opt, maxiter = 100)
+  pca = imputeFAMD_mod(df, ncp = n_opt, maxiter = 30)
   ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
   ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
+  break
 }
+```
+
+
+
+
+```{r}
+ls_MSE(X.complete, ls.imp.pca.fact, mask=rs.mix$mar1$R.mask, col_num=c(1:6),resample_method='bootstrap') 
+ls_F1(X.complete, ls.imp.pca.fact, mask=rs.mix$mar1$R.mask, col_cat=c(7:8), resample_method='bootstrap',combine_method = 'factor') 
+ls_F1(X.complete, ls.imp.pca.onehot, mask=rs.mix$mar1$R.mask, col_cat=c(7:20), resample_method='bootstrap',combine_method = 'onehot', dict_cat=dict_name_cat)
+head(ls.imp.pca.onehot[[1]])
 ```
 
 
@@ -350,7 +360,7 @@ for(df in ls_jack){
   df = factor_encode(df, idx_col_cat)
   #Input: an incomplete dataset
   #Outout: an imputed dataset (onehot or factor for categorical)
-  pca = imputeFAMD_mod(df, ncp = 3, maxiter = 100)
+  pca = imputeFAMD_mod(df, ncp = 3, maxiter = 30)
   ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
   ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
@@ -361,10 +371,17 @@ for(df in ls_jack){
 ```{r imputation_jack_full_dataframe_FAMD}
 df_full = df_with_mv
 df_full = factor_encode(df_with_mv, idx_col_cat)
-pca_full = imputeFAMD_mod(df_full, ncp = 3, maxiter = 20)
+pca_full = imputeFAMD_mod(df_full, ncp = 3, maxiter = 30)
 imp.pca_full.onehot = pca_full$tab.disj
 imp.pca_full.fact = pca_full$completeObs
 ```
+
+
+```{r}
+ls_MSE(X.complete, ls.imp.pca.fact, mask=rs.mix$mar1$R.mask, col_num=c(1:6),resample_method='jackknife',df_imp_full=imp.pca_full.fact)
+```
+
+
 
 ```{r combine_jack_FAMD}
 rs_jack0=combine_jack(ls.imp.pca.onehot,data.frame(imp.pca_full.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'unalike')
@@ -530,6 +547,23 @@ for(df in ls_boot){
 
 
 ```{r}
+
+
+dict_lev = dict_level(X.complete, c(7:8))
+
+```
+
+
+```{r}
+ls_MSE(X.complete, ls.imp.forest.boot.fact, mask=rs.mix$mar1$R.mask, col_num=c(1:6),resample_method='bootstrap') 
+ls_F1(X.complete, ls.imp.forest.boot.fact, mask=rs.mix$mar1$R.mask, dict_lev=dict_lev, col_cat=c(7:8), resample_method='bootstrap',combine_method = 'factor') 
+ls_F1(X.complete, ls.imp.forest.boot.onehot, mask=rs.mix$mar1$R.mask, dict_lev=dict_lev, col_cat=c(7:20), resample_method='bootstrap',combine_method = 'onehot', dict_cat=dict_name_cat)
+```
+
+
+
+
+```{r}
 rs0 = combine_boot(ls.imp.forest.boot.fact,col_con=c(1:5),col_dis=c(6),col_cat=c(7:8), num_row_origin = 10000, method="factor",dict_cat=dict_name_cat, var_cat = 'wilcox_va')
 rs = combine_boot(ls.imp.forest.boot.onehot,col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), num_row_origin = 10000, method="onehot", dict_cat=dict_name_cat, var_cat = 'unalike')
 rs0
@@ -546,7 +580,7 @@ for(df in ls_jack){
   df = factor_encode(df, idx_col_cat)
   #Input: an incomplete dataset
   #Outout: an imputed dataset (onehot or factor for categorical)
-  imp.forest = missForest_mod(xmis = df, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+  imp.forest = missForest_mod(xmis = df, maxiter = 5, ntree = 100, col_cat = idx_col_cat)
   ls.imp.forest.jack.onehot[[i]] = imp.forest$ximp.disj
   ls.imp.forest.jack.fact[[i]] = imp.forest$ximp
   i = i + 1
@@ -557,10 +591,16 @@ for(df in ls_jack){
 ```{r}
 df_full = df_with_mv
 df_full = factor_encode(df_with_mv, idx_col_cat)
-imp.forest_full = missForest_mod(xmis = df_full, maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+imp.forest_full = missForest_mod(xmis = df_full, maxiter = 5, ntree = 100, col_cat = idx_col_cat)
 ls.imp.forest_full.jack.onehot = imp.forest_full$ximp.disj
 ls.imp.forest_full.jack.fact = imp.forest_full$ximp
 ```
+
+
+```{r}
+ls_MSE(X.complete, ls.imp.forest.jack.fact, mask=rs.mix$mar1$R.mask, col_num=c(1:6),resample_method='jackknife', df_imp_full = ls.imp.forest_full.jack.fact)
+```
+
 
 ```{r}
 rs_jack0=combine_jack(ls.imp.forest.jack.onehot,data.frame(ls.imp.forest_full.jack.onehot),col_con=c(1:5),col_dis=c(6),col_cat=c(7:20), method="onehot", dict_cat=dict_name_cat,var_cat = 'unalike')

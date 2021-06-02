@@ -56,6 +56,7 @@ generate_miss <- function(df,
     mcar <- produce_NA(df, mechanism = "MCAR", perc.missing = miss_perc)
     X.mcar <- mcar$data.incomp
     R.mcar <- data.frame(mcar$idx_newNA)
+    colnames(R.mcar) <- colnames(X.mcar)
     real_miss_perc <- sum(R.mcar * 1) / prod(dim(R.mcar * 1))
     return(list(
       "X.incomp" = X.mcar,
@@ -75,6 +76,7 @@ generate_miss <- function(df,
     )
     X.mar1 <- mar1$data.incomp
     R.mar1 <- data.frame(mar1$idx_newNA)
+    colnames(R.mar1) <- colnames(X.mar1)
     real_miss_perc <- sum(R.mar1 * 1) / prod(dim(R.mar1 * 1))
     return(list(
       "X.incomp" = X.mar1,
@@ -99,6 +101,7 @@ generate_miss <- function(df,
     }
     R.mar2 <- data.frame(is.na(X.mar2))
     real_miss_perc <- sum(R.mar2 * 1) / prod(dim(R.mar2 * 1))
+    colnames(R.mar2) <- colnames(X.mar2)
     return(list(
       "X.incomp" = X.mar2,
       "R.mask" = R.mar2,
@@ -133,6 +136,7 @@ generate_miss <- function(df,
     }
     R.mar3 <- data.frame(is.na(X.mar3))
     real_miss_perc <- sum(R.mar3 * 1) / prod(dim(R.mar3 * 1))
+    colnames(R.mar3) <- colnames(X.mar3)
     return(list(
       "X.incomp" = X.mar3,
       "R.mask" = R.mar3,
@@ -151,6 +155,7 @@ generate_miss <- function(df,
     X.mnar1 <- mnar1$data.incomp
     R.mnar1 <- data.frame(mnar1$idx_newNA)
     real_miss_perc <- sum(R.mnar1 * 1) / prod(dim(R.mnar1 * 1))
+    colnames(R.mnar1) <- colnames(X.mnar1)
     return(list(
       "X.incomp" = X.mnar1,
       "R.mask" = R.mnar1,
@@ -165,6 +170,7 @@ generate_miss <- function(df,
     }
     R.mnar2 <- data.frame(is.na(X.mnar2))
     real_miss_perc <- sum(R.mnar2 * 1) / prod(dim(R.mnar2 * 1))
+    colnames(R.mnar2) <- colnames(X.mnar2)
     return(list(
       "X.incomp" = X.mnar2,
       "R.mask" = R.mnar2,

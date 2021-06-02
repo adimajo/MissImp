@@ -92,7 +92,6 @@ single_imp <- function(df, imp_method='missRanger', resample_method='bootstrap',
   }
   
   
-  
   ##3. Final result
   if(resample_method=="bootstrap"){
     if(cat_combine_by=='factor'){

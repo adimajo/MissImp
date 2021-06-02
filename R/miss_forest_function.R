@@ -555,7 +555,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             OOBerror[varInd] <- mean((predict(RF) - RF$y) ^ 2, na.rm=TRUE)
             #               OOBerror[varInd] <- RF$mse[ntree]
           } else {
-            RF <- randomForest( x = obsX,
+            RF <- randomForest::randomForest( x = obsX,
                                 y = obsY,
                                 ntree = ntree,
                                 mtry = mtry,
