@@ -235,12 +235,3 @@ combine_boot <- function(ls_df,
 }
 
 
-#' Mode_cat
-#' @description Find the most frequent result for one categorical variable.
-#' This function is used in combine_boot with method = 'factor'
-#' @param x Vector of categorical results. For example c('A','B','A').
-#' @return Most frequent category in vector \code{x}.
-Mode_cat <- function(x) {
-  ux <- unique(x)
-  return(ux[which.max(tabulate(match(x, ux)))])
-}
