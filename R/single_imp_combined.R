@@ -87,8 +87,11 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       imp.full.onehot <- data.frame(res$tab.disj)
     }
   }
-
-  ## 3. Final result
+  
+  
+  ## 3. Evaluation matrix
+  
+  ## 4. Final result
   if (resample_method == "bootstrap") {
     if (cat_combine_by == "factor") {
       ls.imp.tmp <- ls.imp.fact

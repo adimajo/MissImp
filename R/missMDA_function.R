@@ -189,6 +189,11 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
     tab <- as.data.frame(tab)
     modalite.disjonctif <- function(i) {
       moda <- tab[, i]
+      ######### Change#######
+      if (is.numeric(moda)) {
+        return(moda)
+      }
+      ######################
       nom <- names(tab)[i]
       n <- length(moda)
       moda <- as.factor(moda)
@@ -289,7 +294,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
     }
     # quali
     result$completeObs <- X
-    if (!is.null(ind.quali)) result$completeObs[, ind.quali] <- find.category(X[, ind.quali, drop = F], tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w))
+    if (!is.null(ind.quali)) result$completeObs[, ind.quali] <- find.category(X[, ind.quali, drop = F], FactoMineR::tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w))
     # quanti
     if (!is.null(ind.quanti)) {
       tab.disj <- X[, ind.quanti, drop = F]
@@ -305,7 +310,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
       nbdummy[is.quali] <- unlist(lapply(X[, is.quali, drop = FALSE], nlevels))
       tabdisj <- matrix(NA, nrow(X), ncol = sum(nbdummy))
       tabdisj[, cumsum(nbdummy)[which(nbdummy == 1)]] <- as.matrix(result$completeObs[, ind.quanti, drop = F])
-      auxQuali <- tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w)
+      auxQuali <- FactoMineR::tab.disjonctif.prop(X[, ind.quali, drop = F], row.w = row.w)
       tabdisj[, -cumsum(nbdummy)[which(nbdummy == 1)]] <- auxQuali
       rownames(tabdisj) <- rownames(X)
       colnames(tabdisj) <- paste0("v", 1:ncol(tabdisj))
@@ -326,7 +331,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
       }
 
       if (type[g] == "n") {
-        tab.disj <- tab.disjonctif.prop(aux.base, seed, row.w = row.w)
+        tab.disj <- FactoMineR::tab.disjonctif.prop(aux.base, seed, row.w = row.w)
         tab.disj.comp[[g]] <- tab.disj
         group.mod[g] <- ncol(tab.disj)
       }
@@ -376,7 +381,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
       if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- rnorm(length(missing))
     }
     if (type[g] == "n") {
-      tab.disj <- tab.disjonctif.prop(data.frame(aux.base), seed, row.w = row.w)
+      tab.disj <- FactoMineR::tab.disjonctif.prop(data.frame(aux.base), seed, row.w = row.w)
       ####### Change: add the index of observation############
       obs_cat <- data.frame(!is.na(tab.disjonctif.NA(data.frame(aux.base))))
       idx_obs[[g]] <- which(apply(obs_cat, 1, any))
@@ -485,10 +490,9 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
         # Z = t(t(Z) - apply(Z, 2, moy.p, row.w))
         # aux.base = t(t(Z) * sqrt(MM[[g]]))
         # The three lines above are equivalent to these two lines:
-        Z <- t(t(tab.disj) / sqrt(MM[[g]] * ncol(aux.base)))
+        Z <- t(t(tab.disj) / (sqrt(MM[[g]]) * ncol(aux.base)))
         aux.base <- t(t(Z) - sqrt(MM[[g]]))
         ##################################################
-
         ponderation[g] <- FactoMineR::svd.triplet(aux.base, row.w = row.w, ncp = 1)$vs[1]
       }
       if (g == 1) {

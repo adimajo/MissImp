@@ -255,15 +255,16 @@ final_result_mcar
 ```{r}
 # source("../R/single_imp_combined.R")
 df=list_df.mix[[2]]
-col_cat=c(7:8) 
+col_cat=c(7:8)
+df=factor_encode(ordinal_encode(df,col_cat),col_cat)
 col_dis=c(6)
-n_resample=4     #2*log(nrow(df))
+n_resample=4     #2*round(log(nrow(df)))
 maxiter_tree=3
 maxiter_pca=30
 ncp_pca=ncol(df)/2
 learn_ncp=FALSE
 
-imp_method='PCA'
+imp_method='missRanger'
 resample_method='jackknife'
 cat_combine_by='onehot'
 var_cat='unalike'
@@ -331,7 +332,6 @@ for(df in ls_boot){
   ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
   ls.imp.pca.fact[[i]] = pca$completeObs
   i = i + 1
-  break
 }
 ```
 

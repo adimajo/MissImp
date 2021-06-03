@@ -21,6 +21,35 @@ Precision (micro averaged)
 Compute the precision score of multi-class problem using the "micro" average.
 details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
 }
+\details{
+#' @title Precision
+#'
+#' @description
+#' Compute the precision score.
+#'
+#' @param y_pred Predicted labels vector, as returned by a classifier
+#' @param y_true Ground truth (correct) 0-1 labels vector
+#' @param positive An optional character string for the factor level that
+#'   corresponds to a "positive" result
+#' @return Precision
+#' @examples
+#' data(cars)
+#' logreg <- glm(formula = vs ~ hp + wt,
+#'               family = binomial(link = "logit"), data = mtcars)
+#' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
+#' Precision(y_pred = pred, y_true = mtcars$vs, positive = "0")
+#' Precision(y_pred = pred, y_true = mtcars$vs, positive = "1")
+#' @export
+
+Precision <- function(y_true, y_pred, positive = NULL) {
+  Confusion_DF <- ConfusionDF(y_pred, y_true)
+  if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
+  TP <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive),"Freq"])
+  FP <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true!=positive & Confusion_DF$y_pred==positive), "Freq"]))
+  Precision <- TP/(TP+FP)
+  return(Precision)
+}
+}
 \examples{
 labels <- c("Q1","Q2","Q3","Q4")
 truth <- sample(labels, 10, replace = TRUE)

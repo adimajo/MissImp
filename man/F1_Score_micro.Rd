@@ -21,6 +21,185 @@ F1 Score (micro averaged)
 Compute the F1 Score of multi-class problem using the "micro" average.
 details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
 }
+\details{
+#' @title Recall (macro averaged)
+#'
+#' @description
+#' Compute the recall score of multi-class problem using the "macro" average.
+#' details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
+#'
+#' @param y_pred Predicted labels vector, as returned by a classifier
+#' @param y_true Ground truth (correct) labels vector
+#' @param labels An optional vector containing the list of the existent
+#'   (unique) labels.
+#' @return Recall (macro averaged)
+#' @examples
+#' labels <- c("Q1","Q2","Q3","Q4")
+#' truth <- sample(labels, 10, replace = TRUE)
+#' pred <- sample(labels, 10, replace = TRUE)
+#' Recall_macro(y_pred = pred, y_true = truth, labels)
+#' @export
+
+Recall_macro <- function(y_true, y_pred, labels = NULL) {
+  Confusion_DF <- ConfusionDF(y_pred, y_true)
+  
+  if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
+  # this is not bulletproof since there might be labels missing (in strange cases)
+  # in strange cases where they existed in training set but are missing from test ground truth and predictions.
+  
+  Rec <- c()
+  for (i in c(1:length(labels))) {
+    positive <- labels[i]
+    
+    # short version, comment out due to bug or feature of Confusion_DF
+    # TP[i] <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"])
+    # FP[i] <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]))
+    
+    # workaround:
+    tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
+    TP <- if (length(tmp)==0) 0 else as.integer(tmp)
+    
+    tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]
+    FN <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
+    
+    Rec[i] <- TP/(TP+FN)
+  }
+  
+  Rec[is.na(Rec)] <- 0
+  Recall_macro <- mean(Rec) # sum(Rec) / length(labels)
+  return(Recall_macro)
+}
+
+
+#' @title Recall (macro weighted averaged)
+#'
+#' @description
+#' Compute the recall score of multi-class problem using the "macro" formula but weighted averaged (similar to weka).
+#' details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
+#'
+#' @param y_pred Predicted labels vector, as returned by a classifier
+#' @param y_true Ground truth (correct) labels vector
+#' @param labels An optional vector containing the list of the existent
+#'   (unique) labels.
+#' @return Recall (macro weighted averaged)
+#' @examples
+#' labels <- c("Q1","Q2","Q3","Q4")
+#' truth <- sample(labels, 10, replace = TRUE)
+#' pred <- sample(labels, 10, replace = TRUE)
+#' Recall_macro_weighted(y_pred = pred, y_true = truth, labels)
+#' @export
+
+Recall_macro_weighted <- function(y_true, y_pred, labels = NULL) {
+  Confusion_DF <- ConfusionDF(y_pred, y_true)
+  
+  if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
+  # this is not bulletproof since there might be labels missing (in strange cases)
+  # in strange cases where they existed in training set but are missing from test ground truth and predictions.
+  
+  Rec <- c()
+  for (i in c(1:length(labels))) {
+    positive <- labels[i]
+    
+    # short version, comment out due to bug or feature of Confusion_DF
+    # TP[i] <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"])
+    # FP[i] <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]))
+    
+    # workaround:
+    tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
+    TP <- if (length(tmp)==0) 0 else as.integer(tmp)
+    
+    tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]
+    FN <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
+    
+    Rec[i] <- TP/(TP+FN)
+  }
+  
+  Rec[is.na(Rec)] <- 0
+  Recall_macro_weighted <- weighted.mean(Rec, as.vector(table(y_true)[labels])) # sum(Rec) / length(labels)
+  return(Recall_macro_weighted)
+}
+#' @title Sensitivity
+#'
+#' @description
+#' Compute the sensitivity score.
+#'
+#' @param y_pred Predicted labels vector, as returned by a classifier
+#' @param y_true Ground truth (correct) 0-1 labels vector
+#' @param positive An optional character string for the factor level that
+#'   corresponds to a "positive" result
+#' @return Sensitivity
+#' @examples
+#' data(cars)
+#' logreg <- glm(formula = vs ~ hp + wt,
+#'               family = binomial(link = "logit"), data = mtcars)
+#' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
+#' Sensitivity(y_pred = pred, y_true = mtcars$vs, positive = "0")
+#' Sensitivity(y_pred = pred, y_true = mtcars$vs, positive = "1")
+#' @export
+
+Sensitivity  <- function(y_true, y_pred, positive = NULL) {
+  Confusion_DF <- ConfusionDF(y_pred, y_true)
+  if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
+  TP <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"])
+  FN <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]))
+  Sensitivity <- TP/(TP+FN)
+  return(Sensitivity)
+}
+#' @title Specificity
+#'
+#' @description
+#' Compute the specificity score.
+#'
+#' @param y_pred Predicted labels vector, as returned by a classifier
+#' @param y_true Ground truth (correct) 0-1 labels vector
+#' @param positive An optional character string for the factor level that
+#'   corresponds to a "positive" result
+#' @return Specificity
+#' @examples
+#' data(cars)
+#' logreg <- glm(formula = vs ~ hp + wt,
+#'               family = binomial(link = "logit"), data = mtcars)
+#' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
+#' Specificity(y_pred = pred, y_true = mtcars$vs, positive = "0")
+#' Specificity(y_pred = pred, y_true = mtcars$vs, positive = "1")
+#' @export
+
+Specificity  <- function(y_true, y_pred, positive = NULL) {
+  Confusion_DF <- ConfusionDF(y_pred, y_true)
+  if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
+  TN <- as.integer(Confusion_DF[which(Confusion_DF$y_true!=positive & Confusion_DF$y_pred!=positive), "Freq"])
+  FP <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true!=positive & Confusion_DF$y_pred==positive), "Freq"]))
+  Specificity <- TN/(TN+FP)
+  return(Specificity)
+}
+#' @title F1 Score
+#'
+#' @description
+#' Compute the F1 Score.
+#'
+#' @param y_pred Predicted labels vector, as returned by a classifier
+#' @param y_true Ground truth (correct) 0-1 labels vector
+#' @param positive An optional character string for the factor level that
+#'   corresponds to a "positive" result
+#' @return F1 Score
+#' @examples
+#' data(cars)
+#' logreg <- glm(formula = vs ~ hp + wt,
+#'               family = binomial(link = "logit"), data = mtcars)
+#' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
+#' F1_Score(y_pred = pred, y_true = mtcars$vs, positive = "0")
+#' F1_Score(y_pred = pred, y_true = mtcars$vs, positive = "1")
+#' @export
+
+F1_Score <- function(y_true, y_pred, positive = NULL) {
+  Confusion_DF <- ConfusionDF(y_pred, y_true)
+  if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
+  Precision <- Precision(y_true, y_pred, positive)
+  Recall <- Recall(y_true, y_pred, positive)
+  F1_Score <- 2 * (Precision * Recall) / (Precision + Recall)
+  return(F1_Score)
+}
+}
 \examples{
 labels <- c("Q1","Q2","Q3","Q4")
 truth <- sample(labels, 10, replace = TRUE)
