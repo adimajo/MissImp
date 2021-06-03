@@ -32,7 +32,9 @@
 #' number for categorical variables in the second entry.
 #' @param maxnodes maximum number of terminal nodes for individual trees
 #' @param xtrue complete data matrix
+#' @param parallelize TODO
 #' @export
+#' @import foreach
 #' @return \code{ximp} imputed data matrix of same type as 'xmis'.
 #' @return \code{ximp.disj} imputed data matrix of same type as 'xmis' for the numeric columns.
 #'  For the categorical columns, the prediction of probability for each category is shown in form of onehot vector.
@@ -622,15 +624,19 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             OOBerror[varInd] <- mean((predict(RF) - RF$y)^2, na.rm = TRUE)
             #               OOBerror[varInd] <- RF$mse[ntree]
           } else {
-            RF <- randomForest::randomForest( x = obsX,
-                                y = obsY,
-                                ntree = ntree,
-                                mtry = mtry,
-                                replace = replace,
-                                sampsize = if (!is.null(sampsize)) sampsize[[varInd]] else
-                                  if (replace) nrow(obsX) else ceiling(0.632*nrow(obsX)),
-                                nodesize = if (!is.null(nodesize)) nodesize[1] else 1,
-                                maxnodes = if (!is.null(maxnodes)) maxnodes else NULL)
+            RF <- randomForest::randomForest(
+              x = obsX,
+              y = obsY,
+              ntree = ntree,
+              mtry = mtry,
+              replace = replace,
+              sampsize = if (!is.null(sampsize)) {
+                sampsize[[varInd]]
+              } else
+              if (replace) nrow(obsX) else ceiling(0.632 * nrow(obsX)),
+              nodesize = if (!is.null(nodesize)) nodesize[1] else 1,
+              maxnodes = if (!is.null(maxnodes)) maxnodes else NULL
+            )
             ## record out-of-bag error
             OOBerror[varInd] <- RF$mse[ntree]
           }
@@ -876,7 +882,7 @@ predict.randomForest <-
       newdata <- as.data.frame(newdata)
       rn <- row.names(newdata)
       Terms <- delete.response(object$terms)
-      x <- model.frame(Terms, newdata, na.action = na.omit)
+      x <- model.frame(Terms, newdata, na.action = stats::na.omit)
       keep <- match(row.names(x), rn)
     } else {
       if (is.null(dim(newdata))) {

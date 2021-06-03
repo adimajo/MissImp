@@ -57,6 +57,8 @@ number for categorical variables in the second entry.}
 
 \item{xtrue}{complete data matrix}
 
+\item{parallelize}{TODO}
+
 \item{col_cat}{index of categorical columns.}
 }
 \value{

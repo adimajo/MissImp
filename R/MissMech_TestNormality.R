@@ -77,7 +77,7 @@ TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, me
       if (ncomp >= 10 && ncomp >= 2 * p) {
         compy <- y[seq(spatcntz[cind] + 1, spatcntz[cind + 1]), ]
         ybar <- matrix(apply(compy, 2, mean))
-        sbar <- cov(compy)
+        sbar <- stats::cov(compy)
         resid <- (ncomp / (ncomp - 1))^.5 *
           (compy - matrix(ybar, ncomp, p, byrow = TRUE))
       } else {
@@ -163,7 +163,7 @@ TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, me
   adstar <- apply(adistar, 1, sum)
   # combine p-values of test of uniformity
   combp <- -2 * apply(log(pvalsn), 1, sum)
-  pvalcomb <- pchisq(combp, 2 * g, lower.tail = FALSE)
+  pvalcomb <- stats::pchisq(combp, 2 * g, lower.tail = FALSE)
   if (method == "Hawkins") {
     pnormality <- NULL
     adstar <- NULL
@@ -284,20 +284,20 @@ summary.testhomosc <- function(object, ...) {
 # Plot "testhomosc"
 boxplot.testhomosc <- function(x, ...) {
   if (is.null(x$pnormality)) {
-    par(bg = "cornsilk")
-    boxplot(x$pvalsn, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
-    title(
+    graphics::par(bg = "cornsilk")
+    graphics::boxplot(x$pvalsn, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
+    graphics::title(
       main = "Boxplots of p-values corresponding to each set of the missing data patterns\n for the Neyman test of Uniformity",
       xlab = "Missing data pattern group", ylab = "P-value", font.main = 4,
       col.main = "blue4", cex.main = 1, font.lab = 4, cex.lab = 0.8,
       col.lab = "blue4"
     )
-    abline(h = x$alpha / x$g, col = "red", lty = 2)
+    graphics::abline(h = x$alpha / x$g, col = "red", lty = 2)
   }
   if (is.null(x$pvalcomb)) {
-    par(bg = "cornsilk")
-    boxplot(x$adistar, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
-    title(
+    graphics::par(bg = "cornsilk")
+    graphics::boxplot(x$adistar, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
+    graphics::title(
       main = "Boxplots of the T-value test statistics corresponding to each set of missing\n data patterns for the non-parametric test",
       xlab = "Missing data pattern group", ylab = expression(T[i]),
       font.main = 4, col.main = "blue4", cex.main = 1, font.lab = 4,
@@ -305,17 +305,17 @@ boxplot.testhomosc <- function(x, ...) {
     )
   }
   if (!is.null(x$pvalcomb) && !is.null(x$pnormality)) {
-    par(mfrow = c(2, 1), bg = "cornsilk")
-    boxplot(x$pvalsn, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
-    title(
+    graphics::par(mfrow = c(2, 1), bg = "cornsilk")
+    graphics::boxplot(x$pvalsn, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
+    graphics::title(
       main = "Boxplots of p-values corresponding to each set of the missing data patterns\n for the Neyman test of Uniformity",
       xlab = "Missing data pattern group", ylab = "P-value", font.main = 4,
       col.main = "blue4", cex.main = 1, font.lab = 4, cex.lab = 0.8,
       col.lab = "blue4"
     )
-    abline(h = x$alpha / x$g, col = "red", lty = 2)
-    boxplot(x$adistar, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
-    title(
+    graphics::abline(h = x$alpha / x$g, col = "red", lty = 2)
+    graphics::boxplot(x$adistar, col = "lightcyan", border = "blue", medlwd = .5, medcol = "red")
+    graphics::title(
       main = "Boxplots of the T-value test statistics corresponding to each set of missing\n data patterns for the non-parametric test",
       xlab = "Missing data pattern group", ylab = expression(T[i]),
       font.main = 4, col.main = "blue4", cex.main = 1, font.lab = 4,
@@ -342,12 +342,12 @@ TestUNey <- function(x, nrep = 10000, sim = NA, n.min = 30) {
     }
     pn <- length(which(sim > n4)) / nrep
   } else {
-    pn <- pchisq(n4, 4, lower.tail = FALSE)
+    pn <- stats::pchisq(n4, 4, lower.tail = FALSE)
   }
   list(pn = pn, n4 = n4)
 }
 SimNey <- function(n, nrep) {
-  x <- matrix(runif(nrep * n), ncol = nrep)
+  x <- matrix(stats::runif(nrep * n), ncol = nrep)
   pi <- LegNorm(x)
   n4sim <- (apply(pi$p1, 2, sum)^2 + apply(pi$p2, 2, sum)^2 +
     apply(pi$p3, 2, sum)^2 + apply(pi$p4, 2, sum)^2) / n
@@ -423,7 +423,7 @@ AndersonDarling <- function(data, number.cases) {
   } else {
     ind <- seq(2:5)
   }
-  yy <- spline(qnt[ind], c0[ind], xout = adk.s)$y
+  yy <- stats::spline(qnt[ind], c0[ind], xout = adk.s)$y
   p <- 1 / (1 + exp(yy))
   list(pn = p, adk.all = adk.all, adk = adk, var.sdk = var.adk)
 } # end function
@@ -635,7 +635,7 @@ Mls <- function(data, mu = NA, sig = NA, tol = 1e-6, Hessian = FALSE) {
   rownames(mu) <- colnames(y)
   colnames(sig) <- colnames(y)
   if (Hessian) {
-    templist <- Ddf(y, mu, sig)
+    templist <- MissMech::Ddf(y, mu, sig)
     hessian <- templist$dd
     stderror <- templist$se
     return(list(mu = mu, sig = sig, hessian = hessian, stderror = stderror, iteration = itcnt))
@@ -750,7 +750,7 @@ Impute <- function(data, mu = NA, sig = NA, imputation.method = "Normal", resid 
       if (ncomp >= 10 && ncomp >= 2 * p) {
         compy <- y[seq(spatcntz[cind] + 1, spatcntz[cind + 1]), ]
         ybar <- matrix(apply(compy, 2, mean))
-        sbar <- cov(compy)
+        sbar <- stats::cov(compy)
         if (is.na(resid[1])) {
           resid <- (ncomp / (ncomp - 1))^.5 *
             (compy - matrix(ybar, ncomp, p, byrow = TRUE))
@@ -844,7 +844,7 @@ Mimpute <- function(data, patused, mu, sig) {
     svdvar <- svd(varymiss)
     a <- diag(sqrt(svdvar$d)) %*% t(svdvar$u)
   }
-  data[, indm] <- matrix(rnorm(ni * pm), ni, pm) %*% a + expymiss
+  data[, indm] <- matrix(stats::rnorm(ni * pm), ni, pm) %*% a + expymiss
   data
 }
 #---------------------------------------------------------------------------
@@ -894,7 +894,7 @@ Hawkins <- function(data, spatcnt) {
   {
     yg <- y[seq(gind[i] + 1, gind[i + 1]), ]
     ni[i] <- nrow(yg)
-    spool <- spool + (ni[i] - 1) * cov(yg)
+    spool <- spool + (ni[i] - 1) * stats::cov(yg)
     ygmean <- apply(yg, 2, mean)
     ygc[seq(gind[i] + 1, gind[i + 1]), ] <-
       yg - matrix(ygmean, ni[i], p, byrow = TRUE)
@@ -911,7 +911,7 @@ Hawkins <- function(data, spatcnt) {
     vij <- vij * ni[i]
     f[seq(gind[i] + 1, gind[i + 1])] <- ((n - g - p) * vij) /
       (p * ((ni[i] - 1) * (n - g) - vij))
-    a[[i]] <- 1 - pf(f[seq(gind[i] + 1, gind[i + 1])], p, (nu - p + 1))
+    a[[i]] <- 1 - stats::pf(f[seq(gind[i] + 1, gind[i + 1])], p, (nu - p + 1))
   }
   list(fij = f, a = a, ni = ni)
 }

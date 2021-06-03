@@ -1,8 +1,8 @@
 ---
 title: "Generating missing values for evaluation"
-output:
-  html_document:
-    df_print: paged
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 ## 1.Preparation
 #### (1)Load packages

@@ -141,7 +141,7 @@ Recall <- function(y_true, y_pred, positive = NULL) {
 }
 }
 \examples{
-labels <- c("Q1","Q2","Q3","Q4")
+labels <- c("Q1", "Q2", "Q3", "Q4")
 truth <- sample(labels, 10, replace = TRUE)
 pred <- sample(labels, 10, replace = TRUE)
 Recall_micro(y_pred = pred, y_true = truth, labels)

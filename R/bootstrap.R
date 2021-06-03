@@ -233,5 +233,3 @@ combine_boot <- function(ls_df,
     )
   )
 }
-
-

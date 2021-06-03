@@ -32,5 +32,9 @@ Imports:
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr,
-    misaem
+    misaem,
+    rmarkdown,
+    knitr,
+    laeken
 RdMacros: mathjaxr
+VignetteBuilder: knitr
