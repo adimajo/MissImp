@@ -22,7 +22,7 @@ Compute the recall score of multi-class problem using the "macro" formula but we
 details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
 }
 \examples{
-labels <- c("Q1","Q2","Q3","Q4")
+labels <- c("Q1", "Q2", "Q3", "Q4")
 truth <- sample(labels, 10, replace = TRUE)
 pred <- sample(labels, 10, replace = TRUE)
 Recall_macro_weighted(y_pred = pred, y_true = truth, labels)

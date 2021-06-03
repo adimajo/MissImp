@@ -22,7 +22,7 @@ Compute the F1 Score of multi-class problem using the "macro" average.
 details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
 }
 \examples{
-labels <- c("Q1","Q2","Q3","Q4")
+labels <- c("Q1", "Q2", "Q3", "Q4")
 truth <- sample(labels, 10, replace = TRUE)
 pred <- sample(labels, 10, replace = TRUE)
 F1_Score_macro(y_pred = pred, y_true = truth, labels)

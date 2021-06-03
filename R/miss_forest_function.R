@@ -624,15 +624,19 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             OOBerror[varInd] <- mean((predict(RF) - RF$y)^2, na.rm = TRUE)
             #               OOBerror[varInd] <- RF$mse[ntree]
           } else {
-            RF <- randomForest::randomForest( x = obsX,
-                                y = obsY,
-                                ntree = ntree,
-                                mtry = mtry,
-                                replace = replace,
-                                sampsize = if (!is.null(sampsize)) sampsize[[varInd]] else
-                                  if (replace) nrow(obsX) else ceiling(0.632*nrow(obsX)),
-                                nodesize = if (!is.null(nodesize)) nodesize[1] else 1,
-                                maxnodes = if (!is.null(maxnodes)) maxnodes else NULL)
+            RF <- randomForest::randomForest(
+              x = obsX,
+              y = obsY,
+              ntree = ntree,
+              mtry = mtry,
+              replace = replace,
+              sampsize = if (!is.null(sampsize)) {
+                sampsize[[varInd]]
+              } else
+              if (replace) nrow(obsX) else ceiling(0.632 * nrow(obsX)),
+              nodesize = if (!is.null(nodesize)) nodesize[1] else 1,
+              maxnodes = if (!is.null(maxnodes)) maxnodes else NULL
+            )
             ## record out-of-bag error
             OOBerror[varInd] <- RF$mse[ntree]
           }

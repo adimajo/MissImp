@@ -50,12 +50,12 @@ VA_fact <- function(x) {
 #' @param col_cat categorical column index
 #' @export
 #' @return A dictionary that connects onehot form and factor form of the categorical columns.
-dict_onehot = function(df, col_cat){
-  dict_name = list()
-  ls_col_name = colnames(df)
-  for(i in col_cat){
-    col_cat_name = ls_col_name[i]
-    dict_name[[col_cat_name]]=paste(col_cat_name, levels(df[[col_cat_name]]), sep = "_")
+dict_onehot <- function(df, col_cat) {
+  dict_name <- list()
+  ls_col_name <- colnames(df)
+  for (i in col_cat) {
+    col_cat_name <- ls_col_name[i]
+    dict_name[[col_cat_name]] <- paste(col_cat_name, levels(df[[col_cat_name]]), sep = "_")
   }
   return(dict_name)
 }
@@ -77,12 +77,11 @@ Mode_cat <- function(x) {
 #' @param col_cat categorical column index
 #' @export
 #' @return A dictionary that connects categorical columns with their original levels.
-dict_level <- function(df, col_cat){
+dict_level <- function(df, col_cat) {
   ls_col_cat_name <- colnames(df)[col_cat]
   res <- list()
-  for(col_name in ls_col_cat_name){
+  for (col_name in ls_col_cat_name) {
     res[[col_name]] <- levels(df[[col_name]])
   }
   return(res)
 }
-

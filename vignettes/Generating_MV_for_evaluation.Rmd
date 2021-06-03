@@ -1,6 +1,8 @@
 ---
 title: "Generating missing values for evaluation"
 output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 ## 1.Preparation
 #### (1)Load packages

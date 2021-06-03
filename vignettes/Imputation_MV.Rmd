@@ -1,6 +1,8 @@
 ---
 title: "Imputation of missing values"
 output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ## 1.Preparation
