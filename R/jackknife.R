@@ -66,7 +66,6 @@ jacksample <- function(df, num_sample) {
 #' @param col_con Continous columns index.
 #' @param col_dis Discret columns index.
 #' @param col_cat Categorical columns index.
-#' @param num_row_origin Number of rows in the original incomplete dataframe before bootstrapping.
 #' @param method The encoded method of categorical columns in the imputed dataframes.
 #' This function is only coded for "onehot" situation.
 #' @param dict_cat The dictionary of categorical columns names if "onehot" method is applied.

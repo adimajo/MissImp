@@ -1,8 +1,6 @@
 ---
 title: "Imputation of missing values"
-output:
-  html_document:
-    df_print: paged
+output: rmarkdown::html_vignette
 ---
 
 ## 1.Preparation

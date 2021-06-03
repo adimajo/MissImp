@@ -52,7 +52,7 @@ ls_F1 <- function(df_comp, ls_df_imp, mask, col_cat) {
     df_imp_concat <- as.vector(as.matrix(df_imp[, col_cat]))
     df_imp_predict <- df_imp_concat[mask_concat == 1]
     # micro f1 score : https://sebastianraschka.com/faq/docs/multiclass-metric.html
-    f1_result <- F1_Score_micro(factor(df_comp_true), factor(df_imp_predict))
+    f1_result <- LqNoob::F1_Score_micro(factor(df_comp_true), factor(df_imp_predict))
     ls_f1_result[i] <- mean(f1_result)
     i <- i + 1
   }

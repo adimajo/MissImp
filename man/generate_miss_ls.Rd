@@ -40,6 +40,3 @@ X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
 rs <- generate_miss_ls(X.complete.cont, 0.4)
 rs$mcar$X.incomp
 }
-\references{
-
-}

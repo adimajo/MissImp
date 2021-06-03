@@ -1,8 +1,6 @@
 ---
 title: "Generating missing values for evaluation"
-output:
-  html_document:
-    df_print: paged
+output: rmarkdown::html_vignette
 ---
 ## 1.Preparation
 #### (1)Load packages

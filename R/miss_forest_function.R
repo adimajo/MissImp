@@ -32,7 +32,9 @@
 #' number for categorical variables in the second entry.
 #' @param maxnodes maximum number of terminal nodes for individual trees
 #' @param xtrue complete data matrix
+#' @param parallelize TODO
 #' @export
+#' @import foreach
 #' @return \code{ximp} imputed data matrix of same type as 'xmis'.
 #' @return \code{ximp.disj} imputed data matrix of same type as 'xmis' for the numeric columns.
 #'  For the categorical columns, the prediction of probability for each category is shown in form of onehot vector.
@@ -880,7 +882,7 @@ predict.randomForest <-
       newdata <- as.data.frame(newdata)
       rn <- row.names(newdata)
       Terms <- delete.response(object$terms)
-      x <- model.frame(Terms, newdata, na.action = na.omit)
+      x <- model.frame(Terms, newdata, na.action = stats::na.omit)
       keep <- match(row.names(x), rn)
     } else {
       if (is.null(dim(newdata))) {

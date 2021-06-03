@@ -193,7 +193,6 @@ generate_miss <- function(df,
 #' @return \code{mnar1} Incomplete dataframe object with MNAR1 mechanism.
 #' @return \code{mnar2} Incomplete dataframe object with MNAR2 mechanism.
 #' @export
-#' @references
 #' @examples
 #' n <- 10000
 #' mu.X <- c(1, 2, 3)

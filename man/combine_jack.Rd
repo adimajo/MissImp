@@ -34,8 +34,6 @@ For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3"
 
 \item{var_cat}{The method of variance calculation for the categorical columns.
 "unalike" will lead to the calculation of unalikeability, while "wilcox_va" will lead to the calculation of Wilcox index: VarNC.}
-
-\item{num_row_origin}{Number of rows in the original incomplete dataframe before bootstrapping.}
 }
 \value{
 \code{df_result_disj} The final imputed dataframe with the categorical columns in onehot form.

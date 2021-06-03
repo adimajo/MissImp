@@ -355,10 +355,10 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
       if (any(indexNA2s[, variable[i]])) {
         if (is.list(dist_var)) {
           regressors <- dist_var[[i]][dist_var != variable[i]]
-          data.mod <- na.omit(subset(data, select = unique(c(variable[i], dist_var[[i]]))))
+          data.mod <- stats::na.omit(subset(data, select = unique(c(variable[i], dist_var[[i]]))))
         } else {
           regressors <- dist_var[dist_var != variable[i]]
-          data.mod <- na.omit(subset(data, select = unique(c(variable[i], dist_var))))
+          data.mod <- stats::na.omit(subset(data, select = unique(c(variable[i], dist_var))))
         }
 
         ranger.formula <- as.formula(paste(variable[i], paste(regressors, collapse = "+"), sep = "~"))
