@@ -1,4 +1,8 @@
-single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstrap", n_resample = 2 * round(log(nrow(df))), col_cat = c(), col_dis = c(), maxiter_tree = 10, maxiter_pca = 100, ncp_pca = ncol(df) / 2, learn_ncp = TRUE, cat_combine_by = "factor", var_cat = "wilcox_va") {
+single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstrap", 
+                       n_resample = 2 * round(log(nrow(df))), col_cat = c(), col_dis = c(), 
+                       maxiter_tree = 10, maxiter_pca = 100, ncp_pca = ncol(df) / 2, 
+                       learn_ncp = TRUE, cat_combine_by = "factor", var_cat = "wilcox_va",
+                       df_complete=NULL) {
   if (all(!is.na(df))) {
     stop("The input dataframe is complete. Imputation is not needed.")
   }
@@ -15,6 +19,8 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
   ## 0. Preparation
   dict_name_cat <- list()
   if (exist_cat) {
+    # remember the levels for each categorical column
+    dict_lev <- dict_level(df, col_cat)
     # represent the factor columns with their ordinal levels
     df <- ordinal_encode(df, col_cat)
     df <- factor_encode(df, col_cat)
@@ -88,10 +94,10 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     }
   }
   
+
+
   
-  ## 3. Evaluation matrix
-  
-  ## 4. Final result
+  ## 3. Final result
   if (resample_method == "bootstrap") {
     if (cat_combine_by == "factor") {
       ls.imp.tmp <- ls.imp.fact
@@ -128,6 +134,33 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     res[[df_result_var_disj]] <- NA
     res[[df_result_var]] <- NA
   }
-
+  
+  
+  ## 4. Evaluation matrix
+  if(!is.null(df_complete)){ #original complete dataset is provided
+    mask <- data.frame(is.na(df))
+    colnames(mask) <- colnames(mask)
+    df_imp_full <- NULL
+    if(resample_method=='jackknife'){
+      df_imp_full <- imp.full.onehot
+    }
+    MSE_imp <- ls_MSE(df_complete, ls.imp.fact, mask = mask, col_num = c(col_con,col_dis), 
+                  resample_method = resample_method, df_imp_full=df_imp_full)
+    if(exist_cat && cat_combine_by=='factor'){
+      F1 <- ls_F1(df_complete, ls.imp.fact, mask = mask, col_cat = col_cat, dict_lev = dict_lev,
+                  resample_method = resample_method, combine_method = cat_combine_by)
+    }else if (exist_cat && cat_combine_by=='onehot'){
+      col_cat_oh <- c(1:length(colnames(ls.imp.onehot[[1]])))
+      col_cat_oh <- col_cat_oh[!col_cat_oh %in% c(col_con, col_dis)]
+      F1_imp <-ls_F1(df_complete, ls.imp.onehot, mask = mask, col_cat = col_cat_oh, dict_lev = dict_lev,
+                 resample_method = resample_method, combine_method = cat_combine_by, 
+                 dict_cat = dict_name_cat, df_imp_full=df_imp_full)
+    }else{
+      F1_imp <- NA
+    }
+    res[["MSE"]] <- MSE_imp
+    res[["F1"]] <- F1_imp
+  }
+  
   return(res)
 }
