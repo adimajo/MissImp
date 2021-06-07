@@ -134,6 +134,13 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     res[[df_result_var_disj]] <- NA
     res[[df_result_var]] <- NA
   }
+  # Change back the categorical variable levels
+  if(exist_cat){
+    name_cat = names(dict_lev)
+    for(name in name_cat){
+      levels(res$imp[[name]]) <- dict_lev[[name]]
+    }
+  }
   
   
   ## 4. Evaluation matrix

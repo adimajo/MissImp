@@ -61,7 +61,7 @@ library(MissImp)
 # source("../R/mcar_test_combined.R")
 # source("../R/VIM_kNN.R")
 
-set.seed(43)
+# set.seed(43)
 ```
 
 
@@ -155,7 +155,7 @@ for (df in list_df.mix) {
 ### Statistical test for MCAR 
 ```{r p_val}
 p_val <- 0.05
-mcar_test_combined(list_df.mix[[3]], col_cat = c(7:8), p_val = p_val)$test_results
+mcar_test_combined(list_df.con_dis[[3]], col_cat = c(), p_val = p_val)$test_results
 ```
 
 #### Test with dummy variables
@@ -253,12 +253,12 @@ final_result_mcar
 # ls_F1
 ```
 
-### Create several datasets
+### Summary of imputation
 
 ```{r}
 # source("../R/single_imp_combined.R")
-df <- list_df.mix[[2]]
-col_cat <- c(7:8)
+df <- list_df.con_dis[[2]]
+col_cat <- c()
 col_dis <- c(6)
 n_resample <- 4     #2*round(log(nrow(df)))
 maxiter_tree <- 3
@@ -267,10 +267,10 @@ ncp_pca <- ncol(df)/2
 learn_ncp <- FALSE
 df_complete <- X.complete
 
-imp_method <- "PCA"
+imp_method <- "missRanger"
 resample_method <- "jackknife"
 cat_combine_by <- "onehot"
-var_cat <- "unalike"
+var_cat <- "wilcox_va"
 ```
 
 
@@ -390,17 +390,11 @@ rs_jack1 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col
 
 
 ### Imputation
-
+#### (1)EM(onehot form missing)
 ```{r}
-# list_df.con = list(X.mcar.con,X.mar1.con,X.mar2.con,X.mnar1.con,X.mnar2.con)
-# list_df.con_dis = list(X.mcar.con_dis,X.mar1.con_dis,X.mar2.con_dis,X.mnar1.con_dis,X.mnar2.con_dis)
-# list_df.mix = list(X.mcar.mix,X.mar1.mix,X.mar2.mix,X.mnar1.mix,X.mnar2.mix)
-```
-
-#### (1)EM(error in package mix)
-```{r}
-list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], idx_col_cat)
 df_with_mv <- list_df.mix[[2]]
+df_with_mv <- ordinal_encode(df_with_mv, c(7,8))
+df_with_mv <- factor_encode(df_with_mv, c(7,8))
 ```
 
 ```{r} 
@@ -409,70 +403,6 @@ prepare_df_for_em <- function(df, col_cat) {
   col_rest <- allcol[!allcol %in% col_cat]
   return(df[, c(col_cat, col_rest)])
 }
-```
-
-
-```{r}
-library(mix)
-data(stlouis)
-x <- stlouis
-# Perform preliminary manipulations on x. The categorical
-# variables need to be coded as consecutive positive integers
-# beginning with 1.
-s <- prelim.mix(x, 3)
-# look at missingness patterns
-print(s$r)
-# Try EM for general location model without restrictions. This
-# algorithm converges after 168 iterations.
-thetahat1 <- em.mix(s)
-# look at the parameter estimates and loglikelihood
-print(getparam.mix(s, thetahat1))
-print(getparam.mix(s, thetahat1, corr = T))
-print(loglik.mix(s, thetahat1))
-# take 100 steps of data augmentation starting from thetahat1
-rngseed(1234567)
-newtheta <- da.mix(s, thetahat1, steps = 100, showits = T)
-# re-run em beginning from newtheta; should converge after 86
-# iterations.
-thetahat2 <- em.mix(s, newtheta)
-# Notice that the loglikelihood at thetahat2 is somewhat different
-# than at thetahat1. Examination of thetahat1 and thetahat2 reveals
-# that EM has converged to different values. The likelihood is
-# multimodal.
-print(loglik.mix(s, thetahat2))
-print(getparam.mix(s, thetahat2))
-# Now try fitting a model with restrictions. We'll first fit the
-# "null model" described on p. 130 of Schafer (1991), which
-# fits the margins G and D1xD2 in the contingency table, and
-# has a full D1*D2 interaction for each continuous variable
-# but no effect for G.
-margins <- c(1, 0, 2, 3)
-intercept <- rep(1, 12)
-d1 <- c(-1, -1, -1, 1, 1, 1, -1, -1, -1, 1, 1, 1)
-d2 <- c(-1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1)
-design <- cbind(intercept, d1, d2, d1d2 = d1 * d2)
-rm(intercept, d1, d2)
-thetahat3 <- ecm.mix(s, margins, design)
-print(loglik.mix(s, thetahat3))
-# If we play around with starting values, we'll find that the
-# likelihood under the "null model" is also multimodal.
-# Now let's fit the "alternative model" on p. 131 of Schafer (1991).
-margins <- c(1, 2, 0, 2, 3, 0, 1, 3)
-glin <- c(-1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1)
-design <- cbind(design, glin)
-thetahat4 <- ecm.mix(s, margins, design)
-print(loglik.mix(s, thetahat4))
-# Now try some imputations. The following commands produce three
-# multiple imputations under the alternative model. The imputations
-# are proper if we can assume that the data augmentation procedure
-# achieves stationarity by 100 steps.
-rngseed(454545)
-newtheta <- dabipf.mix(s, margins, design, thetahat4, steps = 100, showits = T)
-imp1 <- imp.mix(s, newtheta, x)
-newtheta <- dabipf.mix(s, margins, design, newtheta, steps = 100, showits = T)
-imp2 <- imp.mix(s, newtheta, x)
-newtheta <- dabipf.mix(s, margins, design, newtheta, steps = 100, showits = T)
-imp3 <- imp.mix(s, newtheta, x)
 ```
 
 
@@ -697,6 +627,9 @@ for (df in ls_boot) {
 # head(res$ximp.disj)
 # head(res$R.mask)
 ```
+
+
+
 
 
 
