@@ -23,6 +23,7 @@ jacksample <- function(df, num_sample) {
   i <- 1
   start <- 1
   while (i <= num_sample - rest) {
+    
     # num_sample-rest samples with row_tranch rows
     end <- start + row_tranch - 1
     if (start == 1) {
@@ -43,7 +44,13 @@ jacksample <- function(df, num_sample) {
   while (i <= num_sample) {
     # rest samples with row_tranch+1 rows
     end <- start + (row_tranch + 1) - 1
-    df_new <- df[c(1:(start - 1), (end + 1):num_row), ]
+    if(end>=num_row){
+      df_new <- df[c(1:(start - 1)), ]
+    }
+    else{
+      df_new <- df[c(1:(start - 1), (end + 1):num_row), ]
+    }
+    
     # df_new[["old_idx"]] = c(start:end)
     ls_df_new[[i]] <- df_new
     i <- i + 1
@@ -108,12 +115,11 @@ combine_jack <- function(ls_df,
   while (i <= n_sample) {
     ls_df[[i]]$index <- as.numeric(row.names(ls_df[[i]]))
     # only for numeric columns
-    ls_df_minus[[i]] <- n_sample * df_full[which(df_full$index %in% ls_df[[i]]$index), ] - (n_sample -
+    ls_df_minus[[i]] <- n_sample * df_full[ls_df[[i]]$index, ] - (n_sample -
       1) * ls_df[[i]]
     if (exist_cat) {
       ls_df_minus[[i]][col_name_cat][ls_df_minus[[i]][col_name_cat] < 0] <- 0
     }
-
     ls_df_minus[[i]]$index <- ls_df[[i]]$index
     i <- i + 1
   }

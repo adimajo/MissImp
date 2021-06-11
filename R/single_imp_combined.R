@@ -56,7 +56,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
     else if (imp_method == "kNN") {
-      res <- kNN_mod(dfi, col_cat = col_cat)
+      res <- kNN_mod(dfi, col_cat = col_cat, weightDist=TRUE)
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }

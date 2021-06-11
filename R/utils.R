@@ -38,7 +38,7 @@ normalize_num <- function(df, idx_col_num) {
 #' @param x A vector of categorical variable
 #' @return Wilcox's VarNC
 VA_fact <- function(x) {
-  lev_miss <- length(levels(x)) - length(unique(x))
+  lev_miss <- nlevels(x) - length(unique(x))
   freq <- table(x) / length(x)
   return(qualvar::VA(c(freq, rep(0, lev_miss))))
 }
