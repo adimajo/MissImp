@@ -109,7 +109,7 @@ head(X.complete)
 #### Add missingness
 
 ```{r add_miss_one_mechanism}
-# rs = generate_miss(X.complete, 0.5, mechanism = "MNAR2")
+rs = generate_miss(X.complete, 0.5, mechanism = "MNAR2")
 ```
 
 We generate missing values first on the continuous variables (V1,...,V5), with the result in rs.con; 
@@ -257,8 +257,10 @@ final_result_mcar
 
 ```{r}
 # source("../R/single_imp_combined.R")
-df <- list_df.con_dis[[2]]
-col_cat <- c()
+mech <- 'MAR1'
+miss_prop <- 0.4
+df <- generate_miss(X.complete, miss_prop, mechanism = mech)$X.incomp
+col_cat <- c(7,8)
 col_dis <- c(6)
 n_resample <- 4     #2*round(log(nrow(df)))
 maxiter_tree <- 3
@@ -267,8 +269,8 @@ ncp_pca <- ncol(df)/2
 learn_ncp <- FALSE
 df_complete <- X.complete
 
-imp_method <- "missRanger"
-resample_method <- "jackknife"
+imp_method <- "EM"
+resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 ```
@@ -308,11 +310,11 @@ res$F1
 # Bootstrap needs big number of samples
 # Jackknife has a problem with categorical variables
 df_with_mv <- list_df.mix[[2]]
+df_with_mv = ordinal_encode(df_with_mv,c(7:8))
 df_with_mv <- factor_encode(df_with_mv, c(7:8))
-ls_boot <- bootsample(df_with_mv, 4)
-ls_jack <- jacksample(df_with_mv, 4)
+ls_boot <- bootsample(df_with_mv, 7)
+ls_jack <- jacksample(df_with_mv, 7)
 ```
-
 
 
 
@@ -359,7 +361,7 @@ ls.imp.pca.fact <- list()
 i <- 1
 num_col <- ncol(df_with_mv)
 for (df in ls_jack) {
-  df <- factor_encode(df, idx_col_cat)
+  df <- factor_encode(df, c(7,8))
   # Input: an incomplete dataset
   # Outout: an imputed dataset (onehot or factor for categorical)
   pca <- imputeFAMD_mod(df, ncp = 3, maxiter = 30)
@@ -371,7 +373,7 @@ for (df in ls_jack) {
 
 ```{r imputation_jack_full_dataframe_FAMD}
 df_full <- df_with_mv
-df_full <- factor_encode(df_with_mv, idx_col_cat)
+df_full <- factor_encode(df_with_mv, c(7,8))
 pca_full <- imputeFAMD_mod(df_full, ncp = 3, maxiter = 30)
 imp.pca_full.onehot <- pca_full$tab.disj
 imp.pca_full.fact <- pca_full$completeObs
@@ -389,33 +391,50 @@ rs_jack1 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col
 
 
 
+
 ### Imputation
-#### (1)EM(onehot form missing)
+#### (1)EM
 ```{r}
 df_with_mv <- list_df.mix[[2]]
 df_with_mv <- ordinal_encode(df_with_mv, c(7,8))
 df_with_mv <- factor_encode(df_with_mv, c(7,8))
+ls_boot <- bootsample(df_with_mv, 4)
+ls_jack <- jacksample(df_with_mv, 4)
+dict_lev <- dict_level(df_with_mv, c(7:8))
 ```
 
-```{r} 
-prepare_df_for_em <- function(df, col_cat) {
-  allcol <- c(1:length(colnames(df)))
-  col_rest <- allcol[!allcol %in% col_cat]
-  return(df[, c(col_cat, col_rest)])
-}
-```
 
 
 ```{r}
-# normal assumption in em.mix
-# The categorical columns must be ordinal encoded and they must be the first columns of the dataframe
-df_for_em <- prepare_df_for_em(df_with_mv, c(7:8))
-s <- prelim.mix(df_for_em, 2) # do preliminary manipulations
-thetahat <- em.mix(s) # ML estimate for unrestricted model
-rngseed(12345) # set random number generator seed
-# newtheta <- da.mix(s,thetahat,steps=100) # data augmentation
-ximp <- imp.mix(s, thetahat, df_for_em) # impute under newtheta
+# Imputation for ls_jack (for example PCA with 3 dimension)
+ls.imp.em.jack.onehot <- list()
+ls.imp.em.jack.fact <- list()
+i <- 1
+num_col <- ncol(df_with_mv)
+for (df in ls_jack) {
+  df <- factor_encode(df, idx_col_cat)
+  # Input: an incomplete dataset
+  # Outout: an imputed dataset (onehot or factor for categorical)
+  imp.em <- em_mod(df, col_cat = idx_col_cat)
+  
+  ls.imp.em.jack.onehot[[i]] <- imp.em$ximp.disj
+  ls.imp.em.jack.fact[[i]] <- imp.em$ximp
+  i <- i + 1
+}
 ```
+```{r}
+df = ls_jack[[2]]
+imp.em <- em_mod(df, col_cat = idx_col_cat)
+```
+
+
+
+```{r}
+head(res$ximp)
+head(res$ximp.disj)
+```
+
+
 
 
 #### (2)EM+Importance resampling
@@ -636,6 +655,68 @@ for (df in ls_boot) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Test with different missing proportion
+(Error: same MSE and variance for different miss_perc)
+```{r different_miss_prop}
+mech <- "MNAR2"
+col_cat <- c(7,8)
+col_dis <- c(6)
+maxiter_tree <- 10
+maxiter_pca <- 100
+ncp_pca <- ncol(df)/2
+learn_ncp <- FALSE
+df_complete <- X.complete
+n_resample <- round(2*log(nrow(df_complete)))
+cat_combine_by <- "onehot"
+var_cat <- "wilcox_va"
+imp_method <- "PCA"
+resample_method <- "bootstrap"
+
+i <- 1
+result <- list()
+```
+
+
+```{r different_miss_prop}
+for(miss_prop in c(0.3, 0.5, 0.7)){
+  rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
+  miss_prop_real <- rs$real_miss_perc
+  df_incomp <- rs$X.incomp
+  result[["mechanisme"]][i] <- mech
+  result[["miss_perc"]][i] <- miss_prop_real
+  result[["method"]][i] <- imp_method
+  result[["resample"]][i] <- resample_method
+  res_imp <- single_imp(
+  df = df_incomp, imp_method = imp_method, resample_method = resample_method,
+  n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
+  maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
+  learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
+  df_complete = df_complete)
+  result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
+  result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
+  result[["F1"]][i] <- res_imp$F1$Mean_F1
+  result[["Var_F1"]][i] <- res_imp$F1$Variance_F1
+  i <- i + 1
+}
+
+data.frame(result)
+```
 
 
 

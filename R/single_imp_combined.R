@@ -6,7 +6,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
   if (all(!is.na(df))) {
     stop("The input dataframe is complete. Imputation is not needed.")
   }
-  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA"))
+  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM"))
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   cat_combine_by <- match.arg(cat_combine_by, c("factor", "onehot"))
   var_cat <- match.arg(var_cat, c("wilcox_va", "unalike"))
@@ -60,6 +60,11 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
+    else if (imp_method == "EM") {
+      res <- em_mod(dfi, col_cat = col_cat)
+      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
+      ls.imp.fact[[i]] <- data.frame(res$ximp)
+    }
     else if (imp_method == "PCA") {
       if (learn_ncp) {
         ncp_pca <- estim_ncpFAMD_mod(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
@@ -82,7 +87,11 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       imp.full.onehot <- data.frame(res$ximp.disj)
     }
     else if (imp_method == "kNN") {
-      res <- kNN_mod(df, col_cat = col_cat)
+      res <- kNN_mod(df, col_cat = col_cat, weightDist=TRUE)
+      imp.full.onehot <- data.frame(res$ximp.disj)
+    }
+    else if (imp_method == "EM") {
+      res <- em_mod(df, col_cat = col_cat)
       imp.full.onehot <- data.frame(res$ximp.disj)
     }
     else if (imp_method == "PCA") {
