@@ -92,7 +92,7 @@ combine_boot <- function(ls_df,
     }
   }
   col_name_num <- ls_col_name[col_num]
-
+  print(col_name_num)
   # Deal with doublets in each imputed dataset
   i <- 1
   for (df in ls_df) {

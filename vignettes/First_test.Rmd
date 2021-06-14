@@ -257,12 +257,12 @@ final_result_mcar
 
 ```{r}
 # source("../R/single_imp_combined.R")
-mech <- 'MAR1'
-miss_prop <- 0.4
+mech <- 'MNAR2'
+miss_prop <- 0.7
 df <- generate_miss(X.complete, miss_prop, mechanism = mech)$X.incomp
 col_cat <- c(7,8)
 col_dis <- c(6)
-n_resample <- 4     #2*round(log(nrow(df)))
+n_resample <- 4#2*round(log(nrow(df)))
 maxiter_tree <- 3
 maxiter_pca <- 30
 ncp_pca <- ncol(df)/2
@@ -672,29 +672,34 @@ for (df in ls_boot) {
 
 
 ### Test with different missing proportion
-(Error: same MSE and variance for different miss_perc)
+
 ```{r different_miss_prop}
-mech <- "MNAR2"
+mech <- 'MAR1'
+# miss_prop <- 0.7
+df_complete <- X.complete
+# df <- generate_miss(X.complete, miss_prop, mechanism = mech)$X.incomp
 col_cat <- c(7,8)
 col_dis <- c(6)
-maxiter_tree <- 10
-maxiter_pca <- 100
+n_resample <- 2*round(log(nrow(df_complete)))
+maxiter_tree <- 3
+maxiter_pca <- 30
 ncp_pca <- ncol(df)/2
 learn_ncp <- FALSE
-df_complete <- X.complete
-n_resample <- round(2*log(nrow(df_complete)))
+
+
+imp_method <- "EM"
+resample_method <- "jackknife"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
-imp_method <- "PCA"
-resample_method <- "bootstrap"
 
-i <- 1
-result <- list()
 ```
 
 
 ```{r different_miss_prop}
-for(miss_prop in c(0.3, 0.5, 0.7)){
+i <- 1
+result <- list()
+for(miss_prop in c(0.01, 0.03, 0.07, 0.1, 0.2, 0.3, 0.5, 0.7)){
+  print(miss_prop)
   rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
   miss_prop_real <- rs$real_miss_perc
   df_incomp <- rs$X.incomp
@@ -702,12 +707,13 @@ for(miss_prop in c(0.3, 0.5, 0.7)){
   result[["miss_perc"]][i] <- miss_prop_real
   result[["method"]][i] <- imp_method
   result[["resample"]][i] <- resample_method
-  res_imp <- single_imp(
-  df = df_incomp, imp_method = imp_method, resample_method = resample_method,
-  n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
-  maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
-  learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
-  df_complete = df_complete)
+  res_imp <- single_imp(df = df_incomp, imp_method = imp_method, 
+                        resample_method = resample_method, n_resample = n_resample, 
+                        col_cat = col_cat, col_dis = col_dis,
+                        maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, 
+                        ncp_pca = ncp_pca, learn_ncp = learn_ncp, 
+                        cat_combine_by = cat_combine_by, var_cat = var_cat,
+                        df_complete = df_complete)
   result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
   result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
   result[["F1"]][i] <- res_imp$F1$Mean_F1
@@ -718,7 +724,10 @@ for(miss_prop in c(0.3, 0.5, 0.7)){
 data.frame(result)
 ```
 
-
+```{r}
+write.csv(result,"test_MAR1_EM_jack_result.csv")
+read.csv("test_MAR1_EM_jack_result.csv")
+```
 
 
 

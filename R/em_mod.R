@@ -68,7 +68,7 @@ em_mod <- function(df, col_cat){
   if(!exist_cat){# if there are only numerical columns
     s <- mix::prelim.mix(df_for_em, length(col_cat)) # do preliminary manipulations
     thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
-    rngseed(43) # set random number generator seed
+    mix::rngseed(43) # set random number generator seed
     ximp <- mix::imp.mix(s, thetahat, df_for_em) # impute under newtheta (one draw)
     return(list(ximp=ximp, ximp.disj=ximp))
   }
@@ -80,7 +80,7 @@ em_mod <- function(df, col_cat){
   df_for_em <- prepare_df_for_em(df, col_cat)
   s <- mix::prelim.mix(df_for_em, length(col_cat)) # do preliminary manipulations
   thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
-  rngseed(43) # set random number generator seed
+  mix::rngseed(43) # set random number generator seed
   ximp <- mix::imp.mix(s, thetahat, df_for_em) # impute under newtheta (one draw)
   ximp <- factor_encode(data.frame(ximp), c(1:length(col_cat)))
   #rearrange columns

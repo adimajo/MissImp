@@ -22,8 +22,9 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     # remember the levels for each categorical column
     dict_lev <- dict_level(df, col_cat)
     # represent the factor columns with their ordinal levels
-    df <- ordinal_encode(df, col_cat)
-    df <- factor_encode(df, col_cat)
+    # df <- ordinal_encode(df, col_cat)
+    # df <- factor_encode(df, col_cat)
+    df <- factor_ordinal_encode(df, col_cat)
     # create dictionary for the onehot columns
     dict_name_cat <- dict_onehot(df, col_cat)
   }
