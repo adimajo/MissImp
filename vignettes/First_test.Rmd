@@ -109,7 +109,7 @@ head(X.complete)
 #### Add missingness
 
 ```{r add_miss_one_mechanism}
-rs = generate_miss(X.complete, 0.5, mechanism = "MNAR2")
+rs = generate_miss(X.complete, 0.4, mechanism = "MAR1")
 ```
 
 We generate missing values first on the continuous variables (V1,...,V5), with the result in rs.con; 
@@ -258,7 +258,7 @@ final_result_mcar
 ```{r}
 # source("../R/single_imp_combined.R")
 mech <- 'MNAR2'
-miss_prop <- 0.7
+miss_prop <- 0.5
 df <- generate_miss(X.complete, miss_prop, mechanism = mech)$X.incomp
 col_cat <- c(7,8)
 col_dis <- c(6)
@@ -392,7 +392,7 @@ rs_jack1 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col
 
 
 
-### Imputation
+### Single Imputation
 #### (1)EM
 ```{r}
 df_with_mv <- list_df.mix[[2]]
@@ -412,10 +412,10 @@ ls.imp.em.jack.fact <- list()
 i <- 1
 num_col <- ncol(df_with_mv)
 for (df in ls_jack) {
-  df <- factor_encode(df, idx_col_cat)
+  #df <- factor_encode(df, idx_col_cat)
   # Input: an incomplete dataset
   # Outout: an imputed dataset (onehot or factor for categorical)
-  imp.em <- em_mod(df, col_cat = idx_col_cat)
+  imp.em <- em_mod(df, col_cat = col_cat)
   
   ls.imp.em.jack.onehot[[i]] <- imp.em$ximp.disj
   ls.imp.em.jack.fact[[i]] <- imp.em$ximp
@@ -437,37 +437,7 @@ head(res$ximp.disj)
 
 
 
-#### (2)EM+Importance resampling
-```{r}
-# EMB
-# multivariate normal assumption
-df_comp <- X.complete.ord
-df_with_mv <- list_df.mix[[2]]
-mask <- rs.mix$mar1$R.mask
-col_num <- c(1:6)
-col_cat <- c(7:8)
-num_imp <- 5 # number of imputations
-
-# imputation
-imp_amelia <- amelia(df_with_mv, m = num_imp, p2s = 0, ords = col_cat)
-all.matrix <- abind(imp_amelia$imputations, along = 3)
-# average the imputation results
-result_imp_em_mi <- data.frame(apply(all.matrix, c(1, 2), mean))
-# for categorical columns, we round the category to the nearest one (in the situation of ordinal encoding)
-result_imp_em_mi[, col_cat] <- round(result_imp_em_mi[, col_cat])
-variance_imp_em_mi <- data.frame(apply(all.matrix, c(1, 2), var))
-
-# performance
-list_df.mix[[2]]
-result_imp_em_mi
-variance_imp_em_mi
-dens_comp(df_comp[, col_num], result_imp_em_mi[, col_num])
-ls_MSE(df_comp, imp_amelia$imputations, mask, col_num)
-ls_F1(df_comp, imp_amelia$imputations, mask, col_cat)
-```
-
-
-#### (3)Missforest
+#### (2)Missforest
 ```{r}
 list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], idx_col_cat)
 df_with_mv <- list_df.mix[[2]]
@@ -581,7 +551,7 @@ ls_F1(df_comp, list(imp.forest$ximp), mask, col_cat)
 ```
 
 
-#### (4)MissRanger
+#### (3)MissRanger
 ```{r}
 list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], idx_col_cat)
 df_with_mv <- list_df.mix[[2]]
@@ -605,7 +575,7 @@ res <- missRanger_mod(df_with_mv, col_cat = c(7:8))
 
 
 
-#### (5)MissMDA
+#### (4)MissMDA
 
 ```{r}
 list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], idx_col_cat)
@@ -625,7 +595,7 @@ ls_F1(df_comp, list(imp.pca), mask, col_cat)
 
 
 
-#### (6)KNN
+#### (5)KNN
 ```{r}
 list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], c(7:8))
 df_with_mv <- list_df.mix[[2]]
@@ -667,6 +637,167 @@ for (df in ls_boot) {
 
 
 
+### Multiple Imputation
+#### (1)MI EM(need change)
+```{r}
+# df_with_mv <- list_df.mix[[2]]
+df_with_mv <- rs$X.incomp
+df_with_mv <- factor_ordinal_encode(df_with_mv, c(7,8))
+dict_lev <- dict_level(df_with_mv, c(7:8))
+```
+
+
+
+```{r}
+em_mi_mod <- function(df, col_cat){
+  exist_cat <- !all(c(0, col_cat) == c(0))
+  if(!exist_cat){# if there are only numerical columns
+    s <- mix::prelim.mix(df, 0) # do preliminary manipulations
+    thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
+    mix::rngseed(43) # set random number generator seed
+    newtheta <- mix::da.mix(s,thetahat,steps=100)
+    ximp <- mix::imp.mix(s, thetahat, df) # impute under newtheta (one draw)
+    return(list(ximp=ximp, ximp.disj=ximp))
+  }
+  
+  dict_name_cat <- dict_onehot(df, col_cat)
+  df.cat <- df[,col_cat]
+  #prepare for em and imputation
+  # The categorical columns must be ordinal encoded and they must be the first columns of the dataframe
+  df_for_em <- prepare_df_for_em(df, col_cat)
+  s <- mix::prelim.mix(df_for_em, length(col_cat)) # do preliminary manipulations
+  thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
+  mix::rngseed(43) # set random number generator seed
+  newtheta <- mix::da.mix(s, thetahat, steps=100)
+  ximp <- mix::imp.mix(s, thetahat, df_for_em) # impute under newtheta (one draw)
+  ximp <- factor_encode(data.frame(ximp), c(1:length(col_cat)))
+  #rearrange columns
+  cols <- colnames(df)
+  ximp <- ximp[cols]
+  
+  #create disjonctive table
+  dims <- c()
+  dimnames <- list()
+  dummy <- dummyVars(" ~ .", data = ximp, sep = "_")
+  ximp.disj <- data.frame(predict(dummy, newdata = ximp))
+  
+  #construction of tensor pi
+  i <- 1
+  for(name in names(dict_name_cat)){
+    #ximp.disj[[name]] <- df_with_mv[[name]]
+    lev <- dict_name_cat[[name]]
+    dims <- c(dims,length(lev))
+    dimnames[[i]] <- lev
+    i <- i + 1
+  }
+  pi <- thetahat$pi
+  tensor_pi <- array(pi, dims, dimnames)
+  
+  #ximp.disj onehot probability
+  cat_name <- unlist(dict_name_cat)
+  ximp.disj[cat_name] <- t(apply(as.matrix(df.cat),1,
+                                 FUN=function(x) prob_vector_cat(x, tensor_pi,dict_name_cat)))
+  return(list(ximp=data.frame(ximp), ximp.disj=data.frame(ximp.disj)))
+}
+```
+
+
+
+
+#### (2)MI EM+Importance resampling
+```{r}
+# EMB
+# multivariate normal assumption
+# df_comp <- X.complete
+# df_with_mv <- list_df.mix[[2]]
+# mask <- rs.mix$mar1$R.mask
+
+MI_em_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
+  exist_cat <- !all(c(0, col_cat) == c(0))
+  if(exist_cat){
+    dict_name_cat <- dict_onehot(df_with_mv, col_cat)
+    # imputation
+    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, noms = col_cat)
+    imp_amelia_disj <- list()
+    i <- 1
+    for(imp in imp_amelia$imputations){
+      imp$index <- as.numeric(row.names(imp))
+      imp_num <- imp[,col_num]
+      dummy <- dummyVars(" ~ .", data = imp[,col_cat], sep = "_")
+      imp_cat <- data.frame(predict(dummy, newdata = imp[,col_cat]))
+      imp_num$index <- as.numeric(row.names(imp_num))
+      imp_cat$index <- as.numeric(row.names(imp_cat))
+      imp_amelia_disj[[i]] <- merge(x = imp_num, y = imp_cat, by = "index", all = TRUE)
+      i <- i+1
+    }
+    imp_merge_disj <- Reduce(function(dtf1, dtf2) {
+    rbind(dtf1, dtf2)
+    }, imp_amelia_disj)
+
+    ximp.disj <- stats::aggregate(. ~ index, data = imp_merge_disj, mean)
+    ximp.all <- ximp.disj
+
+    names_cat <- names(dict_name_cat)
+    which_max_cat <- function(x, name) {
+      return(dict_name_cat[[name]][which.max(x)])
+    }
+
+    for (name in names_cat) {
+        ximp.all[[name]] <- apply(ximp.all[dict_name_cat[[name]]], 1, which_max_cat, name)
+        ximp.all[[name]] <- unlist(ximp.all[[name]])
+        ximp.all[[name]] <- factor(ximp.all[[name]])
+    }
+    ximp <- ximp.all[colnames(df_with_mv)]
+    ximp.disj <- ximp.disj[-c(1)]
+  }
+  else{
+    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0)
+    imp_amelia_ls <- list()
+    i <- 1
+    for(imp in imp_amelia$imputations){
+      imp$index <- as.numeric(row.names(imp))
+      imp_amelia_ls[[i]] <- imp
+      i <- i+1
+    }
+    
+    imp_merge <- Reduce(function(dtf1, dtf2) {
+    rbind(dtf1, dtf2)
+    }, imp_amelia_ls)
+    ximp <- stats::aggregate(. ~ index, data = imp_merge, mean)
+    ximp.disj <- ximp
+  }
+  
+
+  return(ximp=ximp,ximp.disj=ximp.disj)
+}
+
+
+# performance
+# list_df.mix[[2]]
+# result_imp_em_mi
+# variance_imp_em_mi
+# dens_comp(df_comp[, col_num], result_imp_em_mi[, col_num])
+# ls_MSE(df_comp, imp_amelia$imputations, mask, col_num)
+# ls_F1(df_comp, imp_amelia$imputations, mask, col_cat)
+```
+
+
+
+
+
+#### (3) MI mice
+```{r}
+
+```
+
+
+
+
+
+#### (4) MI PCA
+```{r}
+
+```
 
 
 
@@ -682,13 +813,13 @@ col_cat <- c(7,8)
 col_dis <- c(6)
 n_resample <- 2*round(log(nrow(df_complete)))
 maxiter_tree <- 3
-maxiter_pca <- 30
-ncp_pca <- ncol(df)/2
+maxiter_pca <- 50
+ncp_pca <- round(ncol(df_complete)/2)
 learn_ncp <- FALSE
 
 
-imp_method <- "EM"
-resample_method <- "jackknife"
+imp_method <- "PCA"
+resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 
@@ -725,8 +856,8 @@ data.frame(result)
 ```
 
 ```{r}
-write.csv(result,"test_MAR1_EM_jack_result.csv")
-read.csv("test_MAR1_EM_jack_result.csv")
+write.csv(result,"test_MAR1_PCA_boot_result.csv")
+read.csv("test_MAR1_PCA_boot_result.csv")
 ```
 
 

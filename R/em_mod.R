@@ -66,10 +66,10 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat){
 em_mod <- function(df, col_cat){
   exist_cat <- !all(c(0, col_cat) == c(0))
   if(!exist_cat){# if there are only numerical columns
-    s <- mix::prelim.mix(df_for_em, length(col_cat)) # do preliminary manipulations
+    s <- mix::prelim.mix(df, length(col_cat)) # do preliminary manipulations
     thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
     mix::rngseed(43) # set random number generator seed
-    ximp <- mix::imp.mix(s, thetahat, df_for_em) # impute under newtheta (one draw)
+    ximp <- mix::imp.mix(s, thetahat, df) # impute under newtheta (one draw)
     return(list(ximp=ximp, ximp.disj=ximp))
   }
   

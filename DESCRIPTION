@@ -29,7 +29,8 @@ Imports:
     VIM,
     data.table,
     ranger,
-    mix
+    mix,
+    Amelia
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr,
