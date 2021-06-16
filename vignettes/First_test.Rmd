@@ -704,72 +704,15 @@ em_mi_mod <- function(df, col_cat){
 
 
 
-#### (2)MI EM+Importance resampling
+#### (2)MI EM Amelia
 ```{r}
-# EMB
+# EMB (with bootstrap option, but here we've turned it off)
 # multivariate normal assumption
-# df_comp <- X.complete
+df_comp <- X.complete
 # df_with_mv <- list_df.mix[[2]]
-# mask <- rs.mix$mar1$R.mask
+mask <- data.frame(is.na(df_with_mv))
 
-MI_em_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
-  exist_cat <- !all(c(0, col_cat) == c(0))
-  if(exist_cat){
-    dict_name_cat <- dict_onehot(df_with_mv, col_cat)
-    # imputation
-    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, noms = col_cat)
-    imp_amelia_disj <- list()
-    i <- 1
-    for(imp in imp_amelia$imputations){
-      imp$index <- as.numeric(row.names(imp))
-      imp_num <- imp[,col_num]
-      dummy <- dummyVars(" ~ .", data = imp[,col_cat], sep = "_")
-      imp_cat <- data.frame(predict(dummy, newdata = imp[,col_cat]))
-      imp_num$index <- as.numeric(row.names(imp_num))
-      imp_cat$index <- as.numeric(row.names(imp_cat))
-      imp_amelia_disj[[i]] <- merge(x = imp_num, y = imp_cat, by = "index", all = TRUE)
-      i <- i+1
-    }
-    imp_merge_disj <- Reduce(function(dtf1, dtf2) {
-    rbind(dtf1, dtf2)
-    }, imp_amelia_disj)
-
-    ximp.disj <- stats::aggregate(. ~ index, data = imp_merge_disj, mean)
-    ximp.all <- ximp.disj
-
-    names_cat <- names(dict_name_cat)
-    which_max_cat <- function(x, name) {
-      return(dict_name_cat[[name]][which.max(x)])
-    }
-
-    for (name in names_cat) {
-        ximp.all[[name]] <- apply(ximp.all[dict_name_cat[[name]]], 1, which_max_cat, name)
-        ximp.all[[name]] <- unlist(ximp.all[[name]])
-        ximp.all[[name]] <- factor(ximp.all[[name]])
-    }
-    ximp <- ximp.all[colnames(df_with_mv)]
-    ximp.disj <- ximp.disj[-c(1)]
-  }
-  else{
-    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0)
-    imp_amelia_ls <- list()
-    i <- 1
-    for(imp in imp_amelia$imputations){
-      imp$index <- as.numeric(row.names(imp))
-      imp_amelia_ls[[i]] <- imp
-      i <- i+1
-    }
-    
-    imp_merge <- Reduce(function(dtf1, dtf2) {
-    rbind(dtf1, dtf2)
-    }, imp_amelia_ls)
-    ximp <- stats::aggregate(. ~ index, data = imp_merge, mean)
-    ximp.disj <- ximp
-  }
-  
-
-  return(ximp=ximp,ximp.disj=ximp.disj)
-}
+res<- MI_em_amelia(df_with_mv, col_num=c(1:6), col_cat=c(7:8), num_imp=10)
 
 
 # performance
@@ -777,11 +720,17 @@ MI_em_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
 # result_imp_em_mi
 # variance_imp_em_mi
 # dens_comp(df_comp[, col_num], result_imp_em_mi[, col_num])
-# ls_MSE(df_comp, imp_amelia$imputations, mask, col_num)
-# ls_F1(df_comp, imp_amelia$imputations, mask, col_cat)
+ls_MSE(df_comp, res$ls_ximp, mask, c(1:6), resample_method = "mi")
+#ls_F1(df_comp, imp_amelia$imputations, mask, col_cat)
 ```
 
 
+```{r}
+head(res$ximp)
+head(res$ximp.disj)
+
+
+```
 
 
 
@@ -799,6 +748,10 @@ MI_em_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
 
 ```
 
+#### (5) MI MissForest
+```{r}
+
+```
 
 
 
@@ -818,8 +771,8 @@ ncp_pca <- round(ncol(df_complete)/2)
 learn_ncp <- FALSE
 
 
-imp_method <- "PCA"
-resample_method <- "bootstrap"
+imp_method <- "MI_EM"
+resample_method <- "jackknife"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 
@@ -844,7 +797,7 @@ for(miss_prop in c(0.01, 0.03, 0.07, 0.1, 0.2, 0.3, 0.5, 0.7)){
                         maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, 
                         ncp_pca = ncp_pca, learn_ncp = learn_ncp, 
                         cat_combine_by = cat_combine_by, var_cat = var_cat,
-                        df_complete = df_complete)
+                        df_complete = df_complete, num_mi=10)
   result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
   result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
   result[["F1"]][i] <- res_imp$F1$Mean_F1
@@ -856,8 +809,8 @@ data.frame(result)
 ```
 
 ```{r}
-write.csv(result,"test_MAR1_PCA_boot_result.csv")
-read.csv("test_MAR1_PCA_boot_result.csv")
+write.csv(result,"test_MAR1_MIEM_jack_result.csv")
+read.csv("test_MAR1_MIEM_jack_result.csv")
 ```
 
 

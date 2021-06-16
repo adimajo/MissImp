@@ -2,14 +2,17 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
                        n_resample = 2 * round(log(nrow(df))), col_cat = c(), col_dis = c(), 
                        maxiter_tree = 10, maxiter_pca = 100, ncp_pca = ncol(df) / 2, 
                        learn_ncp = TRUE, cat_combine_by = "factor", var_cat = "wilcox_va",
-                       df_complete=NULL) {
+                       df_complete=NULL, num_mi=NULL) {
   if (all(!is.na(df))) {
-    stop("The input dataframe is complete. Imputation is not needed.")
+    stop("The input dataframe is complete. Imputation is not needed.\n")
   }
-  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM"))
+  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM"))
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   cat_combine_by <- match.arg(cat_combine_by, c("factor", "onehot"))
   var_cat <- match.arg(var_cat, c("wilcox_va", "unalike"))
+  if(imp_method=="MI_EM" && is.null(num_mi)){
+    stop("For multiple imputation method, 'num_mi' is needed.\n")
+  }
   exist_cat <- !all(c(0, col_cat) == c(0))
   num_col <- ncol(df)
   num_row <- nrow(df)
@@ -74,6 +77,12 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       ls.imp.onehot[[i]] <- data.frame(res$tab.disj)
       ls.imp.fact[[i]] <- data.frame(res$completeObs)
     }
+    else if (imp_method == "MI_EM") {
+      res<- MI_em_amelia(dfi, col_num=c(col_con, col_dis), col_cat=col_cat, num_imp=num_mi)
+      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
+      ls.imp.fact[[i]] <- data.frame(res$ximp)
+    }
+    
     i <- i + 1
   }
 
@@ -101,6 +110,10 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       }
       res <- imputeFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca)
       imp.full.onehot <- data.frame(res$tab.disj)
+    }
+    else if (imp_method == "MI_EM") {
+      res<- MI_em_amelia(df, col_num=c(col_con, col_dis), col_cat=col_cat, num_imp=num_mi)
+      imp.full.onehot <- data.frame(res$ximp.disj)
     }
   }
   

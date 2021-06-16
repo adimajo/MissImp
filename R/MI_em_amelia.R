@@ -3,7 +3,7 @@ MI_em_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
   if(exist_cat){
     dict_name_cat <- dict_onehot(df_with_mv, col_cat)
     # imputation
-    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, noms = col_cat)
+    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, noms = col_cat, boot.type='none')
     imp_amelia_disj <- list()
     i <- 1
     for(imp in imp_amelia$imputations){
@@ -37,22 +37,22 @@ MI_em_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
     ximp.disj <- ximp.disj[-c(1)]
   }
   else{
-    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0)
-    imp_amelia_ls <- list()
+    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, boot.type='none')
+    imp_amelia_disj <- list()
     i <- 1
     for(imp in imp_amelia$imputations){
       imp$index <- as.numeric(row.names(imp))
-      imp_amelia_ls[[i]] <- imp
+      imp_amelia_disj[[i]] <- imp
       i <- i+1
     }
     
     imp_merge <- Reduce(function(dtf1, dtf2) {
       rbind(dtf1, dtf2)
-    }, imp_amelia_ls)
+    }, imp_amelia_disj)
     ximp <- stats::aggregate(. ~ index, data = imp_merge, mean)
     ximp.disj <- ximp
   }
   
   
-  return(ximp=ximp,ximp.disj=ximp.disj)
+  return(list(ximp=ximp,ximp.disj=ximp.disj, ls_ximp=imp_amelia$imputations, lx_ximp.disj = imp_amelia_disj))
 }
