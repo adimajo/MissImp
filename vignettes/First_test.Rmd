@@ -258,7 +258,7 @@ final_result_mcar
 ```{r}
 # source("../R/single_imp_combined.R")
 mech <- 'MNAR2'
-miss_prop <- 0.5
+miss_prop <- 0.3
 df <- generate_miss(X.complete, miss_prop, mechanism = mech)$X.incomp
 col_cat <- c(7,8)
 col_dis <- c(6)
@@ -300,6 +300,10 @@ res$MSE
 res$F1
 ```
 
+```{r}
+sum(res$uncertainty, na.rm = TRUE)/(9832*0.3*6)
+#2.24
+```
 
 
 
