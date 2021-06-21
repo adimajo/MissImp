@@ -23,7 +23,7 @@ jacksample <- function(df, num_sample) {
   i <- 1
   start <- 1
   while (i <= num_sample - rest) {
-    
+
     # num_sample-rest samples with row_tranch rows
     end <- start + row_tranch - 1
     if (start == 1) {
@@ -44,13 +44,13 @@ jacksample <- function(df, num_sample) {
   while (i <= num_sample) {
     # rest samples with row_tranch+1 rows
     end <- start + (row_tranch + 1) - 1
-    if(end>=num_row){
+    if (end >= num_row) {
       df_new <- df[c(1:(start - 1)), ]
     }
-    else{
+    else {
       df_new <- df[c(1:(start - 1), (end + 1):num_row), ]
     }
-    
+
     # df_new[["old_idx"]] = c(start:end)
     ls_df_new[[i]] <- df_new
     i <- i + 1

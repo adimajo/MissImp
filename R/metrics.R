@@ -13,13 +13,13 @@
 #' #' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
 #' #' ZeroOneLoss(y_pred = pred, y_true = mtcars$vs)
 #' #' @export
-#' 
+#'
 #' ZeroOneLoss <- function(y_pred, y_true) {
 #'   ZeroOneLoss <- mean(y_true != y_pred)
 #'   return(ZeroOneLoss)
 #' }
-#' 
-#' 
+#'
+#'
 #' #' @title Accuracy
 #' #'
 #' #' @description
@@ -35,7 +35,7 @@
 #' #' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
 #' #' Accuracy(y_pred = pred, y_true = mtcars$vs)
 #' #' @export
-#' 
+#'
 #' Accuracy <- function(y_pred, y_true) {
 #'   Accuracy <- mean(y_true == y_pred)
 #'   return(Accuracy)
@@ -113,7 +113,7 @@ utils::globalVariables("Freq")
 #' #' Precision(y_pred = pred, y_true = mtcars$vs, positive = "0")
 #' #' Precision(y_pred = pred, y_true = mtcars$vs, positive = "1")
 #' #' @export
-#' 
+#'
 #' Precision <- function(y_true, y_pred, positive = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
 #'   if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
@@ -179,7 +179,7 @@ Precision_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' @description
 #' #' Compute the precision score of multi-class problem using the "macro" average.
 #' #' details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
-#' #' 
+#' #'
 #' #' @param y_pred Predicted labels vector, as returned by a classifier
 #' #' @param y_true Ground truth (correct) labels vector
 #' #' @param labels An optional vector containing the list of the existent
@@ -191,28 +191,28 @@ Precision_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' pred <- sample(labels, 10, replace = TRUE)
 #' #' Precision_macro(y_pred = pred, y_true = truth, labels)
 #' #' @export
-#' 
+#'
 #' Precision_macro <- function(y_true, y_pred, labels = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
-#'   
+#'
 #'   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
 #'   # this is not bulletproof since there might be labels missing (in strange cases)
 #'   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-#'   
+#'
 #'   Prec <- c()
 #'   for (i in c(1:length(labels))) {
 #'     positive <- labels[i]
-#'     
+#'
 #'     # it may happen that a label is never predicted (missing from y_pred) but exists in y_true
 #'     # in this case ConfusionDF will not have these lines and thus the simplified code crashes
 #'     # Prec[i] <- Precision(y_true, y_pred, positive = labels[i])
-#'     
+#'
 #'     # workaround:
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
 #'     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true!=positive & Confusion_DF$y_pred==positive), "Freq"]
 #'     FP <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-#'     
+#'
 #'     Prec[i] <- TP/(TP+FP)
 #'   }
 #'   Prec[is.na(Prec)] <- 0
@@ -226,7 +226,7 @@ Precision_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' @description
 #' #' Compute the precision score of multi-class problem using the "macro" formula but weighted averaged, similarly to Weka.
 #' #' details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
-#' #' 
+#' #'
 #' #' @param y_pred Predicted labels vector, as returned by a classifier
 #' #' @param y_true Ground truth (correct) labels vector
 #' #' @param labels An optional vector containing the list of the existent
@@ -238,28 +238,28 @@ Precision_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' pred <- sample(labels, 10, replace = TRUE)
 #' #' Precision_macro_weighted(y_pred = pred, y_true = truth, labels)
 #' #' @export
-#' 
+#'
 #' Precision_macro_weighted <- function(y_true, y_pred, labels = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
-#'   
+#'
 #'   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
 #'   # this is not bulletproof since there might be labels missing (in strange cases)
 #'   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-#'   
+#'
 #'   Prec <- c()
 #'   for (i in c(1:length(labels))) {
 #'     positive <- labels[i]
-#'     
+#'
 #'     # it may happen that a label is never predicted (missing from y_pred) but exists in y_true
 #'     # in this case ConfusionDF will not have these lines and thus the simplified code crashes
 #'     # Prec[i] <- Precision(y_true, y_pred, positive = labels[i])
-#'     
+#'
 #'     # workaround:
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
 #'     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true!=positive & Confusion_DF$y_pred==positive), "Freq"]
 #'     FP <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-#'     
+#'
 #'     Prec[i] <- TP/(TP+FP)
 #'   }
 #'   Prec[is.na(Prec)] <- 0
@@ -286,7 +286,7 @@ Precision_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' Recall(y_pred = pred, y_true = mtcars$vs, positive = "0")
 #' #' Recall(y_pred = pred, y_true = mtcars$vs, positive = "1")
 #' #' @export
-#' 
+#'
 #' Recall <- function(y_true, y_pred, positive = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
 #'   if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
@@ -360,38 +360,38 @@ Recall_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' pred <- sample(labels, 10, replace = TRUE)
 #' #' Recall_macro(y_pred = pred, y_true = truth, labels)
 #' #' @export
-#' 
+#'
 #' Recall_macro <- function(y_true, y_pred, labels = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
-#'   
+#'
 #'   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
 #'   # this is not bulletproof since there might be labels missing (in strange cases)
 #'   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-#'   
+#'
 #'   Rec <- c()
 #'   for (i in c(1:length(labels))) {
 #'     positive <- labels[i]
-#'     
+#'
 #'     # short version, comment out due to bug or feature of Confusion_DF
 #'     # TP[i] <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"])
 #'     # FP[i] <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]))
-#'     
+#'
 #'     # workaround:
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
 #'     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
-#'     
+#'
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]
 #'     FN <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-#'     
+#'
 #'     Rec[i] <- TP/(TP+FN)
 #'   }
-#'   
+#'
 #'   Rec[is.na(Rec)] <- 0
 #'   Recall_macro <- mean(Rec) # sum(Rec) / length(labels)
 #'   return(Recall_macro)
 #' }
-#' 
-#' 
+#'
+#'
 #' #' @title Recall (macro weighted averaged)
 #' #'
 #' #' @description
@@ -409,32 +409,32 @@ Recall_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' pred <- sample(labels, 10, replace = TRUE)
 #' #' Recall_macro_weighted(y_pred = pred, y_true = truth, labels)
 #' #' @export
-#' 
+#'
 #' Recall_macro_weighted <- function(y_true, y_pred, labels = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
-#'   
+#'
 #'   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
 #'   # this is not bulletproof since there might be labels missing (in strange cases)
 #'   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-#'   
+#'
 #'   Rec <- c()
 #'   for (i in c(1:length(labels))) {
 #'     positive <- labels[i]
-#'     
+#'
 #'     # short version, comment out due to bug or feature of Confusion_DF
 #'     # TP[i] <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"])
 #'     # FP[i] <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]))
-#'     
+#'
 #'     # workaround:
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
 #'     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
-#'     
+#'
 #'     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]
 #'     FN <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-#'     
+#'
 #'     Rec[i] <- TP/(TP+FN)
 #'   }
-#'   
+#'
 #'   Rec[is.na(Rec)] <- 0
 #'   Recall_macro_weighted <- weighted.mean(Rec, as.vector(table(y_true)[labels])) # sum(Rec) / length(labels)
 #'   return(Recall_macro_weighted)
@@ -459,7 +459,7 @@ Recall_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' Sensitivity(y_pred = pred, y_true = mtcars$vs, positive = "0")
 #' #' Sensitivity(y_pred = pred, y_true = mtcars$vs, positive = "1")
 #' #' @export
-#' 
+#'
 #' Sensitivity  <- function(y_true, y_pred, positive = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
 #'   if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
@@ -489,7 +489,7 @@ Recall_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' Specificity(y_pred = pred, y_true = mtcars$vs, positive = "0")
 #' #' Specificity(y_pred = pred, y_true = mtcars$vs, positive = "1")
 #' #' @export
-#' 
+#'
 #' Specificity  <- function(y_true, y_pred, positive = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
 #'   if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
@@ -518,7 +518,7 @@ Recall_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' F1_Score(y_pred = pred, y_true = mtcars$vs, positive = "0")
 #' #' F1_Score(y_pred = pred, y_true = mtcars$vs, positive = "1")
 #' #' @export
-#' 
+#'
 #' F1_Score <- function(y_true, y_pred, positive = NULL) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
 #'   if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])
@@ -575,7 +575,7 @@ F1_Score_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' pred <- sample(labels, 10, replace = TRUE)
 #' #' F1_Score_macro(y_pred = pred, y_true = truth, labels)
 #' #' @export
-#' 
+#'
 #' F1_Score_macro <- function(y_true, y_pred, labels = NULL) {
 #'   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred)) # possible problems if labels are missing from y_*
 #'   Precision <- Precision_macro(y_true, y_pred, labels)
@@ -602,7 +602,7 @@ F1_Score_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' pred <- sample(labels, 10, replace = TRUE)
 #' #' F1_Score_macro(y_pred = pred, y_true = truth, labels)
 #' #' @export
-#' 
+#'
 #' F1_Score_macro_weighted <- function(y_true, y_pred, labels = NULL) {
 #'   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred)) # possible problems if labels are missing from y_*
 #'   Precision <- Precision_macro_weighted(y_true, y_pred, labels)
@@ -632,7 +632,7 @@ F1_Score_micro <- function(y_true, y_pred, labels = NULL) {
 #' #' FBeta_Score(y_pred = pred, y_true = mtcars$vs, positive = "0", beta = 2)
 #' #' FBeta_Score(y_pred = pred, y_true = mtcars$vs, positive = "1", beta = 2)
 #' #' @export
-#' 
+#'
 #' FBeta_Score <- function(y_true, y_pred, positive = NULL, beta = 1) {
 #'   Confusion_DF <- ConfusionDF(y_pred, y_true)
 #'   if (is.null(positive) == TRUE) positive <- as.character(Confusion_DF[1,1])

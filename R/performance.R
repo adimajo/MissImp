@@ -45,7 +45,7 @@ ls_MSE <- function(df_comp, ls_df_imp, mask, col_num, resample_method = "bootstr
       mask_num_i <- mask_num[df_num$index, ]
     }
     else if (resample_method == "jackknife") {
-      #df_imp_full_num$index <- as.numeric(row.names(df_imp_full_num))
+      # df_imp_full_num$index <- as.numeric(row.names(df_imp_full_num))
       # df_minus <- n_sample * df_imp_full_num[df_imp_num$index, ]
       # -(n_sample - 1) * df_imp_num
       df_minus <- df_imp_num

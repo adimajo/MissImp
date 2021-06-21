@@ -27,19 +27,19 @@ bootsample <- function(df, num_sample) {
   ls_df_new <- list()
   i <- 1
   ls_idx <- c()
-  while (i <= num_sample-1) {
+  while (i <= num_sample - 1) {
     chosen_idx <- gdata::resample(c(1:num_row), num_row, replace = TRUE)
     ls_idx <- c(ls_idx, chosen_idx)
     ls_df_new[[i]] <- df[chosen_idx, ]
     i <- i + 1
   }
-  #last sample
+  # last sample
   ls_idx_miss <- c(1:num_row)
   ls_idx_miss <- ls_idx_miss[!ls_idx_miss %in% unique(ls_idx)]
-  chosen_idx <- gdata::resample(c(1:num_row), num_row-length(ls_idx_miss), replace = TRUE)
-  chosen_idx <- c(chosen_idx,ls_idx_miss)
+  chosen_idx <- gdata::resample(c(1:num_row), num_row - length(ls_idx_miss), replace = TRUE)
+  chosen_idx <- c(chosen_idx, ls_idx_miss)
   ls_df_new[[i]] <- df[chosen_idx, ]
-  
+
   return(ls_df_new)
 }
 

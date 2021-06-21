@@ -31,7 +31,7 @@ factor_encode <- function(df, idx_col_cat) {
 #' @return Dataframe after encoding the categorical columns
 factor_ordinal_encode <- function(df, idx_col_cat) {
   for (j in idx_col_cat) {
-    levels(df[, j] )<- c(1:nlevels(df[, j]))
+    levels(df[, j]) <- c(1:nlevels(df[, j]))
   }
   return(df)
 }
