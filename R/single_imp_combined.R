@@ -49,6 +49,8 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
   ls.imp.fact <- list()
   i <- 1
   for (dfi in ls_df) {
+    dummy <- dummyVars(" ~ .", data = dfi, sep = "_")
+    tmp.disj <- data.frame(predict(dummy, newdata = dfi))
     if (imp_method == "missRanger") {
       res <- missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree)
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
@@ -74,11 +76,13 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
         ncp_pca <- estim_ncpFAMD_mod(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
       }
       res <- imputeFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca)
-      ls.imp.onehot[[i]] <- data.frame(res$tab.disj)
+      tmp.disj[colnames(res$tab.disj)] = res$tab.disj
+      tmp.disj[is.na(tmp.disj)] = 0 #in case there is one category that doesn't appear in dfi
+      ls.imp.onehot[[i]] <- data.frame(tmp.disj)
       ls.imp.fact[[i]] <- data.frame(res$completeObs)
     }
     else if (imp_method == "MI_EM") {
-      res<- MI_em_amelia(dfi, col_num=c(col_con, col_dis), col_cat=col_cat, num_imp=num_mi)
+      res<- MI_EM_amelia(dfi, col_num=c(col_con, col_dis), col_cat=col_cat, num_imp=num_mi)
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
@@ -112,7 +116,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       imp.full.onehot <- data.frame(res$tab.disj)
     }
     else if (imp_method == "MI_EM") {
-      res<- MI_em_amelia(df, col_num=c(col_con, col_dis), col_cat=col_cat, num_imp=num_mi)
+      res<- MI_EM_amelia(df, col_num=c(col_con, col_dis), col_cat=col_cat, num_imp=num_mi)
       imp.full.onehot <- data.frame(res$ximp.disj)
     }
   }
@@ -125,8 +129,8 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     if (cat_combine_by == "factor") {
       ls.imp.tmp <- ls.imp.fact
       col_cat_boot <- col_cat
-    }
-    else {
+    
+    }else {
       ls.imp.tmp <- ls.imp.onehot
       # With onehot form, the categorical column index has changed. Y7 -> Y7_1,...Y7_6
       col_cat_boot <- c(1:ncol(ls.imp.onehot[[1]]))
@@ -137,8 +141,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       num_row_origin = num_row, method = cat_combine_by, dict_cat = dict_name_cat,
       var_cat = var_cat
     )
-  }
-  else if (resample_method == "jackknife") {
+  }else if (resample_method == "jackknife") {
     if (cat_combine_by == "factor") {
       stop("Please choose cat_combine_by='onehot' when resample_method=='jackknife'.")
     }
@@ -149,8 +152,8 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       col_dis = col_dis, col_cat = col_cat_jack, method = cat_combine_by,
       dict_cat = dict_name_cat, var_cat = var_cat
     )
-  }
-  else { # if resample_method=='none', there will be no resampling
+  
+  }else { # if resample_method=='none', there will be no resampling
     res <- list()
     res[[df_result]] <- ls.imp.fact
     res[[df_result_disj]] <- ls.imp.onehot

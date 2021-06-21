@@ -1,4 +1,4 @@
-MI_em_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
+MI_EM_amelia <- function(df_with_mv, col_num, col_cat=NULL, num_imp=5){
   exist_cat <- !all(c(0, col_cat) == c(0))
   if(exist_cat){
     dict_name_cat <- dict_onehot(df_with_mv, col_cat)

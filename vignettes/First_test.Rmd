@@ -257,19 +257,21 @@ final_result_mcar
 
 ```{r}
 # source("../R/single_imp_combined.R")
-mech <- 'MNAR2'
-miss_prop <- 0.3
-df <- generate_miss(X.complete, miss_prop, mechanism = mech)$X.incomp
-col_cat <- c(7,8)
+mech <- 'MAR2'
+miss_prop <- 0.4
+rs <- generate_miss(X.complete[,1:6], miss_prop, mechanism = mech)
+df <- rs$X.incomp
+col_cat <- c()
 col_dis <- c(6)
 n_resample <- 4#2*round(log(nrow(df)))
 maxiter_tree <- 3
 maxiter_pca <- 30
 ncp_pca <- ncol(df)/2
 learn_ncp <- FALSE
-df_complete <- X.complete
+df_complete <- X.complete[,1:6]
+num_mi <- 10
 
-imp_method <- "EM"
+imp_method <- "MI_EM"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -284,7 +286,7 @@ res <- single_imp(
   n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
   maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
   learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
-  df_complete = df_complete
+  df_complete = df_complete, num_mi=num_mi
 )
 ```
 
@@ -301,8 +303,10 @@ res$F1
 ```
 
 ```{r}
-sum(res$uncertainty, na.rm = TRUE)/(9832*0.3*6)
-#2.24
+sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
+#0.3: 2.15438
+#0.5: 1.654947
+#0.7: 1.210844
 ```
 
 
@@ -749,7 +753,12 @@ head(res$ximp.disj)
 
 #### (4) MI PCA
 ```{r}
+df_comp <- X.complete
+# df_with_mv <- list_df.mix[[2]]
+df_with_mv <- generate_miss(df_comp, 0.4, mechanism = "MAR1")$X.incomp
+mask <- data.frame(is.na(df_with_mv))
 
+res<- missMDA::MIFAMD(df_with_mv, ncp=2, maxiter = 50)
 ```
 
 #### (5) MI MissForest
@@ -775,7 +784,7 @@ ncp_pca <- round(ncol(df_complete)/2)
 learn_ncp <- FALSE
 
 
-imp_method <- "MI_EM"
+imp_method <- "PCA"
 resample_method <- "jackknife"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -813,8 +822,8 @@ data.frame(result)
 ```
 
 ```{r}
-write.csv(result,"test_MAR1_MIEM_jack_result.csv")
-read.csv("test_MAR1_MIEM_jack_result.csv")
+write.csv(result,"test_MAR1_PCA_jack_witho_i_result.csv")
+read.csv("test_MAR1_PCA_jack_witho_i_result.csv")
 ```
 
 
