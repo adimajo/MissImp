@@ -316,11 +316,8 @@ MIFAMD_mod <-
     ximp.disj <- ximp.all
     if (any("factor" %in% classvar)) {
       names_cat <- names(dict_cat)
-      which_max_cat <- function(x, name) {
-        return(dict_cat[[name]][which.max.random(x)])
-      }
       for (name in names_cat) {
-        ximp.all[[name]] <- apply(ximp.all[dict_cat[[name]]], 1, which_max_cat, name)
+        ximp.all[[name]] <- apply(ximp.all[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
         ximp.all[[name]] <- unlist(ximp.all[[name]])
         ximp.all[[name]] <- factor(ximp.all[[name]])
       }
