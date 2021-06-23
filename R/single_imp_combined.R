@@ -6,7 +6,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
   if (all(!is.na(df))) {
     stop("The input dataframe is complete. Imputation is not needed.\n")
   }
-  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM"))
+  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM", "MI_PCA", "MICE"))
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   cat_combine_by <- match.arg(cat_combine_by, c("factor", "onehot"))
   var_cat <- match.arg(var_cat, c("wilcox_va", "unalike"))
@@ -86,6 +86,17 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
+    else if (imp_method == "MI_PCA") {
+      res <- MIFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca, dict_cat = dict_name_cat, nboot = num_mi)
+      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
+      ls.imp.fact[[i]] <- data.frame(res$ximp)
+    }
+    else if (imp_method == "MICE") {
+      res0 <- mice(dfi, m = num_mi)
+      res <- result_mice(res0, impnum, col_cat = col_cat)
+      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
+      ls.imp.fact[[i]] <- data.frame(res$ximp)
+    }
 
     i <- i + 1
   }
@@ -117,6 +128,15 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     }
     else if (imp_method == "MI_EM") {
       res <- MI_EM_amelia(df, col_num = c(col_con, col_dis), col_cat = col_cat, num_imp = num_mi)
+      imp.full.onehot <- data.frame(res$ximp.disj)
+    }
+    else if (imp_method == "MI_PCA") {
+      res <- MIFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca, dict_cat = dict_name_cat, nboot = num_mi)
+      imp.full.onehot <- data.frame(res$ximp.disj)
+    }
+    else if (imp_method == "MICE") {
+      res0 <- mice(df, m = num_mi)
+      res <- result_mice(res, impnum, col_cat = col_cat)
       imp.full.onehot <- data.frame(res$ximp.disj)
     }
   }

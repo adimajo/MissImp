@@ -99,3 +99,23 @@ dict_level <- function(df, col_cat) {
   }
   return(res)
 }
+
+
+#' which.max.random
+#' @description Determines the location, i.e., index of the maximum of a numeric (or logical) vector.
+#' In case of tie, the index is selected randomly.
+#' @param vec Numeric (logical, integer or double) vector.
+#' @export
+#' @return Index of the maximum value.
+which.max.random <- function(vec) {
+  maxima <- which(vec == max(vec))
+  if (length(maxima) > 1) {
+    maxima <- sample(maxima, 1)
+  }
+  return(maxima)
+}
+
+
+which_max_cat <- function(x, name, dict_cat) {
+  return(dict_cat[[name]][which.max.random(x)])
+}

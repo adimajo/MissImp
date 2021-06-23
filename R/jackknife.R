@@ -131,7 +131,7 @@ combine_jack <- function(ls_df,
   if (exist_cat) {
     names_cat <- names(dict_cat)
     which_max_cat <- function(x, name) {
-      return(dict_cat[[name]][which.max(x)])
+      return(dict_cat[[name]][which.max.random(x)])
     }
     for (name in names_cat) {
       df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1, which_max_cat, name)

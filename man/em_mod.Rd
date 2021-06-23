@@ -20,6 +20,6 @@ em_mod(df, col_cat)
 \description{
 \code{em_mod} is a em imputation function that returns categorical columns results both in factor and in onehot probability vector form.
 Please find the detailed documentation of \code{em.mix} and \code{imp.mix} in the 'mix' package. Only the modifications are explained on this page.
-After the estimation of parameter \code{pi} in \code{em.mix}, we change it into a tensor (multidimensional array) and 
+After the estimation of parameter \code{pi} in \code{em.mix}, we change it into a tensor (multidimensional array) and
 extract the probability vector from this tensor with the help of function \code{prob_vector_cat}.
 }

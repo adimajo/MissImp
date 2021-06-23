@@ -42,29 +42,29 @@ details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
 
 Recall_macro <- function(y_true, y_pred, labels = NULL) {
   Confusion_DF <- ConfusionDF(y_pred, y_true)
-  
+
   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
   # this is not bulletproof since there might be labels missing (in strange cases)
   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-  
+
   Rec <- c()
   for (i in c(1:length(labels))) {
     positive <- labels[i]
-    
+
     # short version, comment out due to bug or feature of Confusion_DF
     # TP[i] <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"])
     # FP[i] <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]))
-    
+
     # workaround:
     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
-    
+
     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]
     FN <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-    
+
     Rec[i] <- TP/(TP+FN)
   }
-  
+
   Rec[is.na(Rec)] <- 0
   Recall_macro <- mean(Rec) # sum(Rec) / length(labels)
   return(Recall_macro)
@@ -91,29 +91,29 @@ Recall_macro <- function(y_true, y_pred, labels = NULL) {
 
 Recall_macro_weighted <- function(y_true, y_pred, labels = NULL) {
   Confusion_DF <- ConfusionDF(y_pred, y_true)
-  
+
   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
   # this is not bulletproof since there might be labels missing (in strange cases)
   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-  
+
   Rec <- c()
   for (i in c(1:length(labels))) {
     positive <- labels[i]
-    
+
     # short version, comment out due to bug or feature of Confusion_DF
     # TP[i] <- as.integer(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"])
     # FP[i] <- as.integer(sum(Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]))
-    
+
     # workaround:
     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
-    
+
     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred!=positive), "Freq"]
     FN <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-    
+
     Rec[i] <- TP/(TP+FN)
   }
-  
+
   Rec[is.na(Rec)] <- 0
   Recall_macro_weighted <- weighted.mean(Rec, as.vector(table(y_true)[labels])) # sum(Rec) / length(labels)
   return(Recall_macro_weighted)

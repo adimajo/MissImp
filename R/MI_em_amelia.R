@@ -24,12 +24,8 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     ximp.all <- ximp.disj
 
     names_cat <- names(dict_name_cat)
-    which_max_cat <- function(x, name) {
-      return(dict_name_cat[[name]][which.max(x)])
-    }
-
     for (name in names_cat) {
-      ximp.all[[name]] <- apply(ximp.all[dict_name_cat[[name]]], 1, which_max_cat, name)
+      ximp.all[[name]] <- apply(ximp.all[dict_name_cat[[name]]], 1, which_max_cat, name, dict_name_cat)
       ximp.all[[name]] <- unlist(ximp.all[[name]])
       ximp.all[[name]] <- factor(ximp.all[[name]])
     }

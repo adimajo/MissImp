@@ -106,7 +106,7 @@ ls_F1 <- function(df_comp, ls_df_imp, mask, col_cat, dict_lev, resample_method =
         # convert onehot to factor form
         names_cat <- names(dict_cat)
         which_max_cat <- function(x, name) {
-          return(dict_cat[[name]][which.max(x)])
+          return(dict_cat[[name]][which.max.random(x)])
         }
         for (name in names_cat) {
           df_cat[[name]] <- apply(df_cat[dict_cat[[name]]], 1, which_max_cat, name)
@@ -138,7 +138,7 @@ ls_F1 <- function(df_comp, ls_df_imp, mask, col_cat, dict_lev, resample_method =
       # convert onehot to factor form
       names_cat <- names(dict_cat)
       which_max_cat <- function(x, name) {
-        return(dict_cat[[name]][which.max(x)])
+        return(dict_cat[[name]][which.max.random(x)])
       }
       for (name in names_cat) {
         df_minus[[name]] <- apply(df_minus[dict_cat[[name]]], 1, which_max_cat, name)

@@ -127,11 +127,8 @@ combine_boot <- function(ls_df,
   # Add the combined result for categorical variables deducted from the onehot result
   if (exist_cat && is_onehot) {
     names_cat <- names(dict_cat)
-    which_max_cat <- function(x, name) {
-      return(dict_cat[[name]][which.max(x)])
-    }
     for (name in names_cat) {
-      df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1, which_max_cat, name)
+      df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
       df_new_merge[[name]] <- unlist(df_new_merge[[name]])
       df_new_merge[[name]] <- factor(df_new_merge[[name]])
     }

@@ -27,7 +27,7 @@ details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
 #' @description
 #' Compute the precision score of multi-class problem using the "macro" average.
 #' details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
-#' 
+#'
 #' @param y_pred Predicted labels vector, as returned by a classifier
 #' @param y_true Ground truth (correct) labels vector
 #' @param labels An optional vector containing the list of the existent
@@ -42,25 +42,25 @@ details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
 
 Precision_macro <- function(y_true, y_pred, labels = NULL) {
   Confusion_DF <- ConfusionDF(y_pred, y_true)
-  
+
   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
   # this is not bulletproof since there might be labels missing (in strange cases)
   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-  
+
   Prec <- c()
   for (i in c(1:length(labels))) {
     positive <- labels[i]
-    
+
     # it may happen that a label is never predicted (missing from y_pred) but exists in y_true
     # in this case ConfusionDF will not have these lines and thus the simplified code crashes
     # Prec[i] <- Precision(y_true, y_pred, positive = labels[i])
-    
+
     # workaround:
     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
     tmp <- Confusion_DF[which(Confusion_DF$y_true!=positive & Confusion_DF$y_pred==positive), "Freq"]
     FP <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-    
+
     Prec[i] <- TP/(TP+FP)
   }
   Prec[is.na(Prec)] <- 0
@@ -72,7 +72,7 @@ Precision_macro <- function(y_true, y_pred, labels = NULL) {
 #' @description
 #' Compute the precision score of multi-class problem using the "macro" formula but weighted averaged, similarly to Weka.
 #' details: https://sebastianraschka.com/faq/docs/multiclass-metric.html
-#' 
+#'
 #' @param y_pred Predicted labels vector, as returned by a classifier
 #' @param y_true Ground truth (correct) labels vector
 #' @param labels An optional vector containing the list of the existent
@@ -87,25 +87,25 @@ Precision_macro <- function(y_true, y_pred, labels = NULL) {
 
 Precision_macro_weighted <- function(y_true, y_pred, labels = NULL) {
   Confusion_DF <- ConfusionDF(y_pred, y_true)
-  
+
   if (is.null(labels) == TRUE) labels <- unique(c(y_true, y_pred))
   # this is not bulletproof since there might be labels missing (in strange cases)
   # in strange cases where they existed in training set but are missing from test ground truth and predictions.
-  
+
   Prec <- c()
   for (i in c(1:length(labels))) {
     positive <- labels[i]
-    
+
     # it may happen that a label is never predicted (missing from y_pred) but exists in y_true
     # in this case ConfusionDF will not have these lines and thus the simplified code crashes
     # Prec[i] <- Precision(y_true, y_pred, positive = labels[i])
-    
+
     # workaround:
     tmp <- Confusion_DF[which(Confusion_DF$y_true==positive & Confusion_DF$y_pred==positive), "Freq"]
     TP <- if (length(tmp)==0) 0 else as.integer(tmp)
     tmp <- Confusion_DF[which(Confusion_DF$y_true!=positive & Confusion_DF$y_pred==positive), "Freq"]
     FP <- if (length(tmp)==0) 0 else as.integer(sum(tmp))
-    
+
     Prec[i] <- TP/(TP+FP)
   }
   Prec[is.na(Prec)] <- 0

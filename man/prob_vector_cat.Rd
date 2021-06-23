@@ -17,11 +17,11 @@ prob_vector_cat(obs, tensor, dict_name_cat)
 Probability vector for all categorical columns.
 }
 \description{
-Extract the probability vector from a tensor of probability. For example, 
-if there are only 2 categorical variables \code{(Y1, Y2)} with \code{nlevels(Y1)=2, nlevels(Y2)=3}, 
- then the tensor is a matrix of probability. \code{tensor[i,j]} is the probability of \code{Y1=i, Y2=j}. 
- If \code{obs=(NA,2)}, then \code{prob_vector_cat} returns the probability vector 
- of \code{Y1} when \code{Y2=2} and the onehot probability vector of \code{Y2=2}. 
- If \code{obs=(NA,NA)}, then \code{prob_vector_cat} returns the marginal probability vector 
+Extract the probability vector from a tensor of probability. For example,
+if there are only 2 categorical variables \code{(Y1, Y2)} with \code{nlevels(Y1)=2, nlevels(Y2)=3},
+ then the tensor is a matrix of probability. \code{tensor[i,j]} is the probability of \code{Y1=i, Y2=j}.
+ If \code{obs=(NA,2)}, then \code{prob_vector_cat} returns the probability vector
+ of \code{Y1} when \code{Y2=2} and the onehot probability vector of \code{Y2=2}.
+ If \code{obs=(NA,NA)}, then \code{prob_vector_cat} returns the marginal probability vector
  of \code{Y1} and that of \code{Y2=2}.
 }
