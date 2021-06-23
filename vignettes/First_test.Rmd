@@ -804,9 +804,10 @@ col_dis <- c(6)
 n_resample <- 2*round(log(nrow(df_complete)))
 maxiter_tree <- 3
 maxiter_pca <- 50
+maxiter_mice <- 5
 ncp_pca <- 5#round(ncol(df_complete)/2)
 learn_ncp <- FALSE
-num_mi <- 10
+num_mi <- 3
 
 
 imp_method <- "MICE"
@@ -835,7 +836,8 @@ for(miss_prop in c(0.01, 0.03, 0.07, 0.1, 0.2, 0.3, 0.5, 0.7)){
                         maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, 
                         ncp_pca = ncp_pca, learn_ncp = learn_ncp, 
                         cat_combine_by = cat_combine_by, var_cat = var_cat,
-                        df_complete = df_complete, num_mi=num_mi)
+                        df_complete = df_complete, num_mi=num_mi, 
+                        maxiter_mice = maxiter_mice)
   result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
   result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
   result[["F1"]][i] <- res_imp$F1$Mean_F1

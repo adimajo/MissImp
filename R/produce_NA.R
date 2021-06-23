@@ -131,7 +131,6 @@ logit.bypatterns <- function(data, patterns, mechanism) {
 #' \item{idx_newNA}{a boolean data.frame indicating the indices of the newly generated missing values}
 #'
 #' @export
-#' @import mice mltools gdata LiblineaR glmnet dplyr
 produce_NA <- function(data,
                        mechanism = "MCAR", # c("MCAR", "MAR", "MNAR"),
                        perc.missing = 0.5,

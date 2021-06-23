@@ -1,6 +1,6 @@
 single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstrap",
                        n_resample = 2 * round(log(nrow(df))), col_cat = c(), col_dis = c(),
-                       maxiter_tree = 10, maxiter_pca = 100, ncp_pca = ncol(df) / 2,
+                       maxiter_tree = 10, maxiter_pca = 100, maxiter_mice = 10, ncp_pca = ncol(df) / 2,
                        learn_ncp = TRUE, cat_combine_by = "factor", var_cat = "wilcox_va",
                        df_complete = NULL, num_mi = NULL) {
   if (all(!is.na(df))) {
@@ -92,7 +92,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
     else if (imp_method == "MICE") {
-      res0 <- mice(dfi, m = num_mi)
+      res0 <- mice(dfi, m = num_mi, maxit = maxiter_mice)
       res <- result_mice(res0, impnum, col_cat = col_cat)
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
@@ -135,7 +135,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       imp.full.onehot <- data.frame(res$ximp.disj)
     }
     else if (imp_method == "MICE") {
-      res0 <- mice(df, m = num_mi)
+      res0 <- mice(df, m = num_mi, maxit = maxiter_mice)
       res <- result_mice(res, impnum, col_cat = col_cat)
       imp.full.onehot <- data.frame(res$ximp.disj)
     }
