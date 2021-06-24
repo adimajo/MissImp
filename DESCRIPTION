@@ -30,7 +30,8 @@ Imports:
     data.table,
     ranger,
     mix,
-    Amelia
+    Amelia,
+    mice
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr,

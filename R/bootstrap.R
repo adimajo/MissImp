@@ -65,6 +65,7 @@ bootsample <- function(df, num_sample) {
 #' @return \code{df_result} The final imputed dataframe with the categorical columns in factor form.
 #' @return \code{df_result_var} The variance matrix for the final imputation dataframe with the categorical columns in factor form.
 #' @export
+#' @importFrom dplyr %>%
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
 combine_boot <- function(ls_df,
                          col_con,
@@ -165,7 +166,7 @@ combine_boot <- function(ls_df,
   # Add the combined result for categorical variables deducted from the onehot result to df_new
   if (is_onehot && exist_cat) {
     for (name in names_cat) {
-      df_new[[name]] <- apply(df_new[dict_cat[[name]]], 1, which_max_cat, name)
+      df_new[[name]] <- apply(df_new[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
       df_new[[name]] <- unlist(df_new[[name]])
     }
     if (is_unalike) {

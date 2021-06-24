@@ -84,6 +84,7 @@ jacksample <- function(df, num_sample) {
 #' @return \code{df_result} The final imputed dataframe with the categorical columns in factor form.
 #' @return \code{df_result_var} The variance matrix for the final imputation dataframe with the categorical columns in factor form.
 #' @export
+#' @importFrom dplyr %>%
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
 
 combine_jack <- function(ls_df,
