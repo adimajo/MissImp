@@ -803,7 +803,7 @@ learn_ncp <- FALSE
 num_mi <- 3
 
 
-imp_method <- "PCA"
+imp_method <- "MI_PCA"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -814,7 +814,7 @@ var_cat <- "wilcox_va"
 ```{r different_miss_prop}
 i <- 1
 result <- list()
-for(miss_prop in c(0.01, 0.03, 0.07, 0.1, 0.2, 0.3, 0.5, 0.7)){
+for(miss_prop in c(0.01, 0.1, 0.3)){
   print(miss_prop)
   rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
   miss_prop_real <- rs$real_miss_perc

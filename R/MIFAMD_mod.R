@@ -307,14 +307,14 @@ MIFAMD_mod <-
     res <- list(res.MI = res.imp)
     res.MI <- lapply(res$res.MI, function(xx, nom) {
       return(xx$res[, nom])
-    }, nom = colnames(X))
+    }, nom = colnames(don))
     res.MI.disj <- lapply(res$res.MI, function(xx) {
       return(xx$res.disj)
     })
     df_new_merge <- abind::abind(res.MI.disj, along = 3)
     ximp.all <- data.frame(apply(df_new_merge, c(1, 2), mean))
     ximp.disj <- ximp.all
-    if (any("factor" %in% classvar)) {
+    if (any(!sapply(don, is.numeric))) {
       names_cat <- names(dict_cat)
       for (name in names_cat) {
         ximp.all[[name]] <- apply(ximp.all[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
