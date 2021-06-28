@@ -19,11 +19,11 @@
 #' ls_boot <- bootsample(rs$X.incomp, 4)
 bootsample <- function(df, num_sample) {
   num_row <- nrow(df)
-  if (num_sample < log(num_row)) {
-    warning(
-      "Warning: We suggest that the bootstrap number > log(number of rows), if not, all the rows may not be covered in the bootstrap samples.\n"
-    )
-  }
+  # if (num_sample < log(num_row)) {
+  #   warning(
+  #     "Warning: We suggest that the bootstrap number > log(number of rows), if not, all the rows may not be covered in the bootstrap samples.\n"
+  #   )
+  # }
   ls_df_new <- list()
   i <- 1
   ls_idx <- c()

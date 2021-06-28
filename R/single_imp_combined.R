@@ -6,7 +6,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
   if (all(!is.na(df))) {
     stop("The input dataframe is complete. Imputation is not needed.\n")
   }
-  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM", "MI_PCA", "MICE"))
+  imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM", "MI_PCA", "MICE", "MI_Ranger"))
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   cat_combine_by <- match.arg(cat_combine_by, c("factor", "onehot"))
   var_cat <- match.arg(var_cat, c("wilcox_va", "unalike"))
@@ -97,6 +97,11 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
+    else if (imp_method == "MI_Ranger") {
+      res <- MI_missRanger(df_with_mv, col_cat = col_cat, num_mi = num_mi)
+      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
+      ls.imp.fact[[i]] <- data.frame(res$ximp)
+    }
 
     i <- i + 1
   }
@@ -137,6 +142,10 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     else if (imp_method == "MICE") {
       res0 <- mice(df, m = num_mi, maxit = maxiter_mice)
       res <- result_mice(res, impnum, col_cat = col_cat)
+      imp.full.onehot <- data.frame(res$ximp.disj)
+    }
+    else if (imp_method == "MI_Ranger") {
+      res <- MI_missRanger(df_with_mv, col_cat = col_cat, num_mi = num_mi)
       imp.full.onehot <- data.frame(res$ximp.disj)
     }
   }
