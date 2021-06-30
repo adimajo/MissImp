@@ -831,13 +831,13 @@ for(miss_prop in c(0.01, 0.1, 0.3)){
   result[["miss_perc"]][i] <- miss_prop_real
   result[["method"]][i] <- imp_method
   result[["resample"]][i] <- resample_method
-  res_imp <- single_imp(df = df_incomp, imp_method = imp_method, 
-                        resample_method = resample_method, n_resample = n_resample, 
+  res_imp <- single_imp(df = df_incomp, imp_method = imp_method,
+                        resample_method = resample_method, n_resample = n_resample,
                         col_cat = col_cat, col_dis = col_dis,
-                        maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, 
-                        ncp_pca = ncp_pca, learn_ncp = learn_ncp, 
+                        maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca,
+                        ncp_pca = ncp_pca, learn_ncp = learn_ncp,
                         cat_combine_by = cat_combine_by, var_cat = var_cat,
-                        df_complete = df_complete, num_mi=num_mi, 
+                        df_complete = df_complete, num_mi=num_mi,
                         maxiter_mice = maxiter_mice)
   result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
   result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
@@ -850,7 +850,7 @@ data.frame(result)
 ```
 
 ```{r write_csv}
-# write.csv(result,"test_MAR1_MIPCA_boot_result.csv")
+write.csv(result,"test_MAR1_MIRanger_boot_result.csv")
 # read.csv("test_MAR1_MIPCA_boot_result.csv")
 ```
 

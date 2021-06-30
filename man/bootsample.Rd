@@ -19,6 +19,9 @@ A list of bootstrapped dataframes.
 
 In average, if we want to cover all the n rows in the original dataframe,
 the number of samples should be greater than log(n).
+
+In this function, to avoid that some rows are uncovered during resampling process (even if the number of samples is smaller than log(n)), 
+the last bootstrap sample will make sure to cover all those uncovered rows.
 }
 \examples{
 n <- 10000

@@ -49,8 +49,6 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
   return(unlist(obs.disj))
 }
 
-
-
 #' em_mod: modified EM Imputation with probability vector
 #'
 #' @description \code{em_mod} is a em imputation function that returns categorical columns results both in factor and in onehot probability vector form.
