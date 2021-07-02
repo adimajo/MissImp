@@ -1,5 +1,8 @@
 #' Fast Imputation of Missing Values by Chained Random Forests
 #'
+#' @description \code{missRanger_mod} is a modified imputation function of \code{missRanger} in 'missRanger' package. 
+#' The only difference is that the disjunctive imputed dataset is also returned (with categorical columns in form of onehot probability vector).
+#' 
 #' Uses the "ranger" package (Wright & Ziegler) to do fast missing value imputation by chained random forests, see Stekhoven & Buehlmann and Van Buuren & Groothuis-Oudshoorn.
 #' Between the iterative model fitting, it offers the option of predictive mean matching. This firstly avoids imputation with values not present in the original data (like a value 0.3334 in a 0-1 coded variable). Secondly, predictive mean matching tries to raise the variance in the resulting conditional distributions to a realistic level. This allows to do multiple imputation when repeating the call to missRanger().
 #' The iterative chaining stops as soon as \code{maxiter} is reached or if the average out-of-bag estimate of performance stops improving. In the latter case, except for the first iteration, the second last (i.e. best) imputed data is returned.
@@ -7,7 +10,6 @@
 #' A note on `mtry`: Be careful when passing a non-default `mtry` to `ranger()` because the number of available covariables might be growing during the first iteration, depending on the missing pattern. Values \code{NULL} (default) and 1 are safe choices. Additionally, recent versions of `ranger()` allow `mtry` to be a single-argument function of the number of available covariables, e.g. `mtry = function(m) max(1, m %/% 3)`.
 #'
 #' @importFrom stats var reformulate terms.formula predict setNames
-#' @importFrom ranger ranger
 #'
 #' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
 #' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
@@ -23,8 +25,8 @@
 #' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
 #' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
 #'
-#' @return An imputed \code{data.frame}.
-#'
+#' @return \code{ximp} An imputed \code{data.frame}.
+#' @return \code{ximp.disj} A disjunctive imputed \code{data.frame}.
 #' @references
 #' \enumerate{
 #'   \item Wright, M. N. & Ziegler, A. (2016). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. Journal of Statistical Software, in press. <arxiv.org/abs/1508.04409>.

@@ -1,6 +1,4 @@
 # Copied from https://raw.githubusercontent.com/R-miss-tastic/website/master/static/how-to/generate/amputation.R
-
-
 imputeMean <- function(df, args_list = NULL) {
   df <- data.frame(df)
   df_imp <- df

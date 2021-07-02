@@ -98,7 +98,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
     else if (imp_method == "MI_Ranger") {
-      res <- MI_missRanger(df_with_mv, col_cat = col_cat, num_mi = num_mi)
+      res <- MI_missRanger(data.frame(dfi), col_cat = col_cat, num_mi = num_mi)
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
@@ -210,16 +210,16 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     )
     if (exist_cat && cat_combine_by == "factor") {
       F1 <- ls_F1(df_complete, ls.imp.fact,
-        mask = mask, col_cat = col_cat, dict_lev = dict_lev,
+        mask = mask, col_cat = col_cat,
         resample_method = resample_method, combine_method = cat_combine_by
       )
     } else if (exist_cat && cat_combine_by == "onehot") {
       col_cat_oh <- c(1:length(colnames(ls.imp.onehot[[1]])))
       col_cat_oh <- col_cat_oh[!col_cat_oh %in% c(col_con, col_dis)]
       F1_imp <- ls_F1(df_complete, ls.imp.onehot,
-        mask = mask, col_cat = col_cat_oh, dict_lev = dict_lev,
+        mask = mask, col_cat = col_cat_oh,
         resample_method = resample_method, combine_method = cat_combine_by,
-        dict_cat = dict_name_cat, df_imp_full = df_imp_full
+        dict_cat = dict_name_cat
       )
     } else {
       F1_imp <- NA

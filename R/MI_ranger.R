@@ -1,5 +1,40 @@
-missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                                verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
+#' missRanger_mod_draw
+#'
+#' @description \code{missRanger_mod_draw} create one imputation result for multiple imputation with \code{missRanger} method.
+#' Please find the detailed explanation of \code{missRanger} single imputation method in  the documentation of \code{missRanger} in 'missRanger' package. 
+#' In this document, only the differences will be explained.
+#' 
+#' \code{missRanger} is an imputation method based on random forest. In \code{missRanger_mod_draw}, for a certain prediction,
+#'  instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical 
+#'  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger}.
+#' 
+#' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
+#' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
+#' If e.g. all variables (with missings) should be imputed by all variables except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately for each side of the formula. Further note that variables
+#' with missings must appear in the left hand side if they should be used on the right hand side.
+#' @param pmm.k Number of candidate non-missing values to sample from in the predictive mean matching steps. 0 to avoid this step.
+#' @param maxiter Maximum number of chaining iterations.
+#' @param seed Integer seed to initialize the random generator.
+#' @param verbose Controls how much info is printed to screen. 0 to print nothing. 1 (default) to print a "." per iteration and variable, 2 to print the OOB prediction error per iteration and variable (1 minus R-squared for regression).
+#' Furthermore, if \code{verbose} is positive, the variables used for imputation are listed as well as the variables to be imputed (in the imputation order). This will be useful to detect if some variables are unexpectedly skipped.
+#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag prediction error is added to the output as attribute "oob". This does not work in the special case when the variables are imputed univariately.
+#' @param case.weights Vector with non-negative case weights.
+#' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
+#' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
+#' @param col_cat Indices of categorical columns
+#' 
+#' @export
+#' @return \code{ximp} One imputed dataset for multiple imputation in \code{MI_missRanger}.
+#' @return \code{ximp.disj} One disjunctive imputed dataset for multiple imputation in \code{MI_missRanger}.
+missRanger_mod_draw <- function(data, 
+                                formula = . ~ ., 
+                                pmm.k = 0L, 
+                                maxiter = 10L, 
+                                seed = NULL,
+                                verbose = 1, 
+                                returnOOB = FALSE, 
+                                case.weights = NULL, 
+                                col_cat = c(), ...) {
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
   }
@@ -296,7 +331,38 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
   return(list(ximp = revert(converted, X = data), ximp.disj = data.disj))
 }
 
-
+#' MI_missRanger
+#'
+#' @description \code{MI_missRanger} is a function of multiple imputation with \code{missRanger} method.
+#' 
+#'  In \code{missRanger_mod_draw}, for a certain prediction,
+#'  instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical 
+#'  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger} 
+#'  from 'missRanger' package.
+#'  
+#'  \code{MI_missRanger} takes all the imputation results from \code{missRanger_mod_draw} and combine them with Rubin's Rule 
+#'  to generate the final imputed data set. 
+#' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
+#' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
+#' If e.g. all variables (with missings) should be imputed by all variables except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately for each side of the formula. Further note that variables
+#' with missings must appear in the left hand side if they should be used on the right hand side.
+#' @param pmm.k Number of candidate non-missing values to sample from in the predictive mean matching steps. 0 to avoid this step.
+#' @param maxiter Maximum number of chaining iterations.
+#' @param seed Integer seed to initialize the random generator.
+#' @param verbose Controls how much info is printed to screen. 0 to print nothing. 1 (default) to print a "." per iteration and variable, 2 to print the OOB prediction error per iteration and variable (1 minus R-squared for regression).
+#' Furthermore, if \code{verbose} is positive, the variables used for imputation are listed as well as the variables to be imputed (in the imputation order). This will be useful to detect if some variables are unexpectedly skipped.
+#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag prediction error is added to the output as attribute "oob". This does not work in the special case when the variables are imputed univariately.
+#' @param case.weights Vector with non-negative case weights.
+#' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
+#' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
+#' @param col_cat Indices of categorical columns
+#' @param num_mi Number of multiple imputation
+#' 
+#' @export
+#' @return \code{ximp} Final imputed dataset.
+#' @return \code{ximp.disj} Final disjunctive imputed dataset.
+#' @return \code{ls_imputations} List of imputed dataset from multiple imputation.
+#' @return \code{ls_imputations.disj} List of disjunctive imputed dataset from multiple imputation.
 MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
                           verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
   imputations <- list()
@@ -327,147 +393,3 @@ MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed
   return(list(ls_imputations = imputations, ls_imputations.disj = imputations.disj, ximp = final.imp, ximp.disj = final.imp.disj))
 }
 
-#' A version of \code{typeof} internally used by \code{missRanger}.
-#'
-#' @description Returns either "numeric" (double or integer), "factor", "character", "logical", "special" (mode numeric, but neither double nor integer) or "" (otherwise).
-#' \code{missRanger} requires this information to deal with response types not natively supported by \code{ranger}.
-#'
-#' @author Michael Mayer
-#'
-#' @param object Any object.
-#'
-#' @return A string.
-typeof2 <- function(object) {
-  if (is.numeric(object)) {
-    "numeric"
-  } else
-  if (is.factor(object)) {
-    "factor"
-  } else
-  if (is.character(object)) {
-    "character"
-  } else
-  if (is.logical(object)) {
-    "logical"
-  } else
-  if (mode(object) == "numeric") "special" else ""
-}
-
-#' Conversion of non-factor/non-numeric variables.
-#'
-#' @description Converts non-factor/non-numeric variables in a data frame to factor/numeric. Stores information to revert back.
-#'
-#' @author Michael Mayer
-#'
-#' @param X A data frame.
-#' @param check If \code{TRUE}, the function checks if the converted columns can be reverted without changes.
-#'
-#' @return A list with the following elements: \code{X} is the converted data frame, \code{vars}, \code{types}, \code{classes} are the names, types and classes of the converted variables. Finally, \code{bad} names variables in \code{X} that should have been converted but could not.
-convert <- function(X, check = FALSE) {
-  stopifnot(is.data.frame(X))
-
-  if (!ncol(X)) {
-    return(list(
-      X = X, bad = character(0), vars = character(0),
-      types = character(0), classes = character(0)
-    ))
-  }
-
-  types <- vapply(X, typeof2, FUN.VALUE = "")
-  bad <- types == "" | if (check) {
-    mapply(function(a, b) {
-      isFALSE(all.equal(a, b))
-    }, X, revert(convert(X)))
-  } else {
-    FALSE
-  }
-  types <- types[!(types %in% c("numeric", "factor") | bad)]
-  vars <- names(types)
-  classes <- lapply(X[, vars, drop = FALSE], class)
-
-  X[, vars] <- lapply(X[, vars, drop = FALSE], function(v) {
-    if (is.character(v) || is.logical(v)) as.factor(v) else as.numeric(v)
-  })
-
-  list(X = X, bad = names(X)[bad], vars = vars, types = types, classes = classes)
-}
-
-#' Revert conversion.
-#'
-#' @description Reverts conversions done by \code{convert}.
-#'
-#' @author Michael Mayer
-#'
-#' @param con A list returned by \code{convert}.
-#' @param X A data frame with some columns to be converted back according to the information stored in \code{converted}.
-#'
-#' @return A data frame.
-revert <- function(con, X = con$X) {
-  stopifnot(c("vars", "types", "classes") %in% names(con), is.data.frame(X))
-
-  if (!length(con$vars)) {
-    return(X)
-  }
-
-  f <- function(v, ty, cl) {
-    switch(ty,
-      logical = as.logical(v),
-      character = as.character(v),
-      special = {
-        class(v) <- cl
-        v
-      },
-      v
-    )
-  }
-  X[, con$vars] <- Map(f, X[, con$vars, drop = FALSE], con$types, con$classes)
-  X
-}
-
-#' Univariate Imputation
-#'
-#' Fills missing values of a vector, matrix or data frame by sampling with replacement from the non-missing values. For data frames, this sampling is done within column.
-#'
-#' @param x A vector, matrix or data frame.
-#' @param v A character vector of column names to impute (only relevant if \code{x} is a data frame). The default \code{NULL} imputes all columns.
-#' @param seed An integer seed.
-#'
-#' @return \code{x} with imputed values.
-#' @export
-#'
-#' @examples
-#' imputeUnivariate(c(NA, 0, 1, 0, 1))
-#' imputeUnivariate(c("A", "A", NA))
-#' imputeUnivariate(as.factor(c("A", "A", NA)))
-#' head(imputeUnivariate(generateNA(iris)))
-#' head(imputeUnivariate(generateNA(iris), v = "Species"))
-#' head(imputeUnivariate(generateNA(iris), v = c("Species", "Petal.Length")))
-imputeUnivariate <- function(x, v = NULL, seed = NULL) {
-  stopifnot(is.atomic(x) || is.data.frame(x))
-
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
-
-  imputeVec <- function(z) {
-    na <- is.na(z)
-    if ((s <- sum(na))) {
-      if (s == length(z)) {
-        stop("No non-missing elements to sample from.")
-      }
-      z[na] <- sample(z[!na], s, replace = TRUE)
-    }
-    z
-  }
-
-  # vector or matrix
-  if (is.atomic(x)) {
-    return(imputeVec(x))
-  }
-
-  # data frame
-  v <- if (is.null(v)) names(x) else intersect(v, names(x))
-  x[, v] <- lapply(x[, v, drop = FALSE], imputeVec)
-
-  x
-}

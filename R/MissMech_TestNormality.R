@@ -1,3 +1,4 @@
+#copied from https://rdrr.io/cran/MissMech/src/R/TestMCARNormality.R
 TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, method = "Auto",
                               imputation.method = "Dist.Free", nrep = 10000, n.min = 30,
                               seed = 110, alpha = 0.05, imputed.data = NA) {

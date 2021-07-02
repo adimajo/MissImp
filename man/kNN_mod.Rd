@@ -2,8 +2,7 @@
 % Please edit documentation in R/VIM_kNN.R
 \name{kNN_mod}
 \alias{kNN_mod}
-\alias{kNN}
-\title{k-Nearest Neighbour Imputation (Modified)}
+\title{kNN_mod}
 \usage{
 kNN_mod(
   data,
@@ -101,18 +100,12 @@ aggregation step}
 k-Nearest Neighbour Imputation based on a variation of the Gower Distance
 for numerical, categorical, ordered and semi-continous variables.
 The original function is kNN in package VIM by Alexander Kowarik and Statistik Austria
-}
-\examples{
-
-data(sleep)
-kNN(sleep)
-library(laeken)
-kNN(sleep, numFun = weightedMean, weightDist = TRUE)
+Here only the difference will be explained. In \code{kNN_mod}, not only the imputed result will be returned, but also
+ the disjunctive imputed result. For each observation of one categorical column, the value of the Nearest Neighbors will be recorded, 
+ and with this values, the probability vector for each category is constructed.
 }
 \references{
 A. Kowarik, M. Templ (2016) Imputation with
 R package VIM.  *Journal of
 Statistical Software*, 74(7), 1-16.
 }
-\concept{imputation methods}
-\keyword{manip}

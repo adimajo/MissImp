@@ -70,14 +70,16 @@ check_data <- function(data) {
 
 
 
-#' k-Nearest Neighbour Imputation (Modified)
+#' kNN_mod
 #' @description
 #' k-Nearest Neighbour Imputation based on a variation of the Gower Distance
 #' for numerical, categorical, ordered and semi-continous variables.
 #' The original function is kNN in package VIM by Alexander Kowarik and Statistik Austria
+#' Here only the difference will be explained. In \code{kNN_mod}, not only the imputed result will be returned, but also
+#'  the disjunctive imputed result. For each observation of one categorical column, the value of the Nearest Neighbors will be recorded, 
+#'  and with this values, the probability vector for each category is constructed.
 #'
-#'
-#' @aliases kNN
+
 #' @param data data.frame or matrix
 #' @param variable variables where missing values should be imputed
 #' @param metric metric to be used for calculating the distances between
@@ -119,14 +121,6 @@ check_data <- function(data) {
 #' @references A. Kowarik, M. Templ (2016) Imputation with
 #' R package VIM.  *Journal of
 #' Statistical Software*, 74(7), 1-16.
-#' @keywords manip
-#' @family imputation methods
-#' @examples
-#'
-#' data(sleep)
-#' kNN(sleep)
-#' library(laeken)
-#' kNN(sleep, numFun = weightedMean, weightDist = TRUE)
 #' @export
 kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_var = colnames(data), weights = NULL,
                     numFun = median, catFun = VIM::maxCat,

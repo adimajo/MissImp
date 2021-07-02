@@ -801,14 +801,15 @@ mech <- 'MAR1'
 df_complete <- X.complete
 col_cat <- c(7,8)
 col_dis <- c(6)
-n_resample <- 4#2*round(log(nrow(df_complete)))
-n_df <- 10
 maxiter_tree <- 3
 maxiter_pca <- 50
 maxiter_mice <- 5
 ncp_pca <- 5#round(ncol(df_complete)/2)
 learn_ncp <- FALSE
+
 num_mi <- 4
+n_df <- 4
+n_resample <- 2#2*round(log(nrow(df_complete)))
 
 
 imp_method <- "MI_Ranger"
@@ -870,7 +871,7 @@ for(miss_prop in c(0.01, 0.03, 0.07, 0.1, 0.2, 0.3, 0.5, 0.7)){
     df_complete <- complete_df_generator(n)
     rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
     miss_prop_real <- c(miss_prop_real,rs$real_miss_perc)
-    df_incomp <- rs$X.incompa
+    df_incomp <- rs$X.incomp
     res_imp <- single_imp(df = df_incomp, imp_method = imp_method, 
                         resample_method = resample_method, n_resample = n_resample, 
                         col_cat = col_cat, col_dis = col_dis,
@@ -900,7 +901,7 @@ data.frame(result)
 
 ```{r write_csv}
 # write.csv(result,"test_MAR1_PCA_boot_diff_dfcomp_result.csv")
-# read.csv("test_MAR1_MIPCA_boot_result.csv")
+# read.csv("test_MAR1_PCA_boot_diff_dfcomp_result.csv")
 ```
 
 
