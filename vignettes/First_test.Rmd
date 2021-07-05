@@ -106,7 +106,6 @@ complete_df_generator <- function(n){
   return(X.complete)
 }
 
-head(X.complete)
 ```
 
 
@@ -798,13 +797,13 @@ res<- MI_missRanger(df_with_mv, col_cat = c(7,8), num_mi = 5)
 
 ```{r different_miss_prop}
 mech <- 'MAR1'
-df_complete <- X.complete
+# df_complete <- X.complete
 col_cat <- c(7,8)
 col_dis <- c(6)
 maxiter_tree <- 3
-maxiter_pca <- 50
+maxiter_pca <- 4#50
 maxiter_mice <- 5
-ncp_pca <- 5#round(ncol(df_complete)/2)
+ncp_pca <- 3#round(ncol(df_complete)/2)
 learn_ncp <- FALSE
 
 num_mi <- 4
@@ -812,8 +811,8 @@ n_df <- 4
 n_resample <- 2#2*round(log(nrow(df_complete)))
 
 
-imp_method <- "MI_Ranger"
-resample_method <- "bootstrap"
+imp_method <- "PCA"
+resample_method <- "jackknife"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 
@@ -900,7 +899,7 @@ data.frame(result)
 
 
 ```{r write_csv}
-# write.csv(result,"test_MAR1_PCA_boot_diff_dfcomp_result.csv")
+write.csv(result,"test_MAR1_MissRanger_boot_diff_dfcomp_result.csv")
 # read.csv("test_MAR1_PCA_boot_diff_dfcomp_result.csv")
 ```
 

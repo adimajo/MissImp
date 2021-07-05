@@ -107,48 +107,48 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
   }
 
   ## In case of Jackknife, one imputation for the original incomplete dataset is needed.
-  if (resample_method == "jackknife") {
-    if (imp_method == "missRanger") {
-      res <- missRanger_mod(df, col_cat = col_cat, maxiter = maxiter_tree)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-    else if (imp_method == "missForest") {
-      res <- missForest_mod(xmis = df, maxiter = maxiter_tree, col_cat = col_cat)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-    else if (imp_method == "kNN") {
-      res <- kNN_mod(df, col_cat = col_cat, weightDist = TRUE)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-    else if (imp_method == "EM") {
-      res <- em_mod(df, col_cat = col_cat)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-    else if (imp_method == "PCA") {
-      if (learn_ncp) {
-        ncp_pca <- estim_ncpFAMD_mod(df, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
-      }
-      res <- imputeFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca)
-      imp.full.onehot <- data.frame(res$tab.disj)
-    }
-    else if (imp_method == "MI_EM") {
-      res <- MI_EM_amelia(df, col_num = c(col_con, col_dis), col_cat = col_cat, num_imp = num_mi)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-    else if (imp_method == "MI_PCA") {
-      res <- MIFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca, dict_cat = dict_name_cat, nboot = num_mi)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-    else if (imp_method == "MICE") {
-      res0 <- mice(df, m = num_mi, maxit = maxiter_mice)
-      res <- result_mice(res, impnum, col_cat = col_cat)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-    else if (imp_method == "MI_Ranger") {
-      res <- MI_missRanger(df_with_mv, col_cat = col_cat, num_mi = num_mi)
-      imp.full.onehot <- data.frame(res$ximp.disj)
-    }
-  }
+  # if (resample_method == "jackknife") {
+  #   if (imp_method == "missRanger") {
+  #     res <- missRanger_mod(df, col_cat = col_cat, maxiter = maxiter_tree)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  #   else if (imp_method == "missForest") {
+  #     res <- missForest_mod(xmis = df, maxiter = maxiter_tree, col_cat = col_cat)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  #   else if (imp_method == "kNN") {
+  #     res <- kNN_mod(df, col_cat = col_cat, weightDist = TRUE)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  #   else if (imp_method == "EM") {
+  #     res <- em_mod(df, col_cat = col_cat)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  #   else if (imp_method == "PCA") {
+  #     if (learn_ncp) {
+  #       ncp_pca <- estim_ncpFAMD_mod(df, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
+  #     }
+  #     res <- imputeFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca)
+  #     imp.full.onehot <- data.frame(res$tab.disj)
+  #   }
+  #   else if (imp_method == "MI_EM") {
+  #     res <- MI_EM_amelia(df, col_num = c(col_con, col_dis), col_cat = col_cat, num_imp = num_mi)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  #   else if (imp_method == "MI_PCA") {
+  #     res <- MIFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca, dict_cat = dict_name_cat, nboot = num_mi)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  #   else if (imp_method == "MICE") {
+  #     res0 <- mice(df, m = num_mi, maxit = maxiter_mice)
+  #     res <- result_mice(res, impnum, col_cat = col_cat)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  #   else if (imp_method == "MI_Ranger") {
+  #     res <- MI_missRanger(df_with_mv, col_cat = col_cat, num_mi = num_mi)
+  #     imp.full.onehot <- data.frame(res$ximp.disj)
+  #   }
+  # }
 
 
 
@@ -175,8 +175,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     }
     col_cat_jack <- c(1:ncol(ls.imp.onehot[[1]]))
     col_cat_jack <- col_cat_jack[!col_cat_jack %in% c(col_con, col_dis)]
-    res <- combine_jack(ls.imp.onehot, imp.full.onehot,
-      col_con = col_con,
+    res <- combine_jack(ls.imp.onehot, col_con = col_con,
       col_dis = col_dis, col_cat = col_cat_jack, method = cat_combine_by,
       dict_cat = dict_name_cat, var_cat = var_cat
     )
@@ -206,7 +205,7 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     }
     MSE_imp <- ls_MSE(df_complete, ls.imp.fact,
       mask = mask, col_num = c(col_con, col_dis),
-      resample_method = resample_method, df_imp_full = df_imp_full
+      resample_method = resample_method
     )
     if (exist_cat && cat_combine_by == "factor") {
       F1 <- ls_F1(df_complete, ls.imp.fact,

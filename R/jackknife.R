@@ -69,7 +69,6 @@ jacksample <- function(df, num_sample) {
 #' \code{combine_jack} function combines several imputed jackknifed dataframes
 #' into the final imputed dataframe and provide the variance for each imputed value.
 #' @param ls_df A list of imputed jackknifed dataframes.
-#' @param df_full Imputation result on the original dataframe before jackknife resampling.
 #' @param col_con Continous columns index.
 #' @param col_dis Discret columns index.
 #' @param col_cat Categorical columns index.
@@ -88,14 +87,13 @@ jacksample <- function(df, num_sample) {
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
 
 combine_jack <- function(ls_df,
-                         df_full,
                          col_con,
                          col_dis = c(),
                          col_cat = c(),
                          method = "onehot",
                          dict_cat = NULL,
                          var_cat = "unalike") {
-  ls_df_minus <- list()
+  ls_df_minus <- ls_df
   ls_col_name <- colnames(ls_df[[1]])
   exist_dis <- !all(c(0, col_dis) == c(0))
   if (exist_dis) {
@@ -112,16 +110,16 @@ combine_jack <- function(ls_df,
   }
   i <- 1
   n_sample <- length(ls_df)
-  df_full$index <- as.numeric(row.names(df_full))
+  # df_full$index <- as.numeric(row.names(df_full))
   while (i <= n_sample) {
-    ls_df[[i]]$index <- as.numeric(row.names(ls_df[[i]]))
-    # only for numeric columns
-    ls_df_minus[[i]] <- n_sample * df_full[ls_df[[i]]$index, ] - (n_sample -
-      1) * ls_df[[i]]
-    if (exist_cat) {
-      ls_df_minus[[i]][col_name_cat][ls_df_minus[[i]][col_name_cat] < 0] <- 0
-    }
-    ls_df_minus[[i]]$index <- ls_df[[i]]$index
+    # ls_df[[i]]$index <- as.numeric(row.names(ls_df[[i]]))
+    # # only for numeric columns
+    # ls_df_minus[[i]] <- n_sample * df_full[ls_df[[i]]$index, ] - (n_sample -
+    #   1) * ls_df[[i]]
+    # if (exist_cat) {
+    #   ls_df_minus[[i]][col_name_cat][ls_df_minus[[i]][col_name_cat] < 0] <- 0
+    # }
+    ls_df_minus[[i]]$index <- as.numeric(row.names(ls_df_minus[[i]]))
     i <- i + 1
   }
   # Put all imputed datasets together
@@ -146,8 +144,8 @@ combine_jack <- function(ls_df,
     df_new[col_name_dis] <- round(df_new[col_name_dis]) # round for the discret variables
   }
   df_new_var_disj <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], var)
-  df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (n_sample -
-    1)
+  # df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (n_sample -
+  #   1)
 
 
   # Final result according to the mean of onehot probability
