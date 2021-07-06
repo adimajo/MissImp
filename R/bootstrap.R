@@ -5,8 +5,8 @@
 #'
 #' In average, if we want to cover all the n rows in the original dataframe,
 #' the number of samples should be greater than log(n).
-#' 
-#' In this function, to avoid that some rows are uncovered during resampling process (even if the number of samples is smaller than log(n)), 
+#'
+#' In this function, to avoid that some rows are uncovered during resampling process (even if the number of samples is smaller than log(n)),
 #' the last bootstrap sample will make sure to cover all those uncovered rows.
 #' @param df A complete or incomplete dataframe
 #' @param num_sample Number of bootstrapped samples. We suggest that num_sample > Log(n), where n is the number of rows.
@@ -59,9 +59,9 @@ bootsample <- function(df, num_sample) {
 #' @param num_row_origin Number of rows in the original incomplete dataframe before bootstrapping.
 #' @param method The encoded method of categorical columns in the imputed dataframes.
 #' This function is coded for both "onehot" and "factor" encoded situations.
-#' When \code{method} = 'onehot', \code{combine_boot} takes the average of the onehot probability vector for each observation, 
-#' then choose the position of maximum probability as the predicted category. When \code{method} = 'factor', for each observation, \code{combine_boot} 
-#' choose the mode value over the imputed dataframes as the predicted category. 
+#' When \code{method} = 'onehot', \code{combine_boot} takes the average of the onehot probability vector for each observation,
+#' then choose the position of maximum probability as the predicted category. When \code{method} = 'factor', for each observation, \code{combine_boot}
+#' choose the mode value over the imputed dataframes as the predicted category.
 #' @param dict_cat The dictionary of categorical columns names if "onehot" method is applied.
 #' For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3")).
 #' @param var_cat The method of variance calculation for the categorical columns.

@@ -1,10 +1,10 @@
 #' MI_EM_amelia: Multiple imputation with EM
 #'
-#' @description \code{MI_EM_amelia} is a multiple imputation function with EM algorithm. 
+#' @description \code{MI_EM_amelia} is a multiple imputation function with EM algorithm.
 #' This function returns both multiple imputation results of the original incomplete data and
-#' the final imputed data (derived from multiple imputation results by Robin's Rule). 
+#' the final imputed data (derived from multiple imputation results by Robin's Rule).
 #' As for categorical columns, both factor form and onehot probability vector form are returned.
-#' 
+#'
 #' More details about the EM implementation could be found in the documentation of function \code{amelia} from
 #'  'Amelia' package.
 #' @param df_with_mv Data matrix with missing values.
@@ -18,12 +18,12 @@
 #' @return \code{ls_ximp} List imputed data matrix from multiple imputation procedure.
 #' @return \code{ls_ximp.disj} List imputed data matrix from multiple imputation procedure, with categorical columns
 #' in onehot probability vector form.
-#' @references 
+#' @references
 #' Honaker, J., King, G., Blackwell, M. (2011).
 #' Amelia II: A Program for Missing Data.
 #' \emph{Journal of Statistical Software}, \bold{45(7)}, 1--47.
 #' \url{http://www.jstatsoft.org/v45/i07/}.
-#' 
+#'
 #' Statistical Analysis with Missing Data, by Little and Rubin, 2002
 MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
   exist_cat <- !all(c(0, col_cat) == c(0))
@@ -59,7 +59,7 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
       ximp.all[[name]] <- factor(ximp.all[[name]])
     }
     ximp <- ximp.all[colnames(df_with_mv)]
-    ximp.disj <- ximp.disj[-c(1)]# remove "index" column
+    ximp.disj <- ximp.disj[-c(1)] # remove "index" column
   }
   else {
     imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, boot.type = "none")

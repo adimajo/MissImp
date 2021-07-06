@@ -1,5 +1,5 @@
 #' dens_comp
-#' @description There are density comparing functions for some of the imputation method, 
+#' @description There are density comparing functions for some of the imputation method,
 #' but here we try to define the function that could be used for every method.
 #' @param df_comp One dataset.
 #' @param df_imp Another dataset with the same columns as \code{df_comp}.
@@ -23,9 +23,9 @@ dens_comp <- function(df_comp, df_imp) {
 
 #' List of MSE
 #' @description \code{ls_MSE} is a function that returns a list of MSE corresponding to the given list of imputed datasets.
-#' \code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets, 
+#' \code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets,
 #' and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines.
-#' 
+#'
 #' If the complete and imputed datasets are mix-typed, then only the numerical parts are taken into account.
 #' @param df_comp The original complete dataset.
 #' @param ls_df_imp List of imputed dataset.
@@ -36,10 +36,10 @@ dens_comp <- function(df_comp, df_imp) {
 #' @return \code{list_MSE} List of MSE corresponding to the given list of imputed datasets.
 #' @return \code{Mean_MSE} Mean value of MSE.
 #' @return \code{Variance_MSE} Variance of MSE.
-ls_MSE <- function(df_comp, 
-                   ls_df_imp, 
-                   mask, 
-                   col_num, 
+ls_MSE <- function(df_comp,
+                   ls_df_imp,
+                   mask,
+                   col_num,
                    resample_method = "bootstrap") {
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   # if (resample_method == "jackknife" && is.null(df_imp_full)) {
@@ -97,7 +97,7 @@ ls_MSE <- function(df_comp,
 # Output: A list of F1-scores for each imputation result, a average F1-score, variance of F1-score
 #' List of MSE
 #' @description \code{ls_F1} is a function that returns a list of F1-Score corresponding to the given list of imputed datasets.
-#' \code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets, 
+#' \code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets,
 #' and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines.
 #' @param df_comp The original complete dataset.
 #' @param ls_df_imp List of imputed dataset.
@@ -105,8 +105,8 @@ ls_MSE <- function(df_comp,
 #' @param col_cat Indices of categorical columns.
 #' @param resample_method Default value is 'bootstrap', could also be 'jackknife' or 'none'.
 #' @param combine_method When \code{resample_method} = 'bootstrap', \code{combine_method} could be 'factor' or 'onehot'.
-#' When \code{method} = 'onehot', \code{ls_F1} takes the average of the onehot probability vector for each observation, 
-#' then choose the position of maximum probability as the predicted category. When \code{method} = 'factor', for each observation, \code{ls_F1} 
+#' When \code{method} = 'onehot', \code{ls_F1} takes the average of the onehot probability vector for each observation,
+#' then choose the position of maximum probability as the predicted category. When \code{method} = 'factor', for each observation, \code{ls_F1}
 #' choose the mode value over the imputed dataframes as the predicted category.
 #' @param dict_cat The dictionary of categorical columns names if "onehot" method is applied.
 #' For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3")).
@@ -114,12 +114,12 @@ ls_MSE <- function(df_comp,
 #' @return \code{list_F1} List of F1 corresponding to the given list of imputed datasets.
 #' @return \code{Mean_F1} Mean value of F1.
 #' @return \code{Variance_F1} Variance of F1.
-ls_F1 <- function(df_comp, 
-                  ls_df_imp, 
-                  mask, 
-                  col_cat, 
-                  resample_method = "bootstrap", 
-                  combine_method = "onehot", 
+ls_F1 <- function(df_comp,
+                  ls_df_imp,
+                  mask,
+                  col_cat,
+                  resample_method = "bootstrap",
+                  combine_method = "onehot",
                   dict_cat = NULL) {
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   combine_method <- match.arg(combine_method, c("onehot", "factor"))
@@ -133,7 +133,7 @@ ls_F1 <- function(df_comp,
     stop("With onehot combining method, dict_cat is needed.\n")
   }
   dict_lev <- dict_level(df_comp, col_cat)
-  
+
   ls_f1_result <- c()
   i <- 1
 

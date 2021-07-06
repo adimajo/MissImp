@@ -1,9 +1,9 @@
 #' result_mice: Multiple imputation with bayesian method
 #'
-#' @description \code{result_mice} is a function that retrieve the final imputed dataset after 
-#' running function \code{mice} in the 'mice' package. 
+#' @description \code{result_mice} is a function that retrieve the final imputed dataset after
+#' running function \code{mice} in the 'mice' package.
 #' As for categorical columns, both factor form and onehot probability vector form are returned
-#' 
+#'
 #' More details about the MICE implementation could be found in the documentation of function \code{mice} from
 #'  'mice' package.
 #' @param res Result returned by \code{mice} function
@@ -37,7 +37,7 @@
 #' Brand, J.P.L. (1999) \emph{Development, implementation and evaluation of
 #' multiple imputation strategies for the statistical analysis of incomplete
 #' data sets.} Dissertation. Rotterdam: Erasmus University.
-#' 
+#'
 #' Statistical Analysis with Missing Data, by Little and Rubin, 2002
 result_mice <- function(res, impnum, col_cat = c()) {
   exist_cat <- !all(c(0, col_cat) == c(0))
@@ -71,5 +71,3 @@ result_mice <- function(res, impnum, col_cat = c()) {
   }
   return(list(ximp = ximp, ximp.disj = ximp.disj))
 }
-
-

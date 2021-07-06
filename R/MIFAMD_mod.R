@@ -1,27 +1,27 @@
 #' MIFAMD_mod: modified multiple imputation with FAMD
 #'
-#' @description \code{MIFAMD_mod} is a modified multiple imputation function with FAMD (Factorial 
-#' Analysis of Mixed Data) 
+#' @description \code{MIFAMD_mod} is a modified multiple imputation function with FAMD (Factorial
+#' Analysis of Mixed Data)
 #' that returns categorical columns results both in factor and in onehot probability vector form.
-#' Please find the detailed documentation of \code{MIFAMD} in the 'missMDA' package. 
+#' Please find the detailed documentation of \code{MIFAMD} in the 'missMDA' package.
 #' Only the modifications are explained on this page.
-#' 
-#' With \code{MIFAMD_mod}, not only the multiple imputation results are returned, 
+#'
+#' With \code{MIFAMD_mod}, not only the multiple imputation results are returned,
 #' but the disjunctive multiple imputation results are also returned (The categorical columns
-#'  are in form of onehot probability vector). Besides, instead of returning the final imputed dataset by 
+#'  are in form of onehot probability vector). Besides, instead of returning the final imputed dataset by
 #'  performing one time FAMD imputation, \code{MIFAMD_mod} returns the final imputed dataset by combining
 #'   the multiple imputation results with Rubin's Rule.
 #' @param X Data frame with missing values.
 #' @param ncp  Number of components used to reconstruct data with the FAMD reconstruction formular.
 #' @param method "Regularized" by default or "EM"
-#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm. 
-#' Other regularization terms can be implemented by setting the value to less than 1 
-#' in order to regularized less (to get closer to the results of an EM method) or 
+#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm.
+#' Other regularization terms can be implemented by setting the value to less than 1
+#' in order to regularized less (to get closer to the results of an EM method) or
 #' more than 1 to regularized more (to get closer to the results of the proportion imputation).
 #' @param threshold Threshold for the criterion convergence.
-#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by 
-#' the mean of each variable for the continuous variables and by the proportion of the category 
-#' for the categorical variables coded with indicator matrices of dummy variables. 
+#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by
+#' the mean of each variable for the continuous variables and by the proportion of the category
+#' for the categorical variables coded with indicator matrices of dummy variables.
 #' Other values leads to a random initialization.
 #' @param maxiter Maximum number of iterations for the algorithm.
 #' @param nboot Number of multiple imputations.
@@ -34,11 +34,11 @@
 #'  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
 #' @return \code{res.imputeFAMD} Output obtained with the function imputeFAMD (single imputation).
 #' @return \code{call} The matched call.
-#' @references 
+#' @references
 #' Audigier, V., Husson, F. & Josse, J. (2015). A principal components method to impute mixed data. Advances in Data Analysis and Classification, 10(1), 5-26. <doi:10.1007/s11634-014-0195-1>
-#' 
+#'
 #' Audigier, V., Husson, F., Josse, J. (2017). MIMCA: Multiple imputation for categorical variables with multiple correspondence analysis. <doi:10.1007/s11222-016-9635-4>
-#' 
+#'
 #' Little R.J.A., Rubin D.B. (2002) Statistical Analysis with Missing Data. Wiley series in probability and statistics, New-York
 
 MIFAMD_mod <-

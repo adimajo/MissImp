@@ -1,10 +1,10 @@
 #' estim_ncpFAMD_mod
 #'
-#' @description Estimate the number of dimensions for the Factorial Analysis of Mixed Data by cross-validation. 
-#' This function is nearly identical with \code{estim_ncpFAMD} function in 'missMDA' package. The only difference is 
+#' @description Estimate the number of dimensions for the Factorial Analysis of Mixed Data by cross-validation.
+#' This function is nearly identical with \code{estim_ncpFAMD} function in 'missMDA' package. The only difference is
 #' that in this function \code{imputeFAMD_mod} is used, which then calls \code{imputeMFA_mod}, then \code{impute_mod}.
 #'  In \code{impute_mod}, some changes have been made to avoid the convergence error.
-#' 
+#'
 #' @param don a data.frame with categorical variables; with missing entries or not.
 #' @param ncp.min integer corresponding to the minimum number of components to test.
 #' @param ncp.max integer corresponding to the maximum number of components to test.
@@ -17,14 +17,14 @@
 #' @param threshold the threshold for assessing convergence
 #' @param verbose boolean. TRUE means that a progressbar is writtent.
 #' @param maxiter max iteration number for \code{imputeFAMD_mod}
-#' 
+#'
 #' @export
 #' @return \code{ncp} 	the number of components retained for the FAMD.
 #' @return \code{criterion} the criterion (the MSEP) calculated for each number of components.
-#' 
-#' @references 
+#'
+#' @references
 #' Audigier, V., Husson, F. & Josse, J. (2014). A principal components method to impute mixed data. Advances in Data Analysis and Classification.
-#' 
+#'
 estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"),
                               method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05, ind.sup = NULL, sup.var = NULL,
                               threshold = 1e-04, verbose = TRUE, maxiter = 1000) {
@@ -169,23 +169,23 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
 
 #' imputeFAMD_mod
 #'
-#' @description Impute the missing values of a mixed dataset (with continuous and categorical variables) using the principal 
-#' component method "factorial analysis for mixed data" (FAMD). 
+#' @description Impute the missing values of a mixed dataset (with continuous and categorical variables) using the principal
+#' component method "factorial analysis for mixed data" (FAMD).
 #' Can be used as a preliminary step before performing FAMD on an incomplete dataset.
-#'  
-#' This function is nearly identical with \code{imputeFAMD} function in 'missMDA' package. The only difference is 
+#'
+#' This function is nearly identical with \code{imputeFAMD} function in 'missMDA' package. The only difference is
 #' that in this function \code{imputeMFA_mod}is used, which then calls \code{impute_mod}.
 #'  In \code{impute_mod}, some changes have been made to avoid the convergence error.
-#' 
+#'
 #' @param X a data.frame with continuous and categorical variables containing missing values.
 #' @param ncp integer corresponding to the number of components used to predict the missing entries.
 #' @param method "Regularized" by default or "EM".
 #' @param row.w row weights (by default, uniform row weights).
-#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized". 
-#' Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less 
+#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized".
+#' Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less
 #' (to get closer to the results of the EM method) or more than 1 to regularized more.
-#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by the 
-#' mean of each variable for the continuous variables and by the proportion of the category for the categorical variables 
+#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by the
+#' mean of each variable for the continuous variables and by the proportion of the category for the categorical variables
 #' coded with indicator matrices of dummy variables. Other values leads to a random initialization.
 #' @param ind.sup a vector indicating the indexes of the supplementary individuals.
 #' @param sup.var a vector indicating the indexes of the supplementary variables (quantitative and categorical).
@@ -193,18 +193,18 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
 #' @param maxiter max iteration number for \code{imputeFAMD_mod}
 #' @param ... further arguments passed to or from other methods.
 #' @export
-#' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and 
-#' the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables. 
-#' In this indicator matrix, the imputed values are real numbers but they met the constraint that the 
-#' sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as 
+#' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and
+#' the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables.
+#' In this indicator matrix, the imputed values are real numbers but they met the constraint that the
+#' sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as
 #' degree of membership to the corresponding category.
-#' @return \code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones. 
-#' For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the 
+#' @return \code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones.
+#' For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the
 #' most plausible categories according to the values in the tab.disj output.
 #' @return \code{call} the matched call.
-#' @references 
-#' Audigier, V., Husson, F. & Josse, J. (2013). A principal components method to impute mixed data. Advances in Data Analysis and Classification, 10(1), 5-26. 
-#' \url{https://arxiv.org/abs/1301.4797#'} 
+#' @references
+#' Audigier, V., Husson, F. & Josse, J. (2013). A principal components method to impute mixed data. Advances in Data Analysis and Classification, 10(1), 5-26.
+#' \url{https://arxiv.org/abs/1301.4797#'}
 imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-6,
                            ind.sup = NULL, sup.var = NULL, seed = NULL, maxiter = 1000, ...) {
   X <- as.data.frame(X)
@@ -218,27 +218,27 @@ imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = 
 
 #' imputeMFA_mod
 #'
-#' @description Impute the missing values of a dataset with Multiple Factor Analysis (MFA). 
-#' The variables are structured a priori into groups of variables. 
-#' The variables can be continuous or categorical but within a group the nature of the variables is the same. 
+#' @description Impute the missing values of a dataset with Multiple Factor Analysis (MFA).
+#' The variables are structured a priori into groups of variables.
+#' The variables can be continuous or categorical but within a group the nature of the variables is the same.
 #' Can be used as a preliminary step before performing MFA on an incomplete dataset.
-#'  
-#' This function is nearly identical with \code{imputeMFA} function in 'missMDA' package. The only difference is 
+#'
+#' This function is nearly identical with \code{imputeMFA} function in 'missMDA' package. The only difference is
 #' that in this function \code{impute_mod} is used.
 #'  In \code{impute_mod}, some changes have been made to avoid the convergence error.
-#' 
+#'
 #' @param X a data.frame with continuous and categorical variables containing missing values.
 #' @param group a vector indicating the number of variables in each group
 #' @param ncp integer corresponding to the number of components used to predict the missing entries.
-#' @param type the type of variables in each group; three possibilities: "c" or "s" for continuous variables 
+#' @param type the type of variables in each group; three possibilities: "c" or "s" for continuous variables
 #' (for "c" the variables are centered and for "s" variables are scaled to unit variance), "n" for categorical variables
 #' @param method "Regularized" by default or "EM".
 #' @param row.w row weights (by default, uniform row weights).
-#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized". 
-#' Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less 
+#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized".
+#' Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less
 #' (to get closer to the results of the EM method) or more than 1 to regularized more.
-#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by the 
-#' mean of each variable for the continuous variables and by the proportion of the category for the categorical variables 
+#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by the
+#' mean of each variable for the continuous variables and by the proportion of the category for the categorical variables
 #' coded with indicator matrices of dummy variables. Other values leads to a random initialization.
 #' @param ind.sup a vector indicating the indexes of the supplementary individuals.
 #' @param num.group.sup a vector indicating the group of variables that are supplementary.
@@ -246,18 +246,18 @@ imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = 
 #' @param maxiter max iteration number for \code{imputeFAMD_mod}
 #' @param ... further arguments passed to or from other methods.
 #' @export
-#' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and 
-#' the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables. 
-#' In this indicator matrix, the imputed values are real numbers but they met the constraint that the 
-#' sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as 
+#' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and
+#' the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables.
+#' In this indicator matrix, the imputed values are real numbers but they met the constraint that the
+#' sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as
 #' degree of membership to the corresponding category.
-#' @return \code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones. 
-#' For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the 
+#' @return \code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones.
+#' For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the
 #' most plausible categories according to the values in the tab.disj output.
 #' @return \code{call} the matched call.
-#' @references 
+#' @references
 #' F. Husson, J. Josse (2013) Handling missing values in multiple factor analysis. Food Quality and Preferences, 30 (2), 77-85.
-#' 
+#'
 #' Josse, J. and Husson, F. missMDA (2016). A Package for Handling Missing Values in Multivariate Data Analysis. Journal of Statistical Software, 70 (1), pp 1-31 <doi:10.18637/jss.v070.i01>
 imputeMFA_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
                           method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1,
@@ -279,23 +279,23 @@ imputeMFA_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
 
 #' impute_mod
 #'
-#' @description Impute the missing values of a dataset with Multiple Factor Analysis (MFA). 
-#'   
-#' This function is nearly identical with \code{impute} function in 'missMDA' package. The only difference is 
+#' @description Impute the missing values of a dataset with Multiple Factor Analysis (MFA).
+#'
+#' This function is nearly identical with \code{impute} function in 'missMDA' package. The only difference is
 #' that in \code{impute_mod}, we have forced \code{MM[[g]]} to be bigger than one threshold, so the convergence error could be avoided.
-#' 
+#'
 #' @param X a data.frame with continuous and categorical variables containing missing values.
 #' @param group a vector indicating the number of variables in each group
 #' @param ncp integer corresponding to the number of components used to predict the missing entries.
-#' @param type the type of variables in each group; three possibilities: "c" or "s" for continuous variables 
+#' @param type the type of variables in each group; three possibilities: "c" or "s" for continuous variables
 #' (for "c" the variables are centered and for "s" variables are scaled to unit variance), "n" for categorical variables
 #' @param method "Regularized" by default or "EM".
 #' @param row.w row weights (by default, uniform row weights).
-#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized". 
-#' Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less 
+#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized".
+#' Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less
 #' (to get closer to the results of the EM method) or more than 1 to regularized more.
-#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by the 
-#' mean of each variable for the continuous variables and by the proportion of the category for the categorical variables 
+#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by the
+#' mean of each variable for the continuous variables and by the proportion of the category for the categorical variables
 #' coded with indicator matrices of dummy variables. Other values leads to a random initialization.
 #' @param ind.sup a vector indicating the indexes of the supplementary individuals.
 #' @param num.group.sup a vector indicating the group of variables that are supplementary.
@@ -303,18 +303,18 @@ imputeMFA_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
 #' @param maxiter max iteration number for \code{imputeFAMD_mod}
 #' @param ... further arguments passed to or from other methods.
 #' @export
-#' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and 
-#' the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables. 
-#' In this indicator matrix, the imputed values are real numbers but they met the constraint that the 
-#' sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as 
+#' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and
+#' the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables.
+#' In this indicator matrix, the imputed values are real numbers but they met the constraint that the
+#' sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as
 #' degree of membership to the corresponding category.
-#' @return \code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones. 
-#' For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the 
+#' @return \code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones.
+#' For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the
 #' most plausible categories according to the values in the tab.disj output.
 #' @return \code{call} the matched call.
-#' @references 
+#' @references
 #' F. Husson, J. Josse (2013) Handling missing values in multiple factor analysis. Food Quality and Preferences, 30 (2), 77-85.
-#' 
+#'
 #' Josse, J. and Husson, F. missMDA (2016). A Package for Handling Missing Values in Multivariate Data Analysis. Journal of Statistical Software, 70 (1), pp 1-31 <doi:10.18637/jss.v070.i01>
 impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
                        method = NULL, threshold = 1e-06, ind.sup = NULL, num.group.sup = NULL, seed = NULL, maxiter = 1000,

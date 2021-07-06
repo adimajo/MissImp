@@ -1,13 +1,13 @@
 #' missRanger_mod_draw
 #'
 #' @description \code{missRanger_mod_draw} create one imputation result for multiple imputation with \code{missRanger} method.
-#' Please find the detailed explanation of \code{missRanger} single imputation method in  the documentation of \code{missRanger} in 'missRanger' package. 
+#' Please find the detailed explanation of \code{missRanger} single imputation method in  the documentation of \code{missRanger} in 'missRanger' package.
 #' In this document, only the differences will be explained.
-#' 
+#'
 #' \code{missRanger} is an imputation method based on random forest. In \code{missRanger_mod_draw}, for a certain prediction,
-#'  instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical 
+#'  instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical
 #'  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger}.
-#' 
+#'
 #' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
 #' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
 #' If e.g. all variables (with missings) should be imputed by all variables except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately for each side of the formula. Further note that variables
@@ -22,18 +22,18 @@
 #' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
 #' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
 #' @param col_cat Indices of categorical columns
-#' 
+#'
 #' @export
 #' @return \code{ximp} One imputed dataset for multiple imputation in \code{MI_missRanger}.
 #' @return \code{ximp.disj} One disjunctive imputed dataset for multiple imputation in \code{MI_missRanger}.
-missRanger_mod_draw <- function(data, 
-                                formula = . ~ ., 
-                                pmm.k = 0L, 
-                                maxiter = 10L, 
+missRanger_mod_draw <- function(data,
+                                formula = . ~ .,
+                                pmm.k = 0L,
+                                maxiter = 10L,
                                 seed = NULL,
-                                verbose = 1, 
-                                returnOOB = FALSE, 
-                                case.weights = NULL, 
+                                verbose = 1,
+                                returnOOB = FALSE,
+                                case.weights = NULL,
                                 col_cat = c(), ...) {
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
@@ -334,14 +334,14 @@ missRanger_mod_draw <- function(data,
 #' MI_missRanger
 #'
 #' @description \code{MI_missRanger} is a function of multiple imputation with \code{missRanger} method.
-#' 
+#'
 #'  In \code{missRanger_mod_draw}, for a certain prediction,
-#'  instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical 
-#'  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger} 
+#'  instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical
+#'  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger}
 #'  from 'missRanger' package.
-#'  
-#'  \code{MI_missRanger} takes all the imputation results from \code{missRanger_mod_draw} and combine them with Rubin's Rule 
-#'  to generate the final imputed data set. 
+#'
+#'  \code{MI_missRanger} takes all the imputation results from \code{missRanger_mod_draw} and combine them with Rubin's Rule
+#'  to generate the final imputed data set.
 #' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
 #' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
 #' If e.g. all variables (with missings) should be imputed by all variables except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately for each side of the formula. Further note that variables
@@ -357,7 +357,7 @@ missRanger_mod_draw <- function(data,
 #' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
 #' @param col_cat Indices of categorical columns
 #' @param num_mi Number of multiple imputation
-#' 
+#'
 #' @export
 #' @return \code{ximp} Final imputed dataset.
 #' @return \code{ximp.disj} Final disjunctive imputed dataset.
@@ -392,4 +392,3 @@ MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed
   }
   return(list(ls_imputations = imputations, ls_imputations.disj = imputations.disj, ximp = final.imp, ximp.disj = final.imp.disj))
 }
-

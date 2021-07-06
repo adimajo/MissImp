@@ -175,7 +175,8 @@ single_imp <- function(df, imp_method = "missRanger", resample_method = "bootstr
     }
     col_cat_jack <- c(1:ncol(ls.imp.onehot[[1]]))
     col_cat_jack <- col_cat_jack[!col_cat_jack %in% c(col_con, col_dis)]
-    res <- combine_jack(ls.imp.onehot, col_con = col_con,
+    res <- combine_jack(ls.imp.onehot,
+      col_con = col_con,
       col_dis = col_dis, col_cat = col_cat_jack, method = cat_combine_by,
       dict_cat = dict_name_cat, var_cat = var_cat
     )
