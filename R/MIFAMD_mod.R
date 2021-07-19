@@ -197,6 +197,7 @@ MIFAMD_mod <-
 
       quanti <- which(sapply(don, is.numeric))
       Ncol <- length(quanti) + sum(sapply(don[, -quanti], nlevels))
+
       W <- matrix(0, nrow(don), Ncol)
       W[!is.na(don)] <- 1
 
@@ -298,7 +299,7 @@ MIFAMD_mod <-
     # TODO: Change MIPCA and MIMCA
     # if(sum(sapply(X,is.numeric))==ncol(X)){stop("All variables are numeric, use MIPCA")
     # }else if(sum(sapply(X,is.numeric))==0){stop("No variable is numeric, use MIMCA")}
-    #
+
     # variables are ordered
     don <- X[, c(which(sapply(X, is.numeric)), which(!sapply(X, is.numeric)))]
     col_cat <- which(!sapply(X, is.numeric))

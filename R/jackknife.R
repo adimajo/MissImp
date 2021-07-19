@@ -174,14 +174,19 @@ combine_jack <- function(ls_df,
     df_result_var_disj <- df_new_var[, !(names(df_new) %in% c(names_cat, "index"))]
     return(
       list(
-        "imp.disj" = df_result_disj,
-        "uncertainty.disj" = df_result_var_disj,
-        "imp" = df_result,
-        "uncertainty" = df_result_var
+        imp.disj = df_result_disj,
+        uncertainty.disj = df_result_var_disj,
+        imp = df_result,
+        uncertainty = df_result_var
       )
     )
   }
   else {
-    return(list("imp" = df_new[-c(1)], "uncertainty" = df_new_var_disj[-c(1)]))
+    return(list(
+      imp = df_new[-c(1)],
+      imp.disj = df_new[-c(1)],
+      uncertainty = df_new_var_disj[-c(1)],
+      uncertainty.disj = df_new_var_disj[-c(1)]
+    ))
   }
 }

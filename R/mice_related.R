@@ -46,9 +46,9 @@ result_mice <- function(res, impnum, col_cat = c()) {
   }
   # Extract the imputations with categorical columns in onehot form
   res.disj <- list()
-  idx <- c(1:imp_num)
+  idx <- c(1:impnum)
   for (j in idx) {
-    data <- mice::single.complete(res$data, res$where, res$imp, j)
+    data <- mice::complete(res, j)
     dummy <- dummyVars(" ~ .", data = data, sep = "_")
     data.disj <- data.frame(predict(dummy, newdata = data))
     res.disj[[j]] <- data.disj

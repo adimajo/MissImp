@@ -28,7 +28,7 @@ mcar_test_combined <- function(df, col_cat = c(), p_val = 0.1) {
   out_little <- naniar::mcar_test(df)
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
-    warning("The normality test is written for numerical dataframes. Here the test is performed on only the numerical part of the input dataframe.\n")
+    print("The normality test is written for numerical dataframes. Here the test is performed on only the numerical part of the input dataframe.\n")
     df <- subset(df, select = -col_cat)
   }
   out_missmech <- TestMCARNormality(df)
