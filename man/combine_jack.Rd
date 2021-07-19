@@ -6,7 +6,6 @@
 \usage{
 combine_jack(
   ls_df,
-  df_full,
   col_con,
   col_dis = c(),
   col_cat = c(),
@@ -17,8 +16,6 @@ combine_jack(
 }
 \arguments{
 \item{ls_df}{A list of imputed jackknifed dataframes.}
-
-\item{df_full}{Imputation result on the original dataframe before jackknife resampling.}
 
 \item{col_con}{Continous columns index.}
 

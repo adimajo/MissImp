@@ -1,0 +1,40 @@
+---
+title: "Test on climat data"
+output:
+  rmarkdown::html_vignette
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    number_sections: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r}
+library(haven)
+data <- haven::read_sas("N:/Projets02/SiteMRU/Stage Sensibilité/Dossier C1/Bases/base_tge_2009_2018_calib.sas7bdat ")
+head(data)
+```
+
+```{r}
+miss_col <- apply(data,2,function(x) any(is.na(x)))
+miss_col <- miss_col[miss_col]
+miss_col
+```
+```{r}
+data_complete=rnorm(1000,0,1)
+df = data.frame(data_complete)
+df$data_incomplete =df$data_complete
+df$data_incomplete[df$data_incomplete>1] = NA
+df$data_mean_impute = df$data_incomplete
+df$data_mean_impute[is.na(df$data_mean_impute)] = mean(df$data_mean_impute, na.rm=TRUE)
+```
+
+
+```{r}
+hist(df$data_complete, breaks = 50, xlim = range(-3,3), col = "lightgreen", main = "Complete data", xlab = "Complete data")
+hist(df$data_incomplete, breaks = 50, xlim = range(-3,3), col = "lightblue", main = "Incomplete data", xlab = "Incomplete data")
+hist(df$data_mean_impute, breaks = 50, xlim = range(-3,3), col = "pink", main = "Mean imputed data", xlab = "Mean imputed data")
+```
+

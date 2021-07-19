@@ -11,11 +11,11 @@ dens_comp <- function(df_comp, df_imp) {
   for (ycol in ls_col_name) {
     dat <- data.frame(
       y = c(df_comp[[ycol]], df_imp[[ycol]]),
-      lines = rep(c("complete", "imputed"), each = 100)
+      lines = rep(c("complete", "imputed"), each = nrow(df_comp))
     )
-    p <- ggplot(dat, aes(x = y, fill = lines)) +
-      geom_density(alpha = 0.3) +
-      labs(x = ycol)
+    p <- ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
+      ggplot2::geom_density(alpha = 0.3) +
+      ggplot2::labs(x = ycol)
     show(p)
   }
 }

@@ -27,9 +27,9 @@ MI_EM_amelia(df_with_mv, col_num, col_cat = NULL, num_imp = 5)
 in onehot probability vector form.
 }
 \description{
-\code{MI_EM_amelia} is a multiple imputation function with EM algorithm. 
+\code{MI_EM_amelia} is a multiple imputation function with EM algorithm.
 This function returns both multiple imputation results of the original incomplete data and
-the final imputed data (derived from multiple imputation results by Robin's Rule). 
+the final imputed data (derived from multiple imputation results by Robin's Rule).
 As for categorical columns, both factor form and onehot probability vector form are returned.
 
 More details about the EM implementation could be found in the documentation of function \code{amelia} from

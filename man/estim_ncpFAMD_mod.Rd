@@ -50,8 +50,8 @@ estim_ncpFAMD_mod(
 \code{criterion} the criterion (the MSEP) calculated for each number of components.
 }
 \description{
-Estimate the number of dimensions for the Factorial Analysis of Mixed Data by cross-validation. 
-This function is nearly identical with \code{estim_ncpFAMD} function in 'missMDA' package. The only difference is 
+Estimate the number of dimensions for the Factorial Analysis of Mixed Data by cross-validation.
+This function is nearly identical with \code{estim_ncpFAMD} function in 'missMDA' package. The only difference is
 that in this function \code{imputeFAMD_mod} is used, which then calls \code{imputeMFA_mod}, then \code{impute_mod}.
  In \code{impute_mod}, some changes have been made to avoid the convergence error.
 }

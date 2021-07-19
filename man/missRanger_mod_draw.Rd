@@ -49,10 +49,10 @@ The following arguments are e.g. incompatible with \code{ranger}: \code{write.fo
 }
 \description{
 \code{missRanger_mod_draw} create one imputation result for multiple imputation with \code{missRanger} method.
-Please find the detailed explanation of \code{missRanger} single imputation method in  the documentation of \code{missRanger} in 'missRanger' package. 
+Please find the detailed explanation of \code{missRanger} single imputation method in  the documentation of \code{missRanger} in 'missRanger' package.
 In this document, only the differences will be explained.
 
 \code{missRanger} is an imputation method based on random forest. In \code{missRanger_mod_draw}, for a certain prediction,
- instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical 
+ instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical
  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger}.
 }

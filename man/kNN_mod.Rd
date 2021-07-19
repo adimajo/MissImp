@@ -101,7 +101,7 @@ k-Nearest Neighbour Imputation based on a variation of the Gower Distance
 for numerical, categorical, ordered and semi-continous variables.
 The original function is kNN in package VIM by Alexander Kowarik and Statistik Austria
 Here only the difference will be explained. In \code{kNN_mod}, not only the imputed result will be returned, but also
- the disjunctive imputed result. For each observation of one categorical column, the value of the Nearest Neighbors will be recorded, 
+ the disjunctive imputed result. For each observation of one categorical column, the value of the Nearest Neighbors will be recorded,
  and with this values, the probability vector for each category is constructed.
 }
 \references{

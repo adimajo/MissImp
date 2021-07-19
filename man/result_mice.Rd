@@ -20,8 +20,8 @@ result_mice(res, impnum, col_cat = c())
  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
 }
 \description{
-\code{result_mice} is a function that retrieve the final imputed dataset after 
-running function \code{mice} in the 'mice' package. 
+\code{result_mice} is a function that retrieve the final imputed dataset after
+running function \code{mice} in the 'mice' package.
 As for categorical columns, both factor form and onehot probability vector form are returned
 
 More details about the MICE implementation could be found in the documentation of function \code{mice} from

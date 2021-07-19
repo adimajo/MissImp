@@ -27,15 +27,15 @@ imputeMFA_mod(
 
 \item{ncp}{integer corresponding to the number of components used to predict the missing entries.}
 
-\item{type}{the type of variables in each group; three possibilities: "c" or "s" for continuous variables 
+\item{type}{the type of variables in each group; three possibilities: "c" or "s" for continuous variables
 (for "c" the variables are centered and for "s" variables are scaled to unit variance), "n" for categorical variables}
 
 \item{method}{"Regularized" by default or "EM".}
 
 \item{row.w}{row weights (by default, uniform row weights).}
 
-\item{coeff.ridge}{1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized". 
-Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less 
+\item{coeff.ridge}{1 by default to perform the regularized imputeFAMD algorithm; useful only if method="Regularized".
+Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less
 (to get closer to the results of the EM method) or more than 1 to regularized more.}
 
 \item{threshold}{the threshold for assessing convergence}
@@ -44,8 +44,8 @@ Other regularization terms can be implemented by setting the value to less than 
 
 \item{num.group.sup}{a vector indicating the group of variables that are supplementary.}
 
-\item{seed}{integer, by default seed = NULL implies that missing values are initially imputed by the 
-mean of each variable for the continuous variables and by the proportion of the category for the categorical variables 
+\item{seed}{integer, by default seed = NULL implies that missing values are initially imputed by the
+mean of each variable for the continuous variables and by the proportion of the category for the categorical variables
 coded with indicator matrices of dummy variables. Other values leads to a random initialization.}
 
 \item{maxiter}{max iteration number for \code{imputeFAMD_mod}}
@@ -53,25 +53,25 @@ coded with indicator matrices of dummy variables. Other values leads to a random
 \item{...}{further arguments passed to or from other methods.}
 }
 \value{
-\code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and 
-the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables. 
-In this indicator matrix, the imputed values are real numbers but they met the constraint that the 
-sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as 
+\code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and
+the missing values are replaced by the predicted ones. The categorical variables are coded with the indicator matrix of dummy variables.
+In this indicator matrix, the imputed values are real numbers but they met the constraint that the
+sum of the entries corresponding to one individual and one variable is equal to one. Consequently they can be seen as
 degree of membership to the corresponding category.
 
-\code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones. 
-For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the 
+\code{completeObs} the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones.
+For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the
 most plausible categories according to the values in the tab.disj output.
 
 \code{call} the matched call.
 }
 \description{
-Impute the missing values of a dataset with Multiple Factor Analysis (MFA). 
-The variables are structured a priori into groups of variables. 
-The variables can be continuous or categorical but within a group the nature of the variables is the same. 
+Impute the missing values of a dataset with Multiple Factor Analysis (MFA).
+The variables are structured a priori into groups of variables.
+The variables can be continuous or categorical but within a group the nature of the variables is the same.
 Can be used as a preliminary step before performing MFA on an incomplete dataset.
- 
-This function is nearly identical with \code{imputeMFA} function in 'missMDA' package. The only difference is 
+
+This function is nearly identical with \code{imputeMFA} function in 'missMDA' package. The only difference is
 that in this function \code{impute_mod} is used.
  In \code{impute_mod}, some changes have been made to avoid the convergence error.
 }

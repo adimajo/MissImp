@@ -58,10 +58,10 @@ The following arguments are e.g. incompatible with \code{ranger}: \code{write.fo
 \code{MI_missRanger} is a function of multiple imputation with \code{missRanger} method.
 
  In \code{missRanger_mod_draw}, for a certain prediction,
- instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical 
- distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger} 
+ instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical
+ distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger}
  from 'missRanger' package.
- 
- \code{MI_missRanger} takes all the imputation results from \code{missRanger_mod_draw} and combine them with Rubin's Rule 
+
+ \code{MI_missRanger} takes all the imputation results from \code{missRanger_mod_draw} and combine them with Rubin's Rule
  to generate the final imputed data set.
 }

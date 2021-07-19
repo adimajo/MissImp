@@ -26,7 +26,7 @@ ls_MSE(df_comp, ls_df_imp, mask, col_num, resample_method = "bootstrap")
 }
 \description{
 \code{ls_MSE} is a function that returns a list of MSE corresponding to the given list of imputed datasets.
-\code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets, 
+\code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets,
 and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines.
 
 If the complete and imputed datasets are mix-typed, then only the numerical parts are taken into account.

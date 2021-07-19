@@ -15,6 +15,6 @@ dens_comp(df_comp, df_imp)
 The comparison of the density distribution for each column.
 }
 \description{
-There are density comparing functions for some of the imputation method, 
+There are density comparing functions for some of the imputation method,
 but here we try to define the function that could be used for every method.
 }

@@ -92,7 +92,6 @@ complete_df_generator <- function(n){
   lambda <- 4.3
   X.complete.discr <- stats::rpois(n, lambda) # poisson distribution
 
-
   X.complete.cat <- stats::rbinom(n, size = 5, prob = 0.4) # binomial
 
   X.complete.cat2 <- stats::rbinom(n, size = 7, prob = 0.6) # binomial
@@ -261,21 +260,23 @@ final_result_mcar
 
 ```{r}
 # source("../R/single_imp_combined.R")
+n <- 10000
 mech <- 'MAR2'
 miss_prop <- 0.4
-rs <- generate_miss(X.complete[,1:6], miss_prop, mechanism = mech)
+X.complete <- complete_df_generator(n)
+rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
 df <- rs$X.incomp
-col_cat <- c()
+col_cat <- c(7,8)
 col_dis <- c(6)
-n_resample <- 4#2*round(log(nrow(df)))
-maxiter_tree <- 3
+n_resample <- 3#2*round(log(nrow(df)))
+maxiter_tree <- 10
 maxiter_pca <- 30
 ncp_pca <- ncol(df)/2
 learn_ncp <- FALSE
-df_complete <- X.complete[,1:6]
+df_complete <- X.complete
 num_mi <- 10
 
-imp_method <- "MI_EM"
+imp_method <- "missRanger"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -297,13 +298,14 @@ res <- single_imp(
 
 
 ```{r}
-head(df)
-head(res$imp)
-head(res$imp.disj)
-head(res$uncertainty)
-head(res$uncertainty.disj)
-res$MSE
-res$F1
+# head(df)
+# head(res$imp)
+# head(res$imp.disj)
+# head(res$uncertainty)
+# head(res$uncertainty.disj)
+# res$MSE
+# res$F1
+# dens_comp(res$imp,X.complete)
 ```
 
 ```{r}
@@ -313,91 +315,39 @@ sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
 #0.7: 1.210844
 ```
 
-
-
-
-
-```{r bootstrap_and_jackknife}
-# Create bootstrap and jackknife datasets
-# Bootstrap needs big number of samples
-# Jackknife has a problem with categorical variables
-df_with_mv <- list_df.mix[[2]]
-df_with_mv = ordinal_encode(df_with_mv,c(7:8))
-df_with_mv <- factor_encode(df_with_mv, c(7:8))
-ls_boot <- bootsample(df_with_mv, 7)
-ls_jack <- jacksample(df_with_mv, 7)
-```
-
-
-
-```{r dict_cat}
-dict_name_cat <- dict_onehot(df_with_mv, c(7:8))
-```
-
-
-```{r imputation_boot_FAMD}
-
-#Imputation (for example PCA with 3 dimension)
-df_with_mv = ordinal_encode(df_with_mv,c(7:8))
-df_with_mv = factor_encode(df_with_mv,c(7:8))
-ls.imp.pca.onehot = list()
-ls.imp.pca.fact = list()
-idx_col_cat = c(7:8)
-i = 1
-num_col = ncol(df_with_mv)
-n_opt =3
-for(df in ls_boot){
-  df = factor_encode(df, idx_col_cat)
-  #n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
-  #for imputeFAMD_mod, the categorical data need to be ordinal encoded then factor encoded
-  pca = imputeFAMD_mod(df, ncp = n_opt, maxiter = 30)
-  ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
-  ls.imp.pca.fact[[i]] = pca$completeObs
-  i = i + 1
+```{r}
+res_mean_imp <- df
+col_num <- c(1:6)
+col_num_name <-  colnames(df)[col_num]
+for(y in col_num_name){
+  res_mean_imp[[y]][is.na(res_mean_imp[[y]])] <- mean(res_mean_imp[[y]],na.rm=TRUE)
 }
-```
 
 
-
-```{r combine_boot_FAMD}
-rs0 <- combine_boot(ls.imp.pca.fact, col_con = c(1:5), col_dis = c(6), col_cat = c(7:8), num_row_origin = 10000, method = "factor", dict_cat = dict_name_cat, var_cat = "wilcox_va")
-rs <- combine_boot(ls.imp.pca.onehot, col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), num_row_origin = 10000, method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
-```
-
-
-
-```{r imputation_jack_FAMD}
-# Imputation for ls_jack (for example PCA with 3 dimension)
-ls.imp.pca.onehot <- list()
-ls.imp.pca.fact <- list()
-i <- 1
-num_col <- ncol(df_with_mv)
-for (df in ls_jack) {
-  df <- factor_encode(df, c(7,8))
-  # Input: an incomplete dataset
-  # Outout: an imputed dataset (onehot or factor for categorical)
-  pca <- imputeFAMD_mod(df, ncp = 3, maxiter = 30)
-  ls.imp.pca.onehot[[i]] <- data.frame(pca$tab.disj)
-  ls.imp.pca.fact[[i]] <- pca$completeObs
-  i <- i + 1
-}
-```
-
-```{r imputation_jack_full_dataframe_FAMD}
-df_full <- df_with_mv
-df_full <- factor_encode(df_with_mv, c(7,8))
-pca_full <- imputeFAMD_mod(df_full, ncp = 3, maxiter = 30)
-imp.pca_full.onehot <- pca_full$tab.disj
-imp.pca_full.fact <- pca_full$completeObs
+ycol <- "Y3"
+X.miss <- X.complete
+X.miss[!is.na(df)] <- NA
+# dat <- data.frame(
+#       y = c(X.complete[[ycol]], res$imp[[ycol]],res_mean_imp[[ycol]]),
+#       lines = rep(c("complete", "imputed", "mean_imputed"), each = 10000)
+#     )
+# dat <- data.frame(
+#       y = c(X.miss[[ycol]]-res$imp[[ycol]], X.miss[[ycol]]-res_mean_imp[[ycol]]),
+#       lines = rep(c("imputed_error", "mean_imputed_error"), each = 10000)
+#     )
+dat <- data.frame(
+      y = c(X.miss[[ycol]], df[[ycol]]),
+      lines = rep(c("missing", "observed"), each = 10000)
+    )
+ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
+      ggplot2::geom_density(alpha = 0.3) +
+      ggplot2::labs(x = ycol)
+# show(p)
 ```
 
 
 
 
-```{r combine_jack_FAMD}
-rs_jack0 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
-rs_jack1 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "wilcox_va")
-```
 
 
 
@@ -583,19 +533,90 @@ res <- missRanger_mod(df_with_mv, col_cat = c(7:8))
 
 #### (4)MissMDA
 
-```{r}
-list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], idx_col_cat)
-ncp.pca <- estim_ncpFAMD(list_df.mix[[2]], method.cv = "Kfold", verbose = T, maxiter = 50)$ncp
-pca <- imputeFAMD(list_df.mix[[2]], ncp = 5)
-imp.pca <- pca$comp
+
+```{r bootstrap_and_jackknife}
+# Create bootstrap and jackknife datasets
+# Bootstrap needs big number of samples
+# Jackknife has a problem with categorical variables
+df_with_mv <- list_df.mix[[2]]
+df_with_mv = ordinal_encode(df_with_mv,c(7:8))
+df_with_mv <- factor_encode(df_with_mv, c(7:8))
+ls_boot <- bootsample(df_with_mv, 7)
+ls_jack <- jacksample(df_with_mv, 7)
 ```
 
-```{r}
-imp.pca <- ordinal_encode(imp.pca, idx_col_cat)
-imp.pca
-ls_MSE(df_comp, list(imp.pca), mask, col_num)
-ls_F1(df_comp, list(imp.pca), mask, col_cat)
+
+
+```{r dict_cat}
+dict_name_cat <- dict_onehot(df_with_mv, c(7:8))
 ```
+
+
+```{r imputation_boot_FAMD}
+
+#Imputation (for example PCA with 3 dimension)
+df_with_mv = ordinal_encode(df_with_mv,c(7:8))
+df_with_mv = factor_encode(df_with_mv,c(7:8))
+ls.imp.pca.onehot = list()
+ls.imp.pca.fact = list()
+idx_col_cat = c(7:8)
+i = 1
+num_col = ncol(df_with_mv)
+n_opt =3
+for(df in ls_boot){
+  df = factor_encode(df, idx_col_cat)
+  #n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
+  #for imputeFAMD_mod, the categorical data need to be ordinal encoded then factor encoded
+  pca = imputeFAMD_mod(df, ncp = n_opt, maxiter = 30)
+  ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
+  ls.imp.pca.fact[[i]] = pca$completeObs
+  i = i + 1
+}
+```
+
+
+
+```{r combine_boot_FAMD}
+rs0 <- combine_boot(ls.imp.pca.fact, col_con = c(1:5), col_dis = c(6), col_cat = c(7:8), num_row_origin = 10000, method = "factor", dict_cat = dict_name_cat, var_cat = "wilcox_va")
+rs <- combine_boot(ls.imp.pca.onehot, col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), num_row_origin = 10000, method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
+```
+
+
+
+```{r imputation_jack_FAMD}
+# Imputation for ls_jack (for example PCA with 3 dimension)
+ls.imp.pca.onehot <- list()
+ls.imp.pca.fact <- list()
+i <- 1
+num_col <- ncol(df_with_mv)
+for (df in ls_jack) {
+  df <- factor_encode(df, c(7,8))
+  # Input: an incomplete dataset
+  # Outout: an imputed dataset (onehot or factor for categorical)
+  pca <- imputeFAMD_mod(df, ncp = 3, maxiter = 30)
+  ls.imp.pca.onehot[[i]] <- data.frame(pca$tab.disj)
+  ls.imp.pca.fact[[i]] <- pca$completeObs
+  i <- i + 1
+}
+```
+
+```{r imputation_jack_full_dataframe_FAMD}
+df_full <- df_with_mv
+df_full <- factor_encode(df_with_mv, c(7,8))
+pca_full <- imputeFAMD_mod(df_full, ncp = 3, maxiter = 30)
+imp.pca_full.onehot <- pca_full$tab.disj
+imp.pca_full.fact <- pca_full$completeObs
+```
+
+
+
+
+```{r combine_jack_FAMD}
+rs_jack0 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
+rs_jack1 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "wilcox_va")
+```
+
+
 
 
 
@@ -800,7 +821,7 @@ mech <- 'MAR1'
 # df_complete <- X.complete
 col_cat <- c(7,8)
 col_dis <- c(6)
-maxiter_tree <- 3
+maxiter_tree <- 10
 maxiter_pca <- 50
 maxiter_mice <- 5
 ncp_pca <- 3#round(ncol(df_complete)/2)
@@ -808,10 +829,10 @@ learn_ncp <- FALSE
 
 num_mi <- 4
 n_df <- 4
-n_resample <- 2#2*round(log(nrow(df_complete)))
+n_resample <- 3#2*round(log(nrow(df_complete)))
 
 
-imp_method <- "MI_Ranger"
+imp_method <- "PCA"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -899,12 +920,32 @@ data.frame(result)
 
 
 ```{r write_csv}
-data.frame(result)
-write.csv(result,"test_MAR1_MIRanger_boot_diff_dfcomp_result.csv")
-# read.csv("test_MAR1_PCA_boot_diff_dfcomp_result.csv")
+write.csv(result,"test_MAR1_PCA_boot_diff_dfcomp_result.csv")
+read.csv("test_MAR1_MIRanger_bis_boot_diff_dfcomp_result.csv")
 ```
 
 
+```{r write_csv}
+res <- read.csv("test_MAR1_MissRanger_boot_diff_dfcomp_result.csv")
+x <- res$miss_perc
+y1 <- res$MSE
+y2 <- res$MSE + 1.96*res$Var_MSE
+y3 <- res$MSE - 1.96*res$Var_MSE
+# 
+# plot(x, y1, type = "n", ylim = range(c(y1, y2)), xlab = "", ylab = "")
+# lines(x, y1, col = "blue")
+# lines(x, y2, col = "red")
+# lines(x, y3, col = "red") 
+predframe <- with(res,data.frame(miss_perc,
+                                MSE=MSE,lwr=MSE-1.96*Var_MSE,upr=MSE+1.96*Var_MSE))
+p1 <- ggplot(predframe, aes(miss_perc, MSE))+
+    geom_point()+
+    geom_line(data=predframe)+
+    geom_ribbon(data=predframe,aes(ymin=lwr,ymax=upr),alpha=0.3, fill='red')+
+    xlab('Percentage of missing data')
+show(p1)
+```
 
+`
 
 

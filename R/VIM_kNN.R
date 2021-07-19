@@ -122,6 +122,7 @@ check_data <- function(data) {
 #' R package VIM.  *Journal of
 #' Statistical Software*, 74(7), 1-16.
 #' @export
+#' @importFrom data.table `:=`
 kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_var = colnames(data), weights = NULL,
                     numFun = median, catFun = VIM::maxCat,
                     makeNA = NULL, NAcond = NULL, impNA = TRUE, donorcond = NULL, mixed = vector(), mixed.constant = NULL, trace = FALSE,

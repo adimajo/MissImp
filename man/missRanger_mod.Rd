@@ -46,7 +46,7 @@ The following arguments are e.g. incompatible with \code{ranger}: \code{write.fo
 \code{ximp.disj} A disjunctive imputed \code{data.frame}.
 }
 \description{
-\code{missRanger_mod} is a modified imputation function of \code{missRanger} in 'missRanger' package. 
+\code{missRanger_mod} is a modified imputation function of \code{missRanger} in 'missRanger' package.
 The only difference is that the disjunctive imputed dataset is also returned (with categorical columns in form of onehot probability vector).
 
 Uses the "ranger" package (Wright & Ziegler) to do fast missing value imputation by chained random forests, see Stekhoven & Buehlmann and Van Buuren & Groothuis-Oudshoorn.

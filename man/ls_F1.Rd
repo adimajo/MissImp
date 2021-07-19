@@ -26,8 +26,8 @@ ls_F1(
 \item{resample_method}{Default value is 'bootstrap', could also be 'jackknife' or 'none'.}
 
 \item{combine_method}{When \code{resample_method} = 'bootstrap', \code{combine_method} could be 'factor' or 'onehot'.
-When \code{method} = 'onehot', \code{ls_F1} takes the average of the onehot probability vector for each observation, 
-then choose the position of maximum probability as the predicted category. When \code{method} = 'factor', for each observation, \code{ls_F1} 
+When \code{method} = 'onehot', \code{ls_F1} takes the average of the onehot probability vector for each observation,
+then choose the position of maximum probability as the predicted category. When \code{method} = 'factor', for each observation, \code{ls_F1}
 choose the mode value over the imputed dataframes as the predicted category.}
 
 \item{dict_cat}{The dictionary of categorical columns names if "onehot" method is applied.
@@ -42,6 +42,6 @@ For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3"
 }
 \description{
 \code{ls_F1} is a function that returns a list of F1-Score corresponding to the given list of imputed datasets.
-\code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets, 
+\code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets,
 and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines.
 }
