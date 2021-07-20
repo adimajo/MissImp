@@ -1,0 +1,527 @@
+---
+title: "Imputation for each method"
+output:
+  rmarkdown::html_vignette
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    number_sections: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r dependencies, message=FALSE, warning=FALSE}
+library(MissImp)
+```
+
+### Generate data
+
+We generate a complete data set (Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8) with (Y1, Y2, Y3) ~ N(u1, S1), (Y4, Y5)~N(u2,S2), Y6~P(\lambda) and Y7,Y8~Binomial(prob). 
+
+```{r Generate_complete_dataframe}
+n <- 10000
+complete_df_generator <- function(n){
+  mu.X <- c(1, 2, 3)
+  Sigma.X <- matrix(c(
+  9, 3, 2,
+  3, 4, 0,
+  2, 0, 1
+  ), nrow = 3)
+  X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X) # multivariate normal distribution
+
+  mu1.X <- c(9, 8)
+  Sigma1.X <- matrix(c(
+  16, 14,
+  14, 25
+  ), nrow = 2)
+
+  X.complete.cont1 <- MASS::mvrnorm(n, mu1.X, Sigma1.X) # multivariate normal distribution
+
+  lambda <- 4.3
+  X.complete.discr <- stats::rpois(n, lambda) # poisson distribution
+
+  X.complete.cat <- stats::rbinom(n, size = 5, prob = 0.4) # binomial
+
+  X.complete.cat2 <- stats::rbinom(n, size = 7, prob = 0.6) # binomial
+
+  X.complete <- data.frame(cbind(X.complete.cont, X.complete.cont1,
+                                 X.complete.discr, ... = X.complete.cat, X.complete.cat2))
+  X.complete[, 7] <- as.factor(X.complete[, 7])
+  levels(X.complete[, 7]) <- c("F", "E", "D", "C", "B", "A")
+  X.complete[, 8] <- as.factor(X.complete[, 8])
+  colnames(X.complete) <- c("Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8")
+  return(X.complete)
+}
+```
+
+
+```{r add_missingness}
+n <- 10000
+mech <- 'MAR1'
+miss_prop <- 0.4
+X.complete <- complete_df_generator(n)[,c(1:6)]
+rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
+df <- rs$X.incomp
+```
+
+
+### Single Imputation
+#### (1)EM
+```{r}
+df_with_mv <- list_df.mix[[2]]
+df_with_mv <- ordinal_encode(df_with_mv, c(7,8))
+df_with_mv <- factor_encode(df_with_mv, c(7,8))
+ls_boot <- bootsample(df_with_mv, 4)
+ls_jack <- jacksample(df_with_mv, 4)
+dict_lev <- dict_level(df_with_mv, c(7:8))
+```
+
+
+
+```{r}
+# Imputation for ls_jack (for example PCA with 3 dimension)
+ls.imp.em.jack.onehot <- list()
+ls.imp.em.jack.fact <- list()
+i <- 1
+num_col <- ncol(df_with_mv)
+for (df in ls_jack) {
+  #df <- factor_encode(df, idx_col_cat)
+  # Input: an incomplete dataset
+  # Outout: an imputed dataset (onehot or factor for categorical)
+  imp.em <- em_mod(df, col_cat = col_cat)
+  
+  ls.imp.em.jack.onehot[[i]] <- imp.em$ximp.disj
+  ls.imp.em.jack.fact[[i]] <- imp.em$ximp
+  i <- i + 1
+}
+```
+```{r}
+df = ls_jack[[2]]
+imp.em <- em_mod(df, col_cat = idx_col_cat)
+```
+
+
+
+
+
+#### (2)Missforest
+```{r}
+list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], idx_col_cat)
+df_with_mv <- list_df.mix[[2]]
+ls_boot <- bootsample(df_with_mv, 4)
+ls_jack <- jacksample(df_with_mv, 4)
+```
+
+```{r}
+# Imputation
+ls.imp.forest.boot.onehot <- list()
+ls.imp.forest.boot.fact <- list()
+idx_col_cat <- c(7:8)
+i <- 1
+num_col <- ncol(df_with_mv)
+for (df in ls_boot) {
+  df <- factor_encode(df, idx_col_cat)
+  imp.forest <- missForest_mod(xmis = df, maxiter = 3, ntree = 100, col_cat = idx_col_cat)
+  ls.imp.forest.boot.onehot[[i]] <- imp.forest$ximp.disj
+  ls.imp.forest.boot.fact[[i]] <- imp.forest$ximp
+  i <- i + 1
+}
+```
+
+
+```{r}
+dict_lev <- dict_level(df_with_mv, c(7:8))
+```
+
+
+```{r}
+ls_MSE(X.complete, ls.imp.forest.boot.fact, mask = rs.mix$mar1$R.mask, col_num = c(1:6), resample_method = "bootstrap")
+ls_F1(X.complete, ls.imp.forest.boot.fact, mask = rs.mix$mar1$R.mask, dict_lev = dict_lev, col_cat = c(7:8), resample_method = "bootstrap", combine_method = "factor")
+ls_F1(X.complete, ls.imp.forest.boot.onehot, mask = rs.mix$mar1$R.mask, dict_lev = dict_lev, col_cat = c(7:20), resample_method = "bootstrap", combine_method = "onehot", dict_cat = dict_name_cat)
+```
+
+
+
+
+```{r}
+rs0 <- combine_boot(ls.imp.forest.boot.fact, col_con = c(1:5), col_dis = c(6), col_cat = c(7:8), num_row_origin = 10000, method = "factor", dict_cat = dict_name_cat, var_cat = "wilcox_va")
+rs <- combine_boot(ls.imp.forest.boot.onehot, col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), num_row_origin = 10000, method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
+```
+
+```{r}
+# Imputation for ls_jack (for example PCA with 3 dimension)
+ls.imp.forest.jack.onehot <- list()
+ls.imp.forest.jack.fact <- list()
+i <- 1
+num_col <- ncol(df_with_mv)
+for (df in ls_jack) {
+  df <- factor_encode(df, idx_col_cat)
+  # Input: an incomplete dataset
+  # Outout: an imputed dataset (onehot or factor for categorical)
+  imp.forest <- missForest_mod(xmis = df, maxiter = 5, ntree = 100, col_cat = idx_col_cat)
+  ls.imp.forest.jack.onehot[[i]] <- imp.forest$ximp.disj
+  ls.imp.forest.jack.fact[[i]] <- imp.forest$ximp
+  i <- i + 1
+}
+```
+
+```{r}
+df_full <- df_with_mv
+df_full <- factor_encode(df_with_mv, idx_col_cat)
+imp.forest_full <- missForest_mod(xmis = df_full, maxiter = 5, ntree = 100, col_cat = idx_col_cat)
+ls.imp.forest_full.jack.onehot <- imp.forest_full$ximp.disj
+ls.imp.forest_full.jack.fact <- imp.forest_full$ximp
+```
+
+
+```{r}
+ls_MSE(X.complete, ls.imp.forest.jack.fact, mask = rs.mix$mar1$R.mask, col_num = c(1:6), resample_method = "jackknife", df_imp_full = ls.imp.forest_full.jack.fact)
+```
+
+
+```{r}
+rs_jack0 <- combine_jack(ls.imp.forest.jack.onehot, data.frame(ls.imp.forest_full.jack.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
+rs_jack1 <- combine_jack(ls.imp.forest.jack.onehot, data.frame(ls.imp.forest_full.jack.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "wilcox_va")
+rs_jack0
+rs_jack1
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+imp.forest <- missForest(xmis = list_df.mix[[2]], maxiter = 5, ntree = 100, dict_cat = dict_name_cat)
+imp.forest$ximp
+imp.forest$ximp.disj
+```
+
+```{r}
+ls_MSE(df_comp, list(imp.forest$ximp), mask, col_num)
+ls_F1(df_comp, list(imp.forest$ximp), mask, col_cat)
+```
+
+
+#### (3)MissRanger
+```{r}
+list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], idx_col_cat)
+df_with_mv <- list_df.mix[[2]]
+```
+
+
+
+
+```{r}
+
+res <- missRanger_mod(df_with_mv, col_cat = c(7:8))
+```
+
+
+```{r}
+# head(res$ximp,10)
+# head(res$ximp.disj,10)
+```
+
+
+
+
+
+#### (4)MissMDA
+
+
+```{r bootstrap_and_jackknife}
+# Create bootstrap and jackknife datasets
+# Bootstrap needs big number of samples
+# Jackknife has a problem with categorical variables
+df_with_mv <- list_df.mix[[2]]
+df_with_mv = ordinal_encode(df_with_mv,c(7:8))
+df_with_mv <- factor_encode(df_with_mv, c(7:8))
+ls_boot <- bootsample(df_with_mv, 7)
+ls_jack <- jacksample(df_with_mv, 7)
+```
+
+
+
+```{r dict_cat}
+dict_name_cat <- dict_onehot(df_with_mv, c(7:8))
+```
+
+
+```{r imputation_boot_FAMD}
+
+#Imputation (for example PCA with 3 dimension)
+df_with_mv = ordinal_encode(df_with_mv,c(7:8))
+df_with_mv = factor_encode(df_with_mv,c(7:8))
+ls.imp.pca.onehot = list()
+ls.imp.pca.fact = list()
+idx_col_cat = c(7:8)
+i = 1
+num_col = ncol(df_with_mv)
+n_opt =3
+for(df in ls_boot){
+  df = factor_encode(df, idx_col_cat)
+  #n_opt = estim_ncpFAMD_mod(df, method.cv="Kfold", verbose=F, maxiter=100)$ncp
+  #for imputeFAMD_mod, the categorical data need to be ordinal encoded then factor encoded
+  pca = imputeFAMD_mod(df, ncp = n_opt, maxiter = 30)
+  ls.imp.pca.onehot[[i]] = data.frame(pca$tab.disj)
+  ls.imp.pca.fact[[i]] = pca$completeObs
+  i = i + 1
+}
+```
+
+
+
+```{r combine_boot_FAMD}
+rs0 <- combine_boot(ls.imp.pca.fact, col_con = c(1:5), col_dis = c(6), col_cat = c(7:8), num_row_origin = 10000, method = "factor", dict_cat = dict_name_cat, var_cat = "wilcox_va")
+rs <- combine_boot(ls.imp.pca.onehot, col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), num_row_origin = 10000, method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
+```
+
+
+
+```{r imputation_jack_FAMD}
+# Imputation for ls_jack (for example PCA with 3 dimension)
+ls.imp.pca.onehot <- list()
+ls.imp.pca.fact <- list()
+i <- 1
+num_col <- ncol(df_with_mv)
+for (df in ls_jack) {
+  df <- factor_encode(df, c(7,8))
+  # Input: an incomplete dataset
+  # Outout: an imputed dataset (onehot or factor for categorical)
+  pca <- imputeFAMD_mod(df, ncp = 3, maxiter = 30)
+  ls.imp.pca.onehot[[i]] <- data.frame(pca$tab.disj)
+  ls.imp.pca.fact[[i]] <- pca$completeObs
+  i <- i + 1
+}
+```
+
+```{r imputation_jack_full_dataframe_FAMD}
+df_full <- df_with_mv
+df_full <- factor_encode(df_with_mv, c(7,8))
+pca_full <- imputeFAMD_mod(df_full, ncp = 3, maxiter = 30)
+imp.pca_full.onehot <- pca_full$tab.disj
+imp.pca_full.fact <- pca_full$completeObs
+```
+
+
+
+
+```{r combine_jack_FAMD}
+rs_jack0 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "unalike")
+rs_jack1 <- combine_jack(ls.imp.pca.onehot, data.frame(imp.pca_full.onehot), col_con = c(1:5), col_dis = c(6), col_cat = c(7:20), method = "onehot", dict_cat = dict_name_cat, var_cat = "wilcox_va")
+```
+
+
+
+
+
+
+
+#### (5)KNN
+```{r}
+list_df.mix[[2]] <- factor_encode(list_df.mix[[2]], c(7:8))
+df_with_mv <- list_df.mix[[2]]
+```
+
+
+
+
+```{r}
+for (df in ls_boot) {
+  res <- kNN_mod(df, col_cat = c(7:8))
+}
+```
+
+
+```{r}
+# head(res$ximp)
+# head(res$ximp.disj)
+# head(res$R.mask)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Multiple Imputation
+#### (1)MI EM(need change)
+```{r}
+# df_with_mv <- list_df.mix[[2]]
+df_with_mv <- rs$X.incomp
+df_with_mv <- factor_ordinal_encode(df_with_mv, c(7,8))
+dict_lev <- dict_level(df_with_mv, c(7:8))
+```
+
+
+
+```{r}
+em_mi_mod <- function(df, col_cat){
+  exist_cat <- !all(c(0, col_cat) == c(0))
+  if(!exist_cat){# if there are only numerical columns
+    s <- mix::prelim.mix(df, 0) # do preliminary manipulations
+    thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
+    mix::rngseed(43) # set random number generator seed
+    newtheta <- mix::da.mix(s,thetahat,steps=100)
+    ximp <- mix::imp.mix(s, thetahat, df) # impute under newtheta (one draw)
+    return(list(ximp=ximp, ximp.disj=ximp))
+  }
+  
+  dict_name_cat <- dict_onehot(df, col_cat)
+  df.cat <- df[,col_cat]
+  #prepare for em and imputation
+  # The categorical columns must be ordinal encoded and they must be the first columns of the dataframe
+  df_for_em <- prepare_df_for_em(df, col_cat)
+  s <- mix::prelim.mix(df_for_em, length(col_cat)) # do preliminary manipulations
+  thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
+  mix::rngseed(43) # set random number generator seed
+  newtheta <- mix::da.mix(s, thetahat, steps=100)
+  ximp <- mix::imp.mix(s, thetahat, df_for_em) # impute under newtheta (one draw)
+  ximp <- factor_encode(data.frame(ximp), c(1:length(col_cat)))
+  #rearrange columns
+  cols <- colnames(df)
+  ximp <- ximp[cols]
+  
+  #create disjonctive table
+  dims <- c()
+  dimnames <- list()
+  dummy <- dummyVars(" ~ .", data = ximp, sep = "_")
+  ximp.disj <- data.frame(predict(dummy, newdata = ximp))
+  
+  #construction of tensor pi
+  i <- 1
+  for(name in names(dict_name_cat)){
+    #ximp.disj[[name]] <- df_with_mv[[name]]
+    lev <- dict_name_cat[[name]]
+    dims <- c(dims,length(lev))
+    dimnames[[i]] <- lev
+    i <- i + 1
+  }
+  pi <- thetahat$pi
+  tensor_pi <- array(pi, dims, dimnames)
+  
+  #ximp.disj onehot probability
+  cat_name <- unlist(dict_name_cat)
+  ximp.disj[cat_name] <- t(apply(as.matrix(df.cat),1,
+                                 FUN=function(x) prob_vector_cat(x, tensor_pi,dict_name_cat)))
+  return(list(ximp=data.frame(ximp), ximp.disj=data.frame(ximp.disj)))
+}
+```
+
+
+
+
+#### (2)MI EM Amelia
+```{r}
+# EMB (with bootstrap option, but here we've turned it off)
+# multivariate normal assumption
+df_comp <- X.complete
+# df_with_mv <- list_df.mix[[2]]
+mask <- data.frame(is.na(df_with_mv))
+
+res<- MI_em_amelia(df_with_mv, col_num=c(1:6), col_cat=c(7:8), num_imp=10)
+
+
+# performance
+# list_df.mix[[2]]
+# result_imp_em_mi
+# variance_imp_em_mi
+# dens_comp(df_comp[, col_num], result_imp_em_mi[, col_num])
+ls_MSE(df_comp, res$ls_ximp, mask, c(1:6), resample_method = "mi")
+#ls_F1(df_comp, imp_amelia$imputations, mask, col_cat)
+```
+
+
+```{r}
+head(res$ximp)
+head(res$ximp.disj)
+
+
+```
+
+
+
+#### (3) MI mice
+```{r}
+df_comp <- X.complete
+# df_with_mv <- list_df.mix[[2]]
+imp_num=10
+df_with_mv <- generate_miss(df_comp, 0.4, mechanism = "MAR1")$X.incomp
+df_with_mv <- factor_ordinal_encode(df_with_mv,c(7,8))
+res<-mice(df_with_mv, m=imp_num)
+result_mice(res, impnum, col_cat=c(7,8))
+
+
+    
+```
+
+
+```{r}
+complete(res)
+```
+
+
+
+
+#### (4) MI PCA
+```{r}
+df_comp <- X.complete
+# df_with_mv <- list_df.mix[[2]]
+df_with_mv <- generate_miss(df_comp, 0.4, mechanism = "MAR1")$X.incomp
+mask <- data.frame(is.na(df_with_mv))
+df_with_mv <- factor_ordinal_encode(df_with_mv,c(7,8))
+dict_cat <- dict_onehot(df_with_mv, c(7,8))
+res<- MIFAMD_mod(df_with_mv, ncp=3, maxiter = 50, dict_cat=dict_cat)
+```
+
+
+```{r}
+res$ximp
+res$ximp.disj
+
+
+```
+
+
+
+#### (5) MI MissRanger
+```{r}
+df_comp <- X.complete
+df_with_mv <- generate_miss(df_comp, 0.4, mechanism = "MAR1")$X.incomp
+df_with_mv <- factor_ordinal_encode(df_with_mv,c(7,8))
+res<- MI_missRanger(df_with_mv, col_cat = c(7,8), num_mi = 5)
+```
+
+
