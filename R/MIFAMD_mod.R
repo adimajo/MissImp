@@ -296,9 +296,53 @@ MIFAMD_mod <-
     }
 
     # check if data are mixed
-    # TODO: Change MIPCA and MIMCA
-    # if(sum(sapply(X,is.numeric))==ncol(X)){stop("All variables are numeric, use MIPCA")
-    # }else if(sum(sapply(X,is.numeric))==0){stop("No variable is numeric, use MIMCA")}
+    # X,
+    # ncp = 2,
+    # method = c("Regularized", "EM"),
+    # coeff.ridge = 1,
+    # threshold = 1e-06,
+    # seed = NULL,
+    # maxiter = 1000,
+    # nboot = 20,
+    # verbose = T
+    if (sum(sapply(X, is.numeric)) == ncol(X)) {
+      rs <- missMDA::MIPCA(
+        X = X,
+        ncp = ncp,
+        method = method,
+        threshold = threshold,
+        nboot = nboot,
+        method.mi = "Boot",
+        verbose = verbose
+      )
+      df_new_merge <- abind::abind(rs$res.MI, along = 3)
+      ximp <- data.frame(apply(df_new_merge, c(1, 2), mean))
+      res <- list(
+        res.MI = rs$res.MI,
+        res.MI.disj = rs$res.MI,
+        ximp.disj = ximp,
+        ximp = ximp,
+        res.imputeFAMD = rs$res.imputePCA,
+        call = list(X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
+      )
+      return(res)
+    }
+    # }else if(sum(sapply(X,is.numeric))==0){
+    #   rs <- missMDA::imputeMCA(don = X,
+    #             ncp = ncp,
+    #             method = method,
+    #             threshold = threshold,
+    #             coeff.ridge= coeff.ridge,
+    #             seed = seed,
+    #             maxiter = maxiter)
+    #   res <- list(
+    #     res.MI = rs$res.MI,
+    #     res.MI.disj = rs$res.MI,
+    #     ximp.disj = rs$res.imputePCA,
+    #     ximp = rs$res.imputePCA,
+    #     res.imputeFAMD = imputePCA(X, ncp = ncp, coeff.ridge = coeff.ridge, method = method, threshold = threshold, maxiter = maxiter, seed = seed),
+    #     call = list(X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
+    #   )}
 
     # variables are ordered
     don <- X[, c(which(sapply(X, is.numeric)), which(!sapply(X, is.numeric)))]

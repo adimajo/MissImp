@@ -270,7 +270,7 @@ I find the result is less reliable than the mcar_test, and it couldn't deal with
 ```{r imputation}
 #test numeric database with every method
 # imp_method <- match.arg(imp_method, c("missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM", "MI_PCA", "MICE", "MI_Ranger","MI_Ranger_bis"))
-#TODO:need to add MIPCA and MIMCA to MIFAMD
+
 n <- 10000
 mech <- 'MAR2'
 miss_prop <- 0.4
@@ -288,7 +288,7 @@ learn_ncp <- FALSE
 df_complete <- X.complete
 num_mi <- 2
 
-imp_method <- "MI_Ranger_bis"
+imp_method <- "MI_PCA"
 resample_method <- "jackknife"
 cat_combine_by <- "onehot"
 var_cat <- "unalike"

@@ -32,7 +32,9 @@ Imports:
     mix,
     Amelia,
     mice,
-    ggplot2
+    ggplot2,
+    devtools,
+    missMDA
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr,
