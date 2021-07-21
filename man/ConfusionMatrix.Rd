@@ -17,50 +17,6 @@ a table of Confusion Matrix
 \description{
 Compute confusion matrix to evaluate the accuracy of a classification.
 }
-\details{
-#' @title Normalized Zero-One Loss (Classification Error Loss)
-#'
-#' @description
-#' Compute the normalized zero-one classification loss.
-#'
-#' @param y_pred Predicted labels vector, as returned by a classifier
-#' @param y_true Ground truth (correct) 0-1 labels vector
-#' @return Zero-One Loss
-#' @examples
-#' data(cars)
-#' logreg <- glm(formula = vs ~ hp + wt,
-#'               family = binomial(link = "logit"), data = mtcars)
-#' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
-#' ZeroOneLoss(y_pred = pred, y_true = mtcars$vs)
-#' @export
-
-ZeroOneLoss <- function(y_pred, y_true) {
-  ZeroOneLoss <- mean(y_true != y_pred)
-  return(ZeroOneLoss)
-}
-
-
-#' @title Accuracy
-#'
-#' @description
-#' Compute the accuracy classification score.
-#'
-#' @param y_pred Predicted labels vector, as returned by a classifier
-#' @param y_true Ground truth (correct) 0-1 labels vector
-#' @return Accuracy
-#' @examples
-#' data(cars)
-#' logreg <- glm(formula = vs ~ hp + wt,
-#'               family = binomial(link = "logit"), data = mtcars)
-#' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
-#' Accuracy(y_pred = pred, y_true = mtcars$vs)
-#' @export
-
-Accuracy <- function(y_pred, y_true) {
-  Accuracy <- mean(y_true == y_pred)
-  return(Accuracy)
-}
-}
 \examples{
 data(cars)
 logreg <- glm(

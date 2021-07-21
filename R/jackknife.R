@@ -158,8 +158,7 @@ combine_jack <- function(ls_df,
     df_result <- df_new[-c(1, col_cat + 1)] # remove the index and the onehot columns
     if (is_unalike) {
       df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
-    }
-    else {
+    } else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         dplyr::group_by(index) %>%
         dplyr::summarise(across(all_of(names_cat), VA_fact))

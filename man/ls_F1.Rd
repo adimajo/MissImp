@@ -8,7 +8,8 @@ ls_F1(
   df_comp,
   ls_df_imp,
   mask,
-  col_cat,
+  col_cat_comp,
+  col_cat_imp,
   resample_method = "bootstrap",
   combine_method = "onehot",
   dict_cat = NULL
@@ -21,7 +22,9 @@ ls_F1(
 
 \item{mask}{Mask of missingness (1 means missing value and 0 means observed value).}
 
-\item{col_cat}{Indices of categorical columns.}
+\item{col_cat_comp}{Indices of categorical columns in the complete dataset.}
+
+\item{col_cat_imp}{Indices of categorical columns in the imputed dataset.}
 
 \item{resample_method}{Default value is 'bootstrap', could also be 'jackknife' or 'none'.}
 

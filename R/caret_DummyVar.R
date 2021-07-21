@@ -270,7 +270,8 @@ predict.dummyVars <- function(object, newdata, na.action = na.pass, ...) {
             cnames[pos][cnames[pos - 1] == paste(i, object$lvls[[i]][which(object$lvls[[i]] == j) - 1], sep = object$sep)] <- to_text
           } else {
             # Otherwise, we have to test for the preceding NAMElevel being (NAME-1)(last_level)
-            cnames[pos][cnames[pos - 1] == paste(object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1], utils::tail(object$lvls[[object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1]]], n = 1), sep = object$sep)] <- to_text
+            # Add '(Intercept)'
+            cnames[pos][cnames[pos - 1] %in% c(paste(object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1], utils::tail(object$lvls[[object$facVars[order(-nchar(object$facVars))][which(object$facVars[order(-nchar(object$facVars))] == i) - 1]]], n = 1), sep = object$sep), "(Intercept)")] <- to_text
           }
         } else {
           # Otherwise simply replace the last occurence of the pattern

@@ -42,15 +42,9 @@ ls_MSE <- function(df_comp,
                    col_num,
                    resample_method = "bootstrap") {
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
-  # if (resample_method == "jackknife" && is.null(df_imp_full)) {
-  #   stop("With jackknife resampling method, df_imp_full is required.\n")
-  # }
   ls_mse_result <- c()
   mask_num <- mask[, col_num] * 1
   df_comp_num <- df_comp[, col_num]
-  # if (resample_method == "jackknife") {
-  #   df_imp_full_num <- df_imp_full[, col_num]
-  # }
   col_name_num <- colnames(df_comp_num)
   n_sample <- length(ls_df_imp)
   i <- 1
@@ -63,24 +57,17 @@ ls_MSE <- function(df_comp,
       df_imp_i <- df_num[col_name_num]
       df_comp_i <- df_comp_num[df_num$index, ]
       mask_num_i <- mask_num[df_num$index, ]
-    }
-    else if (resample_method == "jackknife") {
-      # df_imp_full_num$index <- as.numeric(row.names(df_imp_full_num))
-      # df_minus <- n_sample * df_imp_full_num[df_imp_num$index, ]
-      # -(n_sample - 1) * df_imp_num
-      df_minus <- df_imp_num
-      df_minus$index <- df_imp_num$index
-      df_imp_i <- df_minus[col_name_num]
-      df_comp_i <- df_comp_num[df_minus$index, ]
-      mask_num_i <- mask_num[df_minus$index, ]
-    }
-    else {
+    } else if (resample_method == "jackknife") {
+      df_imp_i <- df_imp_num[col_name_num]
+      df_comp_i <- df_comp_num[df_imp_num$index, ]
+      mask_num_i <- mask_num[df_imp_num$index, ]
+    } else {
       df_imp_i <- df_imp_num
       df_comp_i <- df_comp_num
       mask_num_i <- mask_num
     }
 
-    mse_result <- (sqrt(sum((as.matrix(df_comp_i) * mask_num_i - as.matrix(df_imp_i) * mask_num_i)^2) / sum(mask_num_i)))
+    mse_result <- sqrt(sum((as.matrix(df_comp_i) * mask_num_i - as.matrix(df_imp_i) * mask_num_i)^2) / sum(mask_num_i))
     ls_mse_result[i] <- mse_result
     i <- i + 1
   }
@@ -102,7 +89,8 @@ ls_MSE <- function(df_comp,
 #' @param df_comp The original complete dataset.
 #' @param ls_df_imp List of imputed dataset.
 #' @param mask Mask of missingness (1 means missing value and 0 means observed value).
-#' @param col_cat Indices of categorical columns.
+#' @param col_cat_comp Indices of categorical columns in the complete dataset.
+#' @param col_cat_imp Indices of categorical columns in the imputed dataset.
 #' @param resample_method Default value is 'bootstrap', could also be 'jackknife' or 'none'.
 #' @param combine_method When \code{resample_method} = 'bootstrap', \code{combine_method} could be 'factor' or 'onehot'.
 #' When \code{method} = 'onehot', \code{ls_F1} takes the average of the onehot probability vector for each observation,
@@ -117,7 +105,8 @@ ls_MSE <- function(df_comp,
 ls_F1 <- function(df_comp,
                   ls_df_imp,
                   mask,
-                  col_cat,
+                  col_cat_comp,
+                  col_cat_imp,
                   resample_method = "bootstrap",
                   combine_method = "onehot",
                   dict_cat = NULL) {
@@ -132,7 +121,7 @@ ls_F1 <- function(df_comp,
   if (combine_method == "onehot" && is.null(dict_cat)) {
     stop("With onehot combining method, dict_cat is needed.\n")
   }
-  dict_lev <- dict_level(df_comp, col_cat)
+  dict_lev <- dict_level(df_comp, col_cat_comp)
 
   ls_f1_result <- c()
   i <- 1
@@ -141,7 +130,7 @@ ls_F1 <- function(df_comp,
 
   for (df_imp in ls_df_imp) {
     # Take only the categorical part
-    df_imp_cat <- df_imp[, col_cat]
+    df_imp_cat <- df_imp[, col_cat_imp]
     col_name_cat <- colnames(df_imp_cat)
     df_imp_cat$index <- as.numeric(row.names(df_imp_cat))
     if (resample_method == "bootstrap") {
@@ -162,50 +151,49 @@ ls_F1 <- function(df_comp,
         mask_cat_i <- mask[df_cat$index, ][names_cat] * 1
       }
       else { # df_imp_cat in form of factor
-        df_cat <- stats::aggregate(. ~ index, data = df_imp_cat[c("index", col_name_cat)], Mode_cat)
+        df_cat <- df_imp_cat[c("index", col_name_cat)] %>%
+          dplyr::group_by(index) %>%
+          dplyr::summarise(across(all_of(col_name_cat), Mode_cat))
         names_cat <- names(dict_lev)
         for (name in names_cat) {
           levels(df_cat[[name]]) <- dict_lev[[name]]
         }
         df_imp_i <- df_cat[col_name_cat]
-        df_comp_i <- df_comp[df_cat$index, col_cat]
-        mask_cat_i <- mask[df_cat$index, col_cat] * 1
+        df_comp_i <- df_comp[df_cat$index, col_cat_comp]
+        mask_cat_i <- mask[df_cat$index, col_cat_comp] * 1
       }
     }
     else if (resample_method == "jackknife") {
-      # df_imp_full_cat <- df_imp_full[col_name_cat]
-      # df_imp_full_cat$index <- as.numeric(row.names(df_imp_full_cat))
-      # df_minus <- n_sample * df_imp_full_cat[which(df_imp_full_cat$index %in% df_imp_cat$index), ]
-      # -(n_sample - 1) * df_imp_cat
-      df_minus <- df_imp_cat
-      df_minus$index <- df_imp_cat$index
       # convert onehot to factor form
       names_cat <- names(dict_cat)
       for (name in names_cat) {
-        df_minus[[name]] <- apply(df_minus[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
-        df_minus[[name]] <- unlist(df_minus[[name]])
-        df_minus[[name]] <- factor(df_minus[[name]])
-        levels(df_minus[[name]]) <- dict_lev[[name]]
+        df_imp_cat[[name]] <- apply(df_imp_cat[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+        df_imp_cat[[name]] <- unlist(df_imp_cat[[name]])
+        df_imp_cat[[name]] <- factor(df_imp_cat[[name]])
+        levels(df_imp_cat[[name]]) <- dict_lev[[name]]
       }
-      df_imp_i <- df_minus[names_cat]
-      df_comp_i <- df_comp[df_minus$index, ][names_cat]
-      mask_cat_i <- mask[df_minus$index, ][names_cat] * 1
+      df_imp_i <- df_imp_cat[names_cat]
+      df_comp_i <- df_comp[df_imp_cat$index, ][names_cat]
+      mask_cat_i <- mask[df_imp_cat$index, ][names_cat] * 1
     }
     else {
       df_imp_i <- df_imp_cat
-      df_comp_i <- df_comp[, col_cat]
-      mask_cat_i <- mask_cat[, col_cat]
+      df_comp_i <- df_comp[, col_cat_comp]
+      mask_cat_i <- mask_cat[, col_cat_comp]
     }
 
     # Change to one vector
-    mask_concat <- as.vector(as.matrix(mask_cat_i))
-    df_comp_concat <- as.vector(as.matrix(df_comp_i))
-    df_comp_true <- df_comp_concat[mask_concat == 1]
-    df_imp_concat <- as.vector(as.matrix(df_imp_i))
-    df_imp_predict <- df_imp_concat[mask_concat == 1]
+    ls_f1 <- c()
+    for (col in colnames(df_comp_i)) {
+      mask_concat <- as.vector(mask_cat_i[[col]])
+      df_comp_concat <- as.vector(df_comp_i[[col]])
+      df_comp_true <- df_comp_concat[mask_concat == 1]
+      df_imp_concat <- as.vector(df_imp_i[[col]])
+      df_imp_predict <- df_imp_concat[mask_concat == 1]
+      ls_f1 <- c(ls_f1, F1_Score_micro(df_comp_true, df_imp_predict))
+    }
     # micro f1 score : https://sebastianraschka.com/faq/docs/multiclass-metric.html
-    f1_result <- F1_Score_micro(factor(df_comp_true), factor(df_imp_predict))
-    ls_f1_result[i] <- mean(f1_result)
+    ls_f1_result[i] <- mean(ls_f1)
     i <- i + 1
   }
   return(list(

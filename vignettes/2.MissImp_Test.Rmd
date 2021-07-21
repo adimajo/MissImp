@@ -157,138 +157,218 @@ sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
 
 ### Test with different missing proportion
 
-```{r different_miss_prop}
-mech <- 'MAR1'
-# df_complete <- X.complete
-col_cat <- c(7,8)
-col_dis <- c(6)
-maxiter_tree <- 10
-maxiter_pca <- 50
-maxiter_mice <- 5
-ncp_pca <- 3#round(ncol(df_complete)/2)
-learn_ncp <- FALSE
-
-num_mi <- 4
-n_df <- 4
-n_resample <- 3#2*round(log(nrow(df_complete)))
-
-
-imp_method <- "PCA"
-resample_method <- "bootstrap"
-cat_combine_by <- "onehot"
-var_cat <- "wilcox_va"
+```{r different_miss_prop_setting}
+# mech <- 'MAR1'
+# # df_complete <- X.complete
+# col_cat <- c(7,8)
+# col_dis <- c(6)
+# maxiter_tree <- 10
+# maxiter_pca <- 50
+# maxiter_mice <- 5
+# ncp_pca <- 3#round(ncol(df_complete)/2)
+# learn_ncp <- FALSE
+# 
+# num_mi <- 4
+# n_df <- 4
+# n_resample <- 3#2*round(log(nrow(df_complete)))
+# 
+# 
+# imp_method <- "PCA"
+# resample_method <- "bootstrap"
+# cat_combine_by <- "onehot"
+# var_cat <- "wilcox_va"
 
 ```
 
 
 ```{r different_miss_prop}
-i <- 1
-result <- list()
-for(miss_prop in c(0.01, 0.1, 0.3)){
-  print(miss_prop)
-  rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
-  miss_prop_real <- rs$real_miss_perc
-  df_incomp <- rs$X.incomp
-  result[["mechanisme"]][i] <- mech
-  result[["miss_perc"]][i] <- miss_prop_real
-  result[["method"]][i] <- imp_method
-  result[["resample"]][i] <- resample_method
-  res_imp <- single_imp(df = df_incomp, imp_method = imp_method,
-                        resample_method = resample_method, n_resample = n_resample,
-                        col_cat = col_cat, col_dis = col_dis,
-                        maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca,
-                        ncp_pca = ncp_pca, learn_ncp = learn_ncp,
-                        cat_combine_by = cat_combine_by, var_cat = var_cat,
-                        df_complete = df_complete, num_mi=num_mi,
-                        maxiter_mice = maxiter_mice)
-  result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
-  result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
-  result[["F1"]][i] <- res_imp$F1$Mean_F1
-  result[["Var_F1"]][i] <- res_imp$F1$Variance_F1
-  i <- i + 1
-}
-
-data.frame(result)
+# i <- 1
+# result <- list()
+# for(miss_prop in c(0.01, 0.1, 0.3)){
+#   print(miss_prop)
+#   rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
+#   miss_prop_real <- rs$real_miss_perc
+#   df_incomp <- rs$X.incomp
+#   result[["mechanisme"]][i] <- mech
+#   result[["miss_perc"]][i] <- miss_prop_real
+#   result[["method"]][i] <- imp_method
+#   result[["resample"]][i] <- resample_method
+#   res_imp <- single_imp(df = df_incomp, imp_method = imp_method,
+#                         resample_method = resample_method, n_resample = n_resample,
+#                         col_cat = col_cat, col_dis = col_dis,
+#                         maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca,
+#                         ncp_pca = ncp_pca, learn_ncp = learn_ncp,
+#                         cat_combine_by = cat_combine_by, var_cat = var_cat,
+#                         df_complete = df_complete, num_mi=num_mi,
+#                         maxiter_mice = maxiter_mice)
+#   result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
+#   result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
+#   result[["F1"]][i] <- res_imp$F1$Mean_F1
+#   result[["Var_F1"]][i] <- res_imp$F1$Variance_F1
+#   i <- i + 1
+# }
+# 
+# data.frame(result)
 ```
 
 ```{r write_csv}
-write.csv(result,"test_MAR1_MIRanger_boot_result.csv")
+# write.csv(result,"test_MAR1_MIRanger_boot_result.csv")
 # read.csv("test_MAR1_MIPCA_boot_result.csv")
 ```
 
 
 ```{r different_df}
-i <- 1
-n <- 10000
-result <- list()
-for(miss_prop in c(0.01, 0.03, 0.07, 0.1, 0.2, 0.3, 0.5, 0.7)){
-  print(miss_prop)
-  miss_prop_real <- c()
-  ls_mse <- c()
-  ls_f1 <- c()
-  ls_seed <- sample(1:100, n_df, replace=TRUE)
-  for(j in seq(n_df)){
-    set.seed(ls_seed[j])
-    df_complete <- complete_df_generator(n)
-    rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
-    miss_prop_real <- c(miss_prop_real,rs$real_miss_perc)
-    df_incomp <- rs$X.incomp
-    res_imp <- single_imp(df = df_incomp, imp_method = imp_method, 
-                        resample_method = resample_method, n_resample = n_resample, 
-                        col_cat = col_cat, col_dis = col_dis,
-                        maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, 
-                        ncp_pca = ncp_pca, learn_ncp = learn_ncp, 
-                        cat_combine_by = cat_combine_by, var_cat = var_cat,
-                        df_complete = df_complete, num_mi=num_mi, 
-                        maxiter_mice = maxiter_mice)
-    ls_mse <- c(ls_mse,res_imp$MSE$Mean_MSE)
-    ls_f1 <- c(ls_f1,res_imp$F1$Mean_F1)
-  }
-  result[["mechanisme"]][i] <- mech
-  result[["miss_perc"]][i] <- mean(miss_prop_real)
-  result[["method"]][i] <- imp_method
-  #result[["resample"]][i] <- resample_method
-  result[["MSE"]][i] <- mean(ls_mse)
-  result[["Var_MSE"]][i] <- var(ls_mse)
-  result[["F1"]][i] <- mean(ls_f1)
-  result[["Var_F1"]][i] <- var(ls_f1)
-  i <- i + 1
-}
-
-data.frame(result)
-```
-
-
-
-```{r write_csv}
-write.csv(result,"test_MAR1_PCA_boot_diff_dfcomp_result.csv")
-read.csv("test_MAR1_MIRanger_bis_boot_diff_dfcomp_result.csv")
-```
-
-
-```{r write_csv}
-res <- read.csv("test_MAR1_MissRanger_boot_diff_dfcomp_result.csv")
-x <- res$miss_perc
-y1 <- res$MSE
-y2 <- res$MSE + 1.96*res$Var_MSE
-y3 <- res$MSE - 1.96*res$Var_MSE
+# i <- 1
+# n <- 10000
+# result <- list()
+# for(miss_prop in c(0.01, 0.03, 0.07, 0.1, 0.2, 0.3, 0.5, 0.7)){
+#   print(miss_prop)
+#   miss_prop_real <- c()
+#   ls_mse <- c()
+#   ls_f1 <- c()
+#   ls_seed <- sample(1:100, n_df, replace=TRUE)
+#   for(j in seq(n_df)){
+#     set.seed(ls_seed[j])
+#     df_complete <- complete_df_generator(n)
+#     rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
+#     miss_prop_real <- c(miss_prop_real,rs$real_miss_perc)
+#     df_incomp <- rs$X.incomp
+#     res_imp <- single_imp(df = df_incomp, imp_method = imp_method, 
+#                         resample_method = resample_method, n_resample = n_resample, 
+#                         col_cat = col_cat, col_dis = col_dis,
+#                         maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, 
+#                         ncp_pca = ncp_pca, learn_ncp = learn_ncp, 
+#                         cat_combine_by = cat_combine_by, var_cat = var_cat,
+#                         df_complete = df_complete, num_mi=num_mi, 
+#                         maxiter_mice = maxiter_mice)
+#     ls_mse <- c(ls_mse,res_imp$MSE$Mean_MSE)
+#     ls_f1 <- c(ls_f1,res_imp$F1$Mean_F1)
+#   }
+#   result[["mechanisme"]][i] <- mech
+#   result[["miss_perc"]][i] <- mean(miss_prop_real)
+#   result[["method"]][i] <- imp_method
+#   #result[["resample"]][i] <- resample_method
+#   result[["MSE"]][i] <- mean(ls_mse)
+#   result[["Var_MSE"]][i] <- var(ls_mse)
+#   result[["F1"]][i] <- mean(ls_f1)
+#   result[["Var_F1"]][i] <- var(ls_f1)
+#   i <- i + 1
+# }
 # 
-# plot(x, y1, type = "n", ylim = range(c(y1, y2)), xlab = "", ylab = "")
-# lines(x, y1, col = "blue")
-# lines(x, y2, col = "red")
-# lines(x, y3, col = "red") 
-predframe <- with(res,data.frame(miss_perc,
-                                MSE=MSE,lwr=MSE-1.96*Var_MSE,upr=MSE+1.96*Var_MSE))
-p1 <- ggplot(predframe, aes(miss_perc, MSE))+
-    geom_point()+
-    geom_line(data=predframe)+
-    geom_ribbon(data=predframe,aes(ymin=lwr,ymax=upr),alpha=0.3, fill='red')+
-    xlab('Percentage of missing data')
-show(p1)
+# data.frame(result)
 ```
 
-`
+
+
+```{r write_csv}
+# write.csv(result,"test_MAR1_PCA_boot_diff_dfcomp_result.csv")
+# read.csv("test_MAR1_MIRanger_bis_boot_diff_dfcomp_result.csv")
+```
+
+
+```{r write_csv}
+# res <- read.csv("test_MAR1_MissRanger_boot_diff_dfcomp_result.csv")
+# x <- res$miss_perc
+# y1 <- res$MSE
+# y2 <- res$MSE + 1.96*res$Var_MSE
+# y3 <- res$MSE - 1.96*res$Var_MSE
+# # 
+# # plot(x, y1, type = "n", ylim = range(c(y1, y2)), xlab = "", ylab = "")
+# # lines(x, y1, col = "blue")
+# # lines(x, y2, col = "red")
+# # lines(x, y3, col = "red") 
+# predframe <- with(res,data.frame(miss_perc,
+#                                 MSE=MSE,lwr=MSE-1.96*Var_MSE,upr=MSE+1.96*Var_MSE))
+# p1 <- ggplot(predframe, aes(miss_perc, MSE))+
+#     geom_point()+
+#     geom_line(data=predframe)+
+#     geom_ribbon(data=predframe,aes(ymin=lwr,ymax=upr),alpha=0.3, fill='red')+
+#     xlab('Percentage of missing data')
+# show(p1)
+```
 
 
 
 
+
+
+
+
+
+### Real data
+
+```{r read_data}
+credit_data <- read.csv("../data/UCI_Credit_data/crx.data", fileEncoding="UTF-8", dec=",", header = FALSE)
+```
+
+```{r preprocessing}
+credit_data <- data.frame(credit_data)
+col_num <- c(2,3,8,11,14,15)
+col_dis <- c(11,14,15)
+col_cat <- c(1,c(4:7),9,10,12,13,16)
+
+for(j in col_num){
+  if(j %in% col_dis){
+    suppressWarnings(credit_data[,j] <- as.integer(credit_data[,j]))
+  }
+  else{
+    suppressWarnings(credit_data[,j] <- as.numeric(credit_data[,j]))
+  }
+}
+for(j in col_cat){
+  credit_data[,j][credit_data[,j]=="?"] <- NA
+  suppressWarnings(credit_data[,j] <- as.factor(credit_data[,j]))
+}
+credit_data <- na.omit(credit_data)
+row.names(credit_data) <- c(1:nrow(credit_data))
+head(credit_data)
+```
+
+```{r rd_param_settings}
+mech <- 'MAR1'
+miss_prop <- 0.4
+X.complete <- credit_data
+rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
+df <- rs$X.incomp
+df_complete <- X.complete
+col_cat <- c(1,c(4:7),9,10,12,13,16)
+col_dis <- c(11,14,15)
+maxiter_tree <- 10
+maxiter_pca <- 50
+maxiter_mice <- 5
+ncp_pca <- round(ncol(df_complete)/2)
+learn_ncp <- FALSE
+
+num_mi <- 4
+n_df <- 4
+n_resample <- 4
+
+
+imp_method <- "PCA"
+resample_method <- "jackknife"
+cat_combine_by <- "onehot"
+var_cat <- "wilcox_va"
+```
+
+
+
+
+```{r MissImp}
+res <- MissImp(
+  df = df, imp_method = imp_method, resample_method = resample_method,
+  n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
+  maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
+  learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
+  df_complete = df_complete, num_mi=num_mi, maxiter_mice = maxiter_mice
+)
+```
+```{r result_MissImp}
+head(df)
+head(res$imp)
+head(res$imp.disj)
+head(res$uncertainty)
+head(res$uncertainty.disj)
+res$MSE
+res$F1
+# dens_comp(res$imp,X.complete)
+```

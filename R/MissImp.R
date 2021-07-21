@@ -163,14 +163,20 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     if (cat_combine_by == "factor") {
       ls.imp.tmp <- ls.imp.fact
       col_cat_boot <- col_cat
+      col_con_boot <- col_con
+      col_dis_boot <- col_dis
     } else {
       ls.imp.tmp <- ls.imp.onehot
-      # With onehot form, the categorical column index has changed. Y7 -> Y7_1,...Y7_6
-      col_cat_boot <- c(1:ncol(ls.imp.onehot[[1]]))
-      col_cat_boot <- col_cat_boot[!col_cat_boot %in% c(col_con, col_dis)]
+      # With onehot form, the column index have changed. Y7 -> Y7_1,...Y7_6
+      num_name <- colnames(df[, c(col_con, col_dis)])
+      con_name <- colnames(df[, col_con])
+      dis_name <- colnames(df[, col_dis])
+      col_cat_boot <- which(!colnames(ls.imp.onehot[[1]]) %in% num_name)
+      col_con_boot <- which(colnames(ls.imp.onehot[[1]]) %in% con_name)
+      col_dis_boot <- which(colnames(ls.imp.onehot[[1]]) %in% dis_name)
     }
     res <- combine_boot(ls.imp.tmp,
-      col_con = col_con, col_dis = col_dis, col_cat = col_cat_boot,
+      col_con = col_con_boot, col_dis = col_dis_boot, col_cat = col_cat_boot,
       num_row_origin = num_row, method = cat_combine_by, dict_cat = dict_name_cat,
       var_cat = var_cat
     )
@@ -178,11 +184,16 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     if (cat_combine_by == "factor") {
       stop("Please choose cat_combine_by='onehot' when resample_method=='jackknife'.")
     }
-    col_cat_jack <- c(1:ncol(ls.imp.onehot[[1]]))
-    col_cat_jack <- col_cat_jack[!col_cat_jack %in% c(col_con, col_dis)]
+    # With onehot form, the column index have changed. Y7 -> Y7_1,...Y7_6
+    num_name <- colnames(df[, c(col_con, col_dis)])
+    con_name <- colnames(df[, col_con])
+    dis_name <- colnames(df[, col_dis])
+    col_cat_jack <- which(!colnames(ls.imp.onehot[[1]]) %in% num_name)
+    col_con_jack <- which(colnames(ls.imp.onehot[[1]]) %in% con_name)
+    col_dis_jack <- which(colnames(ls.imp.onehot[[1]]) %in% dis_name)
     res <- combine_jack(ls.imp.onehot,
-      col_con = col_con,
-      col_dis = col_dis, col_cat = col_cat_jack, method = cat_combine_by,
+      col_con = col_con_jack,
+      col_dis = col_dis_jack, col_cat = col_cat_jack, method = cat_combine_by,
       dict_cat = dict_name_cat, var_cat = var_cat
     )
   } else { # if resample_method=='none', there will be no resampling
@@ -196,6 +207,7 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   if (exist_cat) {
     name_cat <- names(dict_lev)
     for (name in name_cat) {
+      res$imp[[name]] <- factor(res$imp[[name]])
       levels(res$imp[[name]]) <- dict_lev[[name]]
     }
   }
@@ -205,24 +217,21 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   if (!is.null(df_complete)) { # original complete dataset is provided
     mask <- data.frame(is.na(df))
     colnames(mask) <- colnames(mask)
-    df_imp_full <- NULL
-    # if (resample_method == "jackknife") {
-    #   df_imp_full <- imp.full.onehot
-    # }
     MSE_imp <- ls_MSE(df_complete, ls.imp.fact,
       mask = mask, col_num = c(col_con, col_dis),
       resample_method = resample_method
     )
     if (exist_cat && cat_combine_by == "factor") {
       F1 <- ls_F1(df_complete, ls.imp.fact,
-        mask = mask, col_cat = col_cat,
+        mask = mask, col_cat_comp = col_cat, col_cat_imp = col_cat,
         resample_method = resample_method, combine_method = cat_combine_by
       )
     } else if (exist_cat && cat_combine_by == "onehot") {
-      col_cat_oh <- c(1:length(colnames(ls.imp.onehot[[1]])))
-      col_cat_oh <- col_cat_oh[!col_cat_oh %in% c(col_con, col_dis)]
+      # With onehot form, the column index have changed. Y7 -> Y7_1,...Y7_6
+      num_name <- colnames(df[, c(col_con, col_dis)])
+      col_cat_F1 <- which(!colnames(ls.imp.onehot[[1]]) %in% num_name)
       F1_imp <- ls_F1(df_complete, ls.imp.onehot,
-        mask = mask, col_cat = col_cat_oh,
+        mask = mask, col_cat_comp = col_cat, col_cat_imp = col_cat_F1,
         resample_method = resample_method, combine_method = cat_combine_by,
         dict_cat = dict_name_cat
       )
