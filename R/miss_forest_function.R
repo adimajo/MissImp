@@ -493,8 +493,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   # Add: Calculate the one-hot probability from randomforest
   if (iter == maxiter) {
     ximp <- Ximp[[iter]]
-  }
-  else {
+  } else {
     ximp <- Ximp[[iter - 1]]
   }
 
@@ -714,7 +713,12 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             misY <- stats::predict(RF, misX)
             if (exist_cat) {
               misY.disj <- predict.randomForest(RF, misX, type = "prob")
-              ximp.disj[misi, dict_cat[[ls_colname[varInd]]]] <- misY.disj
+              if (ncol(ximp.disj[misi, dict_cat[[ls_colname[varInd]]]]) == ncol(misY.disj)) {
+                ximp.disj[misi, dict_cat[[ls_colname[varInd]]]] <- misY.disj
+              } else { # When there are dropped unused levels
+                colnames(misY.disj) <- paste0(v, "_", colnames(misY.disj))
+                ximp.disj[misi, colnames(misY.disj)] <- misY.disj
+              }
             }
           }
         }

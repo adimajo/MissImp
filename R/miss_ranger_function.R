@@ -278,7 +278,7 @@ missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, see
       fit <- ranger::ranger(
         formula = reformulate(completed, response = v),
         data = data[!v.na, union(v, completed), drop = FALSE],
-        case.weights = case.weights[!v.na], ...
+        case.weights = case.weights[!v.na]
       )
       pred <- predict(fit, data[v.na, completed, drop = FALSE])$predictions
       if (exist_cat) {
@@ -289,15 +289,18 @@ missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, see
             case.weights = case.weights[!v.na], probability = TRUE
           )
           pred.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE])$predictions
-          data.disj[v.na, dict_cat[[v]]] <- if (pmm.k) {
-            pmm(
+          if (pmm.k) {
+            data.disj[v.na, dict_cat[[v]]] <- pmm(
               xtrain = fit.disj$predictions,
               xtest = pred.disj,
               ytrain = data.disj[[v]][!v.na],
               k = pmm.k
             )
-          } else {
-            pred.disj
+          } else if (ncol(data.disj[v.na, dict_cat[[v]]]) == ncol(pred.disj)) {
+            data.disj[v.na, dict_cat[[v]]] <- pred.disj
+          } else { # When there are dropped unused levels
+            colnames(pred.disj) <- paste0(v, "_", colnames(pred.disj))
+            data.disj[v.na, colnames(pred.disj)] <- pred.disj
           }
         }
         else {

@@ -52,7 +52,7 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     dummy <- dummyVars(" ~ .", data = dfi, sep = "_")
     tmp.disj <- data.frame(predict(dummy, newdata = dfi))
     if (imp_method == "missRanger") {
-      res <- missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree)
+      res <- suppressWarnings(missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree))
       ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
       ls.imp.fact[[i]] <- data.frame(res$ximp)
     }
@@ -208,7 +208,16 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     name_cat <- names(dict_lev)
     for (name in name_cat) {
       res$imp[[name]] <- factor(res$imp[[name]])
-      levels(res$imp[[name]]) <- dict_lev[[name]]
+      if (nlevels(res$imp[[name]]) == length(dict_lev[[name]])) {
+        levels(res$imp[[name]]) <- dict_lev[[name]]
+      } else {
+        ls_str <- strsplit(levels(res$imp[[name]]), "_")
+        ls_lev <- c()
+        for (str in ls_str) {
+          ls_lev <- c(ls_lev, as.integer(str[-1]))
+        }
+        levels(res$imp[[name]]) <- dict_lev[[name]][ls_lev]
+      }
     }
   }
 
@@ -216,13 +225,13 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   ## 4. Evaluation matrix
   if (!is.null(df_complete)) { # original complete dataset is provided
     mask <- data.frame(is.na(df))
-    colnames(mask) <- colnames(mask)
+    colnames(mask) <- colnames(df)
     MSE_imp <- ls_MSE(df_complete, ls.imp.fact,
       mask = mask, col_num = c(col_con, col_dis),
       resample_method = resample_method
     )
     if (exist_cat && cat_combine_by == "factor") {
-      F1 <- ls_F1(df_complete, ls.imp.fact,
+      F1_imp <- ls_F1(df_complete, ls.imp.fact,
         mask = mask, col_cat_comp = col_cat, col_cat_imp = col_cat,
         resample_method = resample_method, combine_method = cat_combine_by
       )

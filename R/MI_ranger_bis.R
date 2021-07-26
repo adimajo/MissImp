@@ -213,15 +213,18 @@ missRanger_mod_draw_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter =
           mask.disj <- aperm(mask.disj, c(1, 3, 2))
           pred_draw.disj <- apply(mask.disj * pred1.disj, c(1, 2), sum)
           #######
-          data.disj[v.na, dict_cat[[v]]] <- if (pmm.k) {
-            pmm(
+          if (pmm.k) {
+            data.disj[v.na, dict_cat[[v]]] <- pmm(
               xtrain = fit.disj$predictions,
               xtest = pred_draw.disj,
               ytrain = data.disj[[v]][!v.na],
               k = pmm.k
             )
-          } else {
-            pred_draw.disj
+          } else if (ncol(data.disj[v.na, dict_cat[[v]]]) == ncol(pred_draw.disj)) {
+            data.disj[v.na, dict_cat[[v]]] <- pred_draw.disj
+          } else { # When there are dropped unused levels
+            colnames(pred_draw.disj) <- paste0(v, "_", colnames(pred_draw.disj))
+            data.disj[v.na, colnames(pred_draw.disj)] <- pred_draw.disj
           }
         }
         else {

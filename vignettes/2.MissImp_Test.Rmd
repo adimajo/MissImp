@@ -345,7 +345,7 @@ n_resample <- 4
 
 
 imp_method <- "PCA"
-resample_method <- "jackknife"
+resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 ```
@@ -362,6 +362,8 @@ res <- MissImp(
   df_complete = df_complete, num_mi=num_mi, maxiter_mice = maxiter_mice
 )
 ```
+
+
 ```{r result_MissImp}
 head(df)
 head(res$imp)

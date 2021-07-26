@@ -504,5 +504,8 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
   colnum <- length(colnames(data))
   dataimp <- data[, 1:(colnum / 2)]
   R.mask <- data[, (colnum / 2 + 1):colnum]
+  for (col in colnames(data.disj)) {
+    data.disj[[col]] <- unlist(data.disj[[col]])
+  }
   return(list(ximp = dataimp, ximp.disj = data.disj, R.mask = R.mask))
 }
