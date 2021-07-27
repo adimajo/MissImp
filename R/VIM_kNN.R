@@ -130,11 +130,25 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
                     col_cat = c()) {
   check_data(data)
   data_df <- !data.table::is.data.table(data)
-  ## Add: Create dict_cat with categroical columns
+  ## Add:
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
+    name_cat <- colnames(data)[col_cat]
+    # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+    for (col in name_cat) {
+      data[[col]] <- factor(as.character(data[[col]]))
+    }
+    # remember the levels for each categorical column
+    dict_lev <- dict_level(data, col_cat)
+    # preserve colnames for ximp.disj
+    dummy <- dummyVars(" ~ .", data = data, sep = "_")
+    col_names.disj <- colnames(data.frame(predict(dummy, newdata = data)))
+    # represent the factor columns with their ordinal levels
+    data <- factor_ordinal_encode(data, col_cat)
+    # Create dict_cat with categroical columns
     dict_cat <- dict_onehot(data, col_cat)
   }
+
   ## Add: data.disj
   dummy <- dummyVars(" ~ .", data = data, sep = "_")
   data.disj <- data.frame(predict(dummy, newdata = data))
@@ -506,6 +520,13 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
   R.mask <- data[, (colnum / 2 + 1):colnum]
   for (col in colnames(data.disj)) {
     data.disj[[col]] <- unlist(data.disj[[col]])
+  }
+  # return to original levels
+  if (exist_cat) {
+    for (col in name_cat) {
+      levels(dataimp[[col]]) <- dict_lev[[col]]
+    }
+    colnames(data.disj) <- col_names.disj
   }
   return(list(ximp = dataimp, ximp.disj = data.disj, R.mask = R.mask))
 }

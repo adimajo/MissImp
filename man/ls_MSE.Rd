@@ -4,7 +4,7 @@
 \alias{ls_MSE}
 \title{List of MSE}
 \usage{
-ls_MSE(df_comp, ls_df_imp, mask, col_num, resample_method = "bootstrap")
+ls_MSE(df_comp, ls_df_imp, mask, col_num_comp, resample_method = "bootstrap")
 }
 \arguments{
 \item{df_comp}{The original complete dataset.}
@@ -13,7 +13,7 @@ ls_MSE(df_comp, ls_df_imp, mask, col_num, resample_method = "bootstrap")
 
 \item{mask}{Mask of missingness (1 means missing value and 0 means observed value)}
 
-\item{col_num}{Indices of numerical columns}
+\item{col_num_comp}{Indices of numerical columns in the complete dataset}
 
 \item{resample_method}{Default value is 'bootstrap', could also be 'jackknife' or 'none'.}
 }

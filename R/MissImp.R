@@ -19,18 +19,32 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   col_con <- c(1:num_col)
   col_con <- col_con[!col_con %in% c(col_cat, col_dis)]
 
+
+
+
   ## 0. Preparation
-  dict_name_cat <- list()
   if (exist_cat) {
-    # remember the levels for each categorical column
     dict_lev <- dict_level(df, col_cat)
-    # represent the factor columns with their ordinal levels
-    # df <- ordinal_encode(df, col_cat)
-    # df <- factor_encode(df, col_cat)
-    df <- factor_ordinal_encode(df, col_cat)
-    # create dictionary for the onehot columns
     dict_name_cat <- dict_onehot(df, col_cat)
   }
+
+
+
+
+  # dict_name_cat <- list()
+  # if (exist_cat) {
+  #   col_cat_name <- colnames(df)[col_cat]
+  #   for(col in col_cat_name){
+  #     df[[col]] <- factor(as.character(df[[col]]))
+  #     levels(df[[col]]) <- unique(df[[col]])[!is.na(unique(df[[col]]))]
+  #   }
+  #   # remember the levels for each categorical column
+  #   dict_lev <- dict_level(df, col_cat)
+  #   # represent the factor columns with their ordinal levels
+  #   df <- factor_ordinal_encode(df, col_cat)
+  #   # create dictionary for the onehot columns
+  #   dict_name_cat <- dict_onehot(df, col_cat)
+  # }
 
   ## 1. Create several datasets. (Resampling)
   if (resample_method == "bootstrap") {
@@ -52,108 +66,90 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     dummy <- dummyVars(" ~ .", data = dfi, sep = "_")
     tmp.disj <- data.frame(predict(dummy, newdata = dfi))
     if (imp_method == "missRanger") {
-      res <- suppressWarnings(missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree))
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      res <- missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree)
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "missForest") {
       res <- missForest_mod(xmis = dfi, maxiter = maxiter_tree, col_cat = col_cat)
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "kNN") {
       res <- suppressWarnings((kNN_mod(dfi, col_cat = col_cat, weightDist = TRUE)))
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "EM") {
-      res <- em_mod(dfi, col_cat = col_cat)
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      res <- em_mod(dfi, col_cat = col_cat) # Error: matrix not sinugular, the categorical variable with too many categories may ends in a sparse matrix
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "PCA") {
       if (learn_ncp) {
         ncp_pca <- estim_ncpFAMD_mod(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
       }
       res <- imputeFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca)
-      tmp.disj[colnames(res$tab.disj)] <- res$tab.disj
-      tmp.disj[is.na(tmp.disj)] <- 0 # in case there is one category that doesn't appear in dfi
-      ls.imp.onehot[[i]] <- data.frame(tmp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$completeObs)
+      imp.onehot_i <- res$tab.disj
+      imp.fact_i <- res$completeObs
     }
     else if (imp_method == "MI_EM") {
       res <- MI_EM_amelia(dfi, col_num = c(col_con, col_dis), col_cat = col_cat, num_imp = num_mi)
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "MI_PCA") {
       res <- MIFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca, nboot = num_mi)
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "MICE") {
+      col_cat <- which(!sapply(dfi, is.numeric))
+      exist_cat <- !all(c(0, col_cat) == c(0))
+      if (exist_cat) {
+        name_cat <- colnames(dfi)[col_cat]
+        # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+        for (col in name_cat) {
+          dfi[[col]] <- factor(as.character(dfi[[col]]))
+        }
+        # remember the levels for each categorical column
+        dict_lev <- dict_level(dfi, col_cat)
+        # preserve colnames for ximp.disj
+        dummy <- dummyVars(" ~ .", data = dfi, sep = "_")
+        col_names.disj <- colnames(data.frame(predict(dummy, newdata = dfi)))
+        # represent the factor columns with their ordinal levels
+        dfi <- factor_ordinal_encode(dfi, col_cat)
+      }
       res0 <- mice::mice(dfi, m = num_mi, maxit = maxiter_mice)
       res <- result_mice(res0, impnum = num_mi, col_cat = col_cat)
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      # change back to original levels
+      if (exist_cat) {
+        for (col in name_cat) {
+          levels(res$ximp[[col]]) <- dict_lev[[col]]
+        }
+        colnames(res$ximp.disj) <- col_names.disj
+      }
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "MI_Ranger") {
       res <- MI_missRanger(data.frame(dfi), col_cat = col_cat, num_mi = num_mi, maxiter = maxiter_tree)
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
     else if (imp_method == "MI_Ranger_bis") {
       res <- MI_missRanger_bis(data.frame(dfi), col_cat = col_cat, num_mi = num_mi, maxiter = maxiter_tree)
-      ls.imp.onehot[[i]] <- data.frame(res$ximp.disj)
-      ls.imp.fact[[i]] <- data.frame(res$ximp)
+      imp.onehot_i <- res$ximp.disj
+      imp.fact_i <- res$ximp
     }
-
+    # in case there is one category that doesn't appear in dfi
+    tmp.disj[colnames(imp.onehot_i)] <- imp.onehot_i
+    tmp.disj[is.na(tmp.disj)] <- 0
+    ls.imp.onehot[[i]] <- data.frame(tmp.disj)
+    ls.imp.fact[[i]] <- data.frame(imp.fact_i)
     i <- i + 1
   }
 
-  ## In case of Jackknife, one imputation for the original incomplete dataset is needed.
-  # if (resample_method == "jackknife") {
-  #   if (imp_method == "missRanger") {
-  #     res <- missRanger_mod(df, col_cat = col_cat, maxiter = maxiter_tree)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  #   else if (imp_method == "missForest") {
-  #     res <- missForest_mod(xmis = df, maxiter = maxiter_tree, col_cat = col_cat)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  #   else if (imp_method == "kNN") {
-  #     res <- kNN_mod(df, col_cat = col_cat, weightDist = TRUE)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  #   else if (imp_method == "EM") {
-  #     res <- em_mod(df, col_cat = col_cat)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  #   else if (imp_method == "PCA") {
-  #     if (learn_ncp) {
-  #       ncp_pca <- estim_ncpFAMD_mod(df, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
-  #     }
-  #     res <- imputeFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca)
-  #     imp.full.onehot <- data.frame(res$tab.disj)
-  #   }
-  #   else if (imp_method == "MI_EM") {
-  #     res <- MI_EM_amelia(df, col_num = c(col_con, col_dis), col_cat = col_cat, num_imp = num_mi)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  #   else if (imp_method == "MI_PCA") {
-  #     res <- MIFAMD_mod(df, ncp = ncp_pca, maxiter = maxiter_pca, dict_cat = dict_name_cat, nboot = num_mi)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  #   else if (imp_method == "MICE") {
-  #     res0 <- mice(df, m = num_mi, maxit = maxiter_mice)
-  #     res <- result_mice(res, impnum, col_cat = col_cat)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  #   else if (imp_method == "MI_Ranger") {
-  #     res <- MI_missRanger(df_with_mv, col_cat = col_cat, num_mi = num_mi)
-  #     imp.full.onehot <- data.frame(res$ximp.disj)
-  #   }
-  # }
 
 
 
@@ -203,23 +199,19 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     res[[df_result_var_disj]] <- NA
     res[[df_result_var]] <- NA
   }
+
+
   # Change back the categorical variable levels
   if (exist_cat) {
     name_cat <- names(dict_lev)
     for (name in name_cat) {
-      res$imp[[name]] <- factor(res$imp[[name]])
-      if (nlevels(res$imp[[name]]) == length(dict_lev[[name]])) {
-        levels(res$imp[[name]]) <- dict_lev[[name]]
-      } else {
-        ls_str <- strsplit(levels(res$imp[[name]]), "_")
-        ls_lev <- c()
-        for (str in ls_str) {
-          ls_lev <- c(ls_lev, as.integer(str[-1]))
-        }
-        levels(res$imp[[name]]) <- dict_lev[[name]][ls_lev]
-      }
+      res$imp[[name]] <- apply(as.array(res$imp[[name]]), 1, function(x) {
+        unlist(strsplit(x, "_"))[-1]
+      })
     }
   }
+
+
 
 
   ## 4. Evaluation matrix
@@ -227,7 +219,7 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     mask <- data.frame(is.na(df))
     colnames(mask) <- colnames(df)
     MSE_imp <- ls_MSE(df_complete, ls.imp.fact,
-      mask = mask, col_num = c(col_con, col_dis),
+      mask = mask, col_num_comp = c(col_con, col_dis),
       resample_method = resample_method
     )
     if (exist_cat && cat_combine_by == "factor") {

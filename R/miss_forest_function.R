@@ -80,8 +80,22 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   ## Add: Create dict_cat with categroical columns
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
+    name_cat <- colnames(xmis)[col_cat]
+    # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+    for (col in name_cat) {
+      xmis[[col]] <- factor(as.character(xmis[[col]]))
+    }
+    # remember the levels for each categorical column
+    dict_lev <- dict_level(xmis, col_cat)
+    # preserve colnames for ximp.disj
+    dummy <- dummyVars(" ~ .", data = xmis, sep = "_")
+    col_names.disj <- colnames(data.frame(predict(dummy, newdata = xmis)))
+    # represent the factor columns with their ordinal levels
+    xmis <- factor_ordinal_encode(xmis, col_cat)
+    # Create dict_cat with categroical columns
     dict_cat <- dict_onehot(xmis, col_cat)
   }
+
   ## Add: Last iteration will be used to predict the onehot probability for the categorical columns
   maxiter <- maxiter - 1
 
@@ -774,10 +788,20 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   }
 
 
+
+  ## Add: return the original levels
+  if (exist_cat) {
+    for (col in name_cat) {
+      levels(Ximp_final[[col]]) <- dict_lev[[col]]
+    }
+    colnames(ximp.disj) <- col_names.disj
+  }
+
   ## Add: if there is no categorical columns, ximp.disj = ximp
   if (!exist_cat) {
     ximp.disj <- Ximp_final
   }
+
   ## produce output w.r.t. stopping rule
   if (iter == maxiter + 1) {
     if (any(is.na(xtrue))) {

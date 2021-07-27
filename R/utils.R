@@ -95,7 +95,7 @@ dict_level <- function(df, col_cat) {
   ls_col_cat_name <- colnames(df)[col_cat]
   res <- list()
   for (col_name in ls_col_cat_name) {
-    res[[col_name]] <- levels(df[[col_name]])
+    res[[col_name]] <- c(levels(df[[col_name]]))
   }
   return(res)
 }

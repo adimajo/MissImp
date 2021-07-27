@@ -31,7 +31,7 @@ dens_comp <- function(df_comp, df_imp) {
 #' @param ls_df_imp List of imputed dataset.
 #' @param mask Mask of missingness (1 means missing value and 0 means observed value)
 #' @param resample_method Default value is 'bootstrap', could also be 'jackknife' or 'none'.
-#' @param col_num Indices of numerical columns
+#' @param col_num_comp Indices of numerical columns in the complete dataset
 #' @export
 #' @return \code{list_MSE} List of MSE corresponding to the given list of imputed datasets.
 #' @return \code{Mean_MSE} Mean value of MSE.
@@ -39,12 +39,12 @@ dens_comp <- function(df_comp, df_imp) {
 ls_MSE <- function(df_comp,
                    ls_df_imp,
                    mask,
-                   col_num,
+                   col_num_comp,
                    resample_method = "bootstrap") {
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   ls_mse_result <- c()
-  mask_num <- mask[, col_num] * 1
-  df_comp_num <- df_comp[, col_num]
+  mask_num <- mask[, col_num_comp] * 1
+  df_comp_num <- df_comp[, col_num_comp]
   col_name_num <- colnames(df_comp_num)
   n_sample <- length(ls_df_imp)
   i <- 1
@@ -143,17 +143,10 @@ ls_F1 <- function(df_comp,
         for (name in names_cat) {
           df_cat[[name]] <- apply(df_cat[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
           df_cat[[name]] <- unlist(df_cat[[name]])
+          df_cat[[name]] <- apply(as.array(df_cat[[name]]), 1, function(x) {
+            unlist(strsplit(x, "_"))[-1]
+          })
           df_cat[[name]] <- factor(df_cat[[name]])
-          if (nlevels(df_cat[[name]]) == length(dict_lev[[name]])) {
-            levels(df_cat[[name]]) <- dict_lev[[name]]
-          } else {
-            ls_str <- strsplit(levels(df_cat[[name]]), "_")
-            ls_lev <- c()
-            for (str in ls_str) {
-              ls_lev <- c(ls_lev, as.integer(str[-1]))
-            }
-            levels(df_cat[[name]]) <- dict_lev[[name]][ls_lev]
-          }
         }
         df_imp_i <- df_cat[names_cat]
         df_comp_i <- df_comp[df_cat$index, ][names_cat]
@@ -165,16 +158,10 @@ ls_F1 <- function(df_comp,
           dplyr::summarise(across(all_of(col_name_cat), Mode_cat))
         names_cat <- names(dict_lev)
         for (name in names_cat) {
-          if (nlevels(df_cat[[name]]) == length(dict_lev[[name]])) {
-            levels(df_cat[[name]]) <- dict_lev[[name]]
-          } else {
-            ls_str <- strsplit(levels(df_cat[[name]]), "_")
-            ls_lev <- c()
-            for (str in ls_str) {
-              ls_lev <- c(ls_lev, as.integer(str[-1]))
-            }
-            levels(df_cat[[name]]) <- dict_lev[[name]][ls_lev]
-          }
+          df_cat[[name]] <- apply(as.array(df_cat[[name]]), 1, function(x) {
+            unlist(strsplit(x, "_"))[-1]
+          })
+          df_cat[[name]] <- factor(df_cat[[name]])
         }
         df_imp_i <- df_cat[col_name_cat]
         df_comp_i <- df_comp[df_cat$index, col_cat_comp]
@@ -187,17 +174,10 @@ ls_F1 <- function(df_comp,
       for (name in names_cat) {
         df_imp_cat[[name]] <- apply(df_imp_cat[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
         df_imp_cat[[name]] <- unlist(df_imp_cat[[name]])
+        df_imp_cat[[name]] <- apply(as.array(df_imp_cat[[name]]), 1, function(x) {
+          unlist(strsplit(x, "_"))[-1]
+        })
         df_imp_cat[[name]] <- factor(df_imp_cat[[name]])
-        if (nlevels(df_imp_cat[[name]]) == length(dict_lev[[name]])) {
-          levels(df_imp_cat[[name]]) <- dict_lev[[name]]
-        } else {
-          ls_str <- strsplit(levels(df_imp_cat[[name]]), "_")
-          ls_lev <- c()
-          for (str in ls_str) {
-            ls_lev <- c(ls_lev, as.integer(str[-1]))
-          }
-          levels(df_imp_cat[[name]]) <- dict_lev[[name]][ls_lev]
-        }
       }
       df_imp_i <- df_imp_cat[names_cat]
       df_comp_i <- df_comp[df_imp_cat$index, ][names_cat]

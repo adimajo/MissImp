@@ -321,12 +321,13 @@ for(j in col_cat){
 }
 credit_data <- na.omit(credit_data)
 row.names(credit_data) <- c(1:nrow(credit_data))
+levels(credit_data$V16) <- c("pos", "neg")
 head(credit_data)
 ```
 
 ```{r rd_param_settings}
 mech <- 'MAR1'
-miss_prop <- 0.4
+miss_prop <- 0.6
 X.complete <- credit_data
 rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
 df <- rs$X.incomp

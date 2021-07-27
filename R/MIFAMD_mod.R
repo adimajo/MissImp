@@ -81,7 +81,7 @@ MIFAMD_mod <-
           ))) {
             dimnames(x) <- list(row.names(tab), paste(nom,
               levels(moda),
-              sep = "."
+              sep = "_"
             ))
           } else {
             dimnames(x) <- list(row.names(tab), levels(moda))
@@ -133,7 +133,7 @@ MIFAMD_mod <-
       nb.obs <- sum(WW[, -cumsum(sapply(Xquali, nlevels))])
       nb.obs.quanti <- sum(WW[, seq(ncol(Xquanti))])
       Zhat2 <- reconst.FAMD(Zhat[, seq(ncol(Xquanti))], Zhat[, -seq(ncol(Xquanti))], ncp = ncp, D = D, M = M)
-      Residu <- (Zhat - Zhat2$zzhat) %*% diag(M)^{
+      Residu <- as.matrix(Zhat - Zhat2$zzhat) %*% diag(M)^{
         1 / 2
       }
       Residu[is.na(cbind.data.frame(Xquanti, tab.disjonctif.NA(Xquali)))] <- 0
@@ -177,7 +177,9 @@ MIFAMD_mod <-
       draw <- function(tabdisj, Don) {
         nbdummy <- rep(1, ncol(Don))
         is.quali <- which(!sapply(Don, is.numeric))
+        # change
         nbdummy[is.quali] <- sapply(Don[, is.quali, drop = FALSE], nlevels)
+        ##
         vec <- c(0, cumsum(nbdummy))
         Donres <- Don
         for (i in is.quali) {
@@ -220,7 +222,6 @@ MIFAMD_mod <-
         X = don, ncp = ncp, method = method, row.w = D,
         coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter
       )
-
 
       var_homo <- estim.sigma2(
         Xquanti = don[, quanti, drop = FALSE],
@@ -295,16 +296,7 @@ MIFAMD_mod <-
       return(rs)
     }
 
-    # check if data are mixed
-    # X,
-    # ncp = 2,
-    # method = c("Regularized", "EM"),
-    # coeff.ridge = 1,
-    # threshold = 1e-06,
-    # seed = NULL,
-    # maxiter = 1000,
-    # nboot = 20,
-    # verbose = T
+
     if (sum(sapply(X, is.numeric)) == ncol(X)) {
       rs <- missMDA::MIPCA(
         X = X,
@@ -344,10 +336,37 @@ MIFAMD_mod <-
     #     call = list(X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
     #   )}
 
+    ## Add:
+    col_cat <- which(!sapply(X, is.numeric))
+    exist_cat <- !all(c(0, col_cat) == c(0))
+    if (exist_cat) {
+      name_cat <- colnames(X)[col_cat]
+      # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+      for (col in name_cat) {
+        X[[col]] <- factor(as.character(X[[col]]))
+      }
+      # remember the levels for each categorical column
+      dict_lev <- dict_level(X, col_cat)
+      # preserve colnames for ximp.disj
+      dummy <- dummyVars(" ~ .", data = X, sep = "_")
+      col_names.disj <- colnames(data.frame(predict(dummy, newdata = X)))
+      # represent the factor columns with their ordinal levels
+      X <- factor_ordinal_encode(X, col_cat)
+      # Create dict_cat with categroical columns
+      dict_cat <- dict_onehot(X, col_cat)
+      dummy <- dummyVars(" ~ .", data = X, sep = "_")
+      col_names.disj.after <- colnames(data.frame(predict(dummy, newdata = X)))
+      # Build a dictionary between Y1_1 and Y1_a
+      dict_disj <- list()
+      for (i in seq(length(col_names.disj.after))) {
+        dict_disj[[col_names.disj.after[i]]] <- col_names.disj[i]
+      }
+    }
+
+
+
     # variables are ordered
     don <- X[, c(which(sapply(X, is.numeric)), which(!sapply(X, is.numeric)))]
-    col_cat <- which(!sapply(X, is.numeric))
-    dict_cat <- dict_onehot(X, col_cat)
     # print
     temp <- if (coeff.ridge == 1) {
       "regularized"
@@ -402,6 +421,7 @@ MIFAMD_mod <-
     df_new_merge <- abind::abind(res.MI.disj, along = 3)
     ximp.all <- data.frame(apply(df_new_merge, c(1, 2), mean))
     ximp.disj <- ximp.all
+
     if (any(!sapply(don, is.numeric))) {
       names_cat <- names(dict_cat)
       for (name in names_cat) {
@@ -412,6 +432,20 @@ MIFAMD_mod <-
       ximp <- ximp.all[colnames(X)]
     } else {
       ximp <- ximp.disj
+    }
+
+    # Add: change back to original levels
+    if (exist_cat) {
+      for (col in name_cat) {
+        levels(ximp[[col]]) <- dict_lev[[col]]
+      }
+      colnames(ximp.disj) <- dict_disj[colnames(ximp.disj)]
+      for (i in seq(length(res.MI))) {
+        for (col in name_cat) {
+          levels(res.MI[[i]][[col]]) <- dict_lev[[col]]
+        }
+        colnames(res.MI.disj[[i]]) <- dict_disj[colnames(res.MI.disj[[i]])]
+      }
     }
     ###########
     res <- list(

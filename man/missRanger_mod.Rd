@@ -44,6 +44,7 @@ The following arguments are e.g. incompatible with \code{ranger}: \code{write.fo
 \code{ximp} An imputed \code{data.frame}.
 
 \code{ximp.disj} A disjunctive imputed \code{data.frame}.
+For example if Y7 has levels a and b, then in \code{ximp.disj} the column Y7_1 corresponds to the probability of Y7=a.
 }
 \description{
 \code{missRanger_mod} is a modified imputation function of \code{missRanger} in 'missRanger' package.

@@ -27,6 +27,7 @@
 #'
 #' @return \code{ximp} An imputed \code{data.frame}.
 #' @return \code{ximp.disj} A disjunctive imputed \code{data.frame}.
+#' For example if Y7 has levels a and b, then in \code{ximp.disj} the column Y7_1 corresponds to the probability of Y7=a.
 #' @references
 #' \enumerate{
 #'   \item Wright, M. N. & Ziegler, A. (2016). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. Journal of Statistical Software, in press. <arxiv.org/abs/1508.04409>.
@@ -97,11 +98,23 @@ missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, see
     cat("\nMissing value imputation by random forests\n")
   }
 
-  ## Add: Create dict_cat with categroical columns
+  ## Add:
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
-    dict_cat <- dict_onehot(data, col_cat)
     name_cat <- colnames(data)[col_cat]
+    # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+    for (col in name_cat) {
+      data[[col]] <- factor(as.character(data[[col]]))
+    }
+    # remember the levels for each categorical column
+    dict_lev <- dict_level(data, col_cat)
+    # preserve colnames for ximp.disj
+    dummy <- dummyVars(" ~ .", data = data, sep = "_")
+    col_names.disj <- colnames(data.frame(predict(dummy, newdata = data)))
+    # represent the factor columns with their ordinal levels
+    data <- factor_ordinal_encode(data, col_cat)
+    # Create dict_cat with categroical columns
+    dict_cat <- dict_onehot(data, col_cat)
   }
   ## Add: Last iteration will be used to predict the onehot probability for the categorical columns
   maxiter <- maxiter - 1
@@ -366,8 +379,23 @@ missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, see
   if (!exist_cat) {
     data.disj <- data
   }
-  return(list(ximp = revert(converted, X = data), ximp.disj = data.disj))
+  ximp <- revert(converted, X = data)
+
+  # change back to original levels
+  if (exist_cat) {
+    for (col in name_cat) {
+      levels(ximp[[col]]) <- dict_lev[[col]]
+    }
+    colnames(data.disj) <- col_names.disj
+  }
+  return(list(ximp = ximp, ximp.disj = data.disj))
 }
+
+
+
+
+
+
 
 #' A version of \code{typeof} internally used by \code{missRanger}.
 #'

@@ -295,6 +295,24 @@ missRanger_mod_draw_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter =
 
 MI_missRanger_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
                               verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
+  ## Add:
+  exist_cat <- !all(c(0, col_cat) == c(0))
+  if (exist_cat) {
+    name_cat <- colnames(data)[col_cat]
+    # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+    for (col in name_cat) {
+      data[[col]] <- factor(as.character(data[[col]]))
+    }
+    # remember the levels for each categorical column
+    dict_lev <- dict_level(data, col_cat)
+    # preserve colnames for ximp.disj
+    dummy <- dummyVars(" ~ .", data = data, sep = "_")
+    col_names.disj <- colnames(data.frame(predict(dummy, newdata = data)))
+    # represent the factor columns with their ordinal levels
+    data <- factor_ordinal_encode(data, col_cat)
+    # Create dict_cat with categroical columns
+    dict_cat <- dict_onehot(data, col_cat)
+  }
   imputations <- list()
   imputations.disj <- list()
   for (i in seq(num_mi)) {
@@ -316,6 +334,16 @@ MI_missRanger_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, 
       final.imp[[name]] <- unlist(final.imp[[name]])
       final.imp[[name]] <- factor(final.imp[[name]])
       final.imp <- final.imp[, !names(final.imp) %in% dict_cat[[name]]]
+    }
+    for (col in name_cat) {
+      levels(final.imp[[col]]) <- dict_lev[[col]]
+    }
+    colnames(final.imp.disj) <- col_names.disj
+    for (i in seq(length(imputations))) {
+      for (col in name_cat) {
+        levels(imputations[[i]][[col]]) <- dict_lev[[col]]
+      }
+      colnames(imputations.disj[[i]]) <- col_names.disj
     }
   } else {
     final.imp <- final.imp.disj

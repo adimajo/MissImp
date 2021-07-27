@@ -208,11 +208,43 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
 imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-6,
                            ind.sup = NULL, sup.var = NULL, seed = NULL, maxiter = 1000, ...) {
   X <- as.data.frame(X)
+  ## Add:
+  X <- X[, c(which(sapply(X, is.numeric)), which(!sapply(X, is.numeric)))]
+  col_cat <- which(!sapply(X, is.numeric))
+  exist_cat <- !all(c(0, col_cat) == c(0))
+  if (exist_cat) {
+    name_cat <- colnames(X)[col_cat]
+    # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+    for (col in name_cat) {
+      X[[col]] <- factor(as.character(X[[col]]))
+    }
+    # remember the levels for each categorical column
+    dict_lev <- dict_level(X, col_cat)
+    # preserve colnames for ximp.disj
+    dummy <- dummyVars(" ~ .", data = X[, col_cat], sep = "_")
+    col_names.disj <- colnames(data.frame(predict(dummy, newdata = X[, col_cat])))
+    col_names.disj <- c(colnames(X[, which(sapply(X, is.numeric))]), col_names.disj)
+    # represent the factor columns with their ordinal levels
+    X <- factor_ordinal_encode(X, col_cat)
+    # Create dict_cat with categroical columns
+    dict_cat <- dict_onehot(X, col_cat)
+  }
+
+
   method <- match.arg(method, c("Regularized", "regularized", "EM", "em"), several.ok = T)[1]
   method <- tolower(method)
   type <- rep("s", ncol(X))
   type[!sapply(X, is.numeric)] <- "n"
   res <- imputeMFA_mod(X = X, group = rep(1, ncol(X)), type = type, ncp = ncp, method = method, row.w = row.w, coeff.ridge = coeff.ridge, ind.sup = ind.sup, num.group.sup = sup.var, threshold = threshold, seed = seed, maxiter = maxiter)
+
+  # Add: change back to original levels
+  if (exist_cat) {
+    for (col in name_cat) {
+      levels(res$completeObs[[col]]) <- dict_lev[[col]]
+    }
+    colnames(res$tab.disj) <- col_names.disj
+  }
+
   return(res)
 }
 
@@ -733,6 +765,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
   }
   completeObs <- as.matrix(Xhat2)
   completeObs[missing] <- Xhat[missing]
+
   result <- list()
   result$tab.disj <- completeObs
   result$completeObs <- find.category(X, completeObs)

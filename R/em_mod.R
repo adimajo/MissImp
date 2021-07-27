@@ -70,8 +70,21 @@ em_mod <- function(df, col_cat) {
     ximp <- norm::imp.norm(s, thetahat, df) # impute under newtheta (one draw)
     return(list(ximp = ximp, ximp.disj = ximp))
   }
-
+  name_cat <- colnames(df)[col_cat]
+  # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+  for (col in name_cat) {
+    df[[col]] <- factor(as.character(df[[col]]))
+  }
+  # remember the levels for each categorical column
+  dict_lev <- dict_level(df, col_cat)
+  # preserve colnames for ximp.disj
+  dummy <- dummyVars(" ~ .", data = df, sep = "_")
+  col_names.disj <- colnames(data.frame(predict(dummy, newdata = df)))
+  # represent the factor columns with their ordinal levels
+  df <- factor_ordinal_encode(df, col_cat)
+  # Create dict_cat with categroical columns
   dict_name_cat <- dict_onehot(df, col_cat)
+
   df.cat <- df[, col_cat]
   # prepare for em and imputation
   # The categorical columns must be ordinal encoded and they must be the first columns of the dataframe
@@ -108,5 +121,11 @@ em_mod <- function(df, col_cat) {
   ximp.disj[cat_name] <- t(apply(as.matrix(df.cat), 1,
     FUN = function(x) prob_vector_cat(x, tensor_pi, dict_name_cat)
   ))
+
+  # Add: change back to original levels
+  for (col in name_cat) {
+    levels(ximp[[col]]) <- dict_lev[[col]]
+  }
+  colnames(ximp.disj) <- col_names.disj
   return(list(ximp = data.frame(ximp), ximp.disj = data.frame(ximp.disj)))
 }
