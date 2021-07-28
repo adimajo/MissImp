@@ -34,7 +34,9 @@ Imports:
     mice,
     ggplot2,
     devtools,
-    missMDA
+    missMDA,
+    abind,
+    mvtnorm
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr,

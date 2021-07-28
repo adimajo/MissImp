@@ -298,7 +298,7 @@ sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
 ### Real data
 
 ```{r read_data}
-credit_data <- read.csv("../data/UCI_Credit_data/crx.data", fileEncoding="UTF-8", dec=",", header = FALSE)
+credit_data <- read.csv("../inst/extdata/UCI_Credit_data/crx.data", fileEncoding="UTF-8", dec=",", header = FALSE)
 ```
 
 ```{r preprocessing}

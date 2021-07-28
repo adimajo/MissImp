@@ -37,6 +37,8 @@ Furthermore, if \code{verbose} is positive, the variables used for imputation ar
 
 \item{case.weights}{Vector with non-negative case weights.}
 
+\item{col_cat}{Column index of categorical variables.}
+
 \item{...}{Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
 The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.}
 }

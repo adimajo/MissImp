@@ -1,4 +1,72 @@
-# copied from https://rdrr.io/cran/MissMech/src/R/TestMCARNormality.R
+
+#' TestMCARNormality: Testing Homoscedasticity, Multivariate Normality, and Missing Completely at Random
+#'
+#' @description
+#' This is a function from \code{MissMech} package. The description of this function in the original package is as following:
+#' The main purpose of this function is to test whether the missing data mechanism, for an incompletely observed data set,
+#' is one of missing completely at random (MCAR). As a by product, however, this package has the capabilities of imputing incomplete data,
+#' performing a test to determine whether data have a multivariate normal distribution, performing a test of equality of covariances for groups,
+#' and obtaining normal-theory maximum likelihood estimates for mean and covariance when data are incomplete.
+#' The test of MCAR follows the methodology proposed by Jamshidian and Jalal (2010).
+#' It is based on testing equality of covariances between groups having identical missing data patterns.
+#' The data are imputed, using two options of normality and distribution free, and the test of equality of covariances between
+#' groups with identical missing data patterns is performed also with options of assuming normality (Hawkins test) or non-parametrically.
+#' Users can optionally use their own method of data imputation as well. Multiple imputation is an additional feature of the program that can be used
+#' as a diagnostic tool to help identify cases or variables that contribute to rejection of MCAR, when the MCAR test is rejecetd
+#' (See Jamshidian and Jalal, 2010 for details). As explained in Jamshidian, Jalal, and Jansen (2014), this package can also be used for imputing missing data,
+#'  test of multivariate normality, and test of equality of covariances between several groups when data are completly observed.
+#'
+#' @param data A matrix or data frame consisting of at least two columns. Values must be numerical with missing data indicated by NA.
+#' @param del.lesscases Missing data patterns consisting of del.lesscases number of cases or less will be removed from the data set.
+#' @param imputation.number Number of imputations to be used, if data are to be multiply imputed.
+#' @param method method is an option that allows the user to select one of the methods of Hawkins or nonparametric for the test.
+#' If the user is certain that data have multivariate normal distribution, the method="Hawkins" should be selected.
+#' On the other hand if data are not normally distributed, then method="Nonparametric" should be used. If the user is unsure,
+#' then the default value of method="Auto" will be used, in which case both the Hawkins and the nonparametric tests will be run,
+#' and the default output follows the recommendation by Jamshidian and Jalal (2010) outlined in their flowchart given in Figure 7 of their paper.
+#' @param imputation.method "Dist.Free": Missing data are imputed nonparametrically using the method of Sirvastava and Dolatabadi (2009);
+#' also see Jamshidian and Jalal (2010).
+#'
+#' "normal": Missing data are imputed assuming that the data come from a multivariate normal distribution.
+#' The maximum likelihood estimate of the mean and covariance obtained from Mls is used for generating imputed values.
+#' The imputed values are based on the conditional distribution of the missing variables given the observed variables;
+#' see Jamshidian and Jalal (2010) for more details.
+#' @param nrep Number of replications used to simulate the Neyman distribution to determine the cut off value for the Neyman test in the program SimNey.
+#'  Larger values increase the accuracy of the Neyman test.
+#' @param n.min The minimum number of cases in a group that triggers the use of asymptotic Chi distribution in place of the emprical distribution in the Neyman test of uniformity.
+#' @param seed An initial random number generator seed. The default is 110 that can be reset to a user selected number. If the value is set to NA, a system selected seed is used.
+#' @param alpha The significance level at which tests are performed.
+#' @param imputed.data The user can optionally provide an imputed data set. In this case the program will not impute the data and will use the imputed data set for the tests performed.
+#' Note that the order of cases in the imputed data set should be the same as that of the incomplete data set.
+#'
+#' @return \code{analyzed.data} The data that were used in the analysis. If del.lesscases=0, this is the same as the orginal data inputted. If del.lesscases > 0, then this is the data with cases removed.
+#' @return \code{imputed.data} The analyzed.data after imputation. If imputation.number > 1, the first imputed data set is returned.
+#' @return \code{ordered.data} The analyzed.data ordered according to missing data pattern, usin the function OrderMissing.
+#' @return \code{caseorder} A mapping of case number indices from ordered.data to the original data.
+#' More specifically, the j-th row of the ordered.data is the caseorder[j]-th (the j-th element of caseorder) row of the original data.
+#' @return \code{pnormality} p-value for the nonparametric test: When imputation.number > 1, this is a vector with each element corresponding to each of the imputed data sets.
+#' @return \code{adistar} A matrix consisting of the Anderson-Darling test statistic for each group (columns) and each imputation (rows).
+#' @return \code{adstar} Sum of adistar: When imputation.number >1, this is a vector with each element corresponding to each of the imputed data sets.
+#' @return \code{pvalcomb} p-value for the Hawkins test: When imputation.number >1, this is a vector with each element corresponding to each of the imputed data sets.
+#' @return \code{pvalsn} A matrix consisting of Hawkins test statistics for each group (columns) and each imputation (rows).
+#' @return \code{g} Number of patterns used in the analysis.
+#' @return \code{combp} Hawkins test statistic: When imputation.number > 1, this is a vector with each element corresponding to each of the imputed data sets.
+#' @return \code{alpha} The significance level at which the hypothesis tests are performed.
+#' @return \code{patcnt} A vector consisting the number of cases corresponding to each pattern in patused.
+#' @return \code{patused} A matrix indicating the missing data patterns in the data set, using 1 and NA's.
+#' @return \code{imputation.number} A value greater than or equal to 1. If a value larger than 1 is used, data will be imputed imputation.number times.
+#' @return \code{mu} The normal-theory maximum likelihood estimate of the variables means.
+#' @return \code{sigma} The normal-theory maximum likelihood estimate of the variables covariance matrix.
+#'
+#' @export
+#'
+#' @references
+#' Jamshidian, M. and Bentler, P. M. (1999). ``ML estimation of mean and covariance structures with missing data using complete data routines.'' Journal of Educational and Behavioral Statistics, 24, 21-41.
+#'
+#' Jamshidian, M. and Jalal, S. (2010). ``Tests of homoscedasticity, normality, and missing at random for incomplete multivariate data,'' Psychometrika, 75, 649-674.
+#'
+#' Jamshidian, M. Jalal, S., and Jansen, C. (2014). `` MissMech: An R Package for Testing Homoscedasticity, Multivariate Normality, and Missing Completely at Random (MCAR),'' Journal of Statistical Software, 56(6), 1-31.
+
 TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, method = "Auto",
                               imputation.method = "Dist.Free", nrep = 10000, n.min = 30,
                               seed = 110, alpha = 0.05, imputed.data = NA) {
@@ -940,4 +1008,76 @@ LegNorm <- function(x) {
   p3 <- sqrt(7) * p3
   p4 <- 3 * p4
   list(p1 = p1, p2 = p2, p3 = p3, p4 = p4)
+}
+
+
+
+Ddf <- function(data, mu, sig) {
+  y <- data
+  n <- nrow(y)
+  p <- ncol(y)
+  ns <- p * (p + 1) / 2
+  nparam <- ns + p
+  ddss <- matrix(0, ns, ns)
+  ddmm <- matrix(0, p, p)
+  ddsm <- matrix(0, ns, p)
+  for (i in 1:n) {
+    obs <- which(!is.na(y[i, ]))
+    lo <- length(obs)
+    tmp <- cbind(rep(obs, 1, each = lo), rep(obs, lo))
+    tmp <- matrix(tmp[tmp[, 1] >= tmp[, 2], ], ncol = 2)
+    lolo <- lo * (lo + 1) / 2
+    subsig <- sig[obs, obs]
+    submu <- mu[obs, ]
+    temp <- matrix(y[i, obs] - submu, nrow = 1)
+    a <- solve(subsig)
+    b <- a %*% (2 * t(temp) %*% temp - subsig) * a
+    d <- temp %*% a
+    ddimm <- 2 * a
+    # ==================== DD(mu, mu)
+    ddmm[obs, obs] <- ddmm[obs, obs] + ddimm
+    # ==================== DD(sig, mu)
+    rcnt <- 0
+    ddism <- matrix(0, lolo, lo)
+    for (k in 1:lo) {
+      for (l in 1:k) {
+        rcnt <- rcnt + 1
+        ccnt <- 0
+        for (kk in 1:lo) {
+          ccnt <- ccnt + 1
+          ddism[rcnt, ccnt] <- 2 * (1 - 0.5 * (k == l)) *
+            (a[kk, l] %*% d[k] + a[kk, k] %*% d[l])
+        }
+      }
+    }
+    for (k in 1:lolo) {
+      par1 <- tmp[k, 1] * (tmp[k, 1] - 1) / 2 + tmp[k, 2]
+      for (j in 1:lo) {
+        ddsm[par1, obs[j]] <- ddsm[par1, obs[j]] + ddism[k, j]
+      }
+    }
+    #------------------------ Test part
+    ssi <- matrix(0, lolo, lolo)
+    for (m in 1:lolo) {
+      u <- which(obs == tmp[m, 1])
+      v <- which(obs == tmp[m, 2])
+      for (q in 1:m) {
+        k <- which(obs == tmp[q, 1])
+        l <- which(obs == tmp[q, 2])
+        ssi[m, q] <- (b[v, k] * a[l, u] + b[v, l] * a[k, u] + b[u, k] * a[l, v] +
+          b[u, l] * a[k, v]) * (1 - 0.5 * (u == v)) * (1 - 0.5 * (k == l))
+      }
+    }
+    for (k in 1:lolo) {
+      par1 <- tmp[k, 1] * (tmp[k, 1] - 1) / 2 + tmp[k, 2]
+      for (l in 1:k) {
+        par2 <- tmp[l, 1] * (tmp[l, 1] - 1) / 2 + tmp[l, 2]
+        ddss[par1, par2] <- ddss[par1, par2] + ssi[k, l]
+        ddss[par2, par1] <- ddss[par1, par2]
+      }
+    }
+  }
+  dd <- -1 * rbind(cbind(ddmm, t(ddsm)), cbind(ddsm, ddss)) / 2
+  se <- -solve(dd)
+  list(dd = dd, se = se)
 }
