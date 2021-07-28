@@ -24,7 +24,8 @@ dens_comp <- function(df_comp, df_imp) {
 #' List of MSE
 #' @description \code{ls_MSE} is a function that returns a list of MSE corresponding to the given list of imputed datasets.
 #' \code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets,
-#' and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines.
+#' and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines. 
+#' With the purpose of giving every variable the same weight, we scale each variable with the mean and variance calculated from the complete dataset.
 #'
 #' If the complete and imputed datasets are mix-typed, then only the numerical parts are taken into account.
 #' @param df_comp The original complete dataset.
@@ -36,6 +37,10 @@ dens_comp <- function(df_comp, df_imp) {
 #' @return \code{list_MSE} List of MSE corresponding to the given list of imputed datasets.
 #' @return \code{Mean_MSE} Mean value of MSE.
 #' @return \code{Variance_MSE} Variance of MSE.
+#' @return  \code{list_MSE_scale} List of scaled MSE corresponding to the given list of imputed datasets. Before performing the calculation of MSE, 
+#' the imputed data set and complete dataset are both scaled with Min-Max scale using the parameter from complete dataset.
+#' @return \code{Mean_MSE_scale} Mean value of scaled MSE.
+#' @return \code{Variance_MSE} Variance of scaled MSE.
 ls_MSE <- function(df_comp,
                    ls_df_imp,
                    mask,
@@ -43,6 +48,7 @@ ls_MSE <- function(df_comp,
                    resample_method = "bootstrap") {
   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
   ls_mse_result <- c()
+  ls_mse_result_scale <- c()
   mask_num <- mask[, col_num_comp] * 1
   df_comp_num <- df_comp[, col_num_comp]
   col_name_num <- colnames(df_comp_num)
@@ -66,15 +72,27 @@ ls_MSE <- function(df_comp,
       df_comp_i <- df_comp_num
       mask_num_i <- mask_num
     }
-
+    
     mse_result <- sqrt(sum((as.matrix(df_comp_i) * mask_num_i - as.matrix(df_imp_i) * mask_num_i)^2) / sum(mask_num_i))
     ls_mse_result[i] <- mse_result
+    
+    #MinMax Scale each variable based on estimated parameters from corresponding complete dataset
+    min_comp <- apply(df_comp_i, 2, min)
+    max_min_comp <- apply(df_comp_i, 2, function(x) {max(x)-min(x)})
+    df_comp_i_scale <- as.matrix(df_comp_i - min_comp)/t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
+    df_imp_i_scale <- as.matrix(df_imp_i - min_comp)/t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
+    mse_result_scale <- sqrt(sum((as.matrix(df_comp_i_scale) * mask_num_i - as.matrix(df_imp_i_scale) * mask_num_i)^2) / sum(mask_num_i))
+    ls_mse_result_scale[i] <- mse_result_scale
+    
     i <- i + 1
   }
   return(list(
     list_MSE = ls_mse_result,
     Mean_MSE = mean(ls_mse_result),
-    Variance_MSE = var(ls_mse_result)
+    Variance_MSE = var(ls_mse_result),
+    list_MSE_scale = ls_mse_result_scale,
+    Mean_MSE_scale = mean(ls_mse_result_scale),
+    Variance_MSE_scale = var(ls_mse_result_scale)
   ))
 }
 

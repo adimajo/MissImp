@@ -327,7 +327,7 @@ head(credit_data)
 
 ```{r rd_param_settings}
 mech <- 'MAR1'
-miss_prop <- 0.6
+miss_prop <- 0.4
 X.complete <- credit_data
 rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
 df <- rs$X.incomp
