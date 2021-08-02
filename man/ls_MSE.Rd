@@ -24,7 +24,7 @@ ls_MSE(df_comp, ls_df_imp, mask, col_num_comp, resample_method = "bootstrap")
 
 \code{Variance_MSE} Variance of MSE.
 
-\code{list_MSE_scale} List of scaled MSE corresponding to the given list of imputed datasets. Before performing the calculation of MSE, 
+\code{list_MSE_scale} List of scaled MSE corresponding to the given list of imputed datasets. Before performing the calculation of MSE,
 the imputed data set and complete dataset are both scaled with Min-Max scale using the parameter from complete dataset.
 
 \code{Mean_MSE_scale} Mean value of scaled MSE.
@@ -34,7 +34,7 @@ the imputed data set and complete dataset are both scaled with Min-Max scale usi
 \description{
 \code{ls_MSE} is a function that returns a list of MSE corresponding to the given list of imputed datasets.
 \code{resample_method} is needed because with 'bootstrap' method, we could have repeated lines in the imputed datasets,
-and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines. 
+and with both 'jackknife' and 'bootstrap', the imputed datasets could not cover all the lines.
 With the purpose of giving every variable the same weight, we scale each variable with the mean and variance calculated from the complete dataset.
 
 If the complete and imputed datasets are mix-typed, then only the numerical parts are taken into account.

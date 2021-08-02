@@ -300,7 +300,7 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
             data.mod[[cn]] <- as.factor(data.mod[[cn]])
           }
         }
-        ranger.mod <- ranger(ranger.formula, data = data.mod)
+        ranger.mod <- ranger::ranger(ranger.formula, data = data.mod)
 
         new_feature <- c(paste0(variable[i], "randomForestFeature"))
         data[, c(new_feature) := predict(ranger.mod, data = dataRF)$predictions]

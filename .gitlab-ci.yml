@@ -32,7 +32,8 @@ lint:
   script:
     - r -e "install.packages('styler')"
     - r inst/pipeline/lint.R
-
+  allow_failure: true 
+  
 buildbinary:
   extends: .before_script_template
   stage: build

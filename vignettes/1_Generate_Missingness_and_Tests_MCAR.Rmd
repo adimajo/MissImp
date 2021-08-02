@@ -1,7 +1,7 @@
 ---
 title: "Generation of Missingness and Tests of MCAR"
 output:
-  rmarkdown::html_vignette
+
   html_document:
     toc: true
     toc_float: true

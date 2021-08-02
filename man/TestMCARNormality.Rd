@@ -24,18 +24,18 @@ TestMCARNormality(
 
 \item{imputation.number}{Number of imputations to be used, if data are to be multiply imputed.}
 
-\item{method}{method is an option that allows the user to select one of the methods of Hawkins or nonparametric for the test. 
-If the user is certain that data have multivariate normal distribution, the method="Hawkins" should be selected. 
-On the other hand if data are not normally distributed, then method="Nonparametric" should be used. If the user is unsure, 
-then the default value of method="Auto" will be used, in which case both the Hawkins and the nonparametric tests will be run, 
+\item{method}{method is an option that allows the user to select one of the methods of Hawkins or nonparametric for the test.
+If the user is certain that data have multivariate normal distribution, the method="Hawkins" should be selected.
+On the other hand if data are not normally distributed, then method="Nonparametric" should be used. If the user is unsure,
+then the default value of method="Auto" will be used, in which case both the Hawkins and the nonparametric tests will be run,
 and the default output follows the recommendation by Jamshidian and Jalal (2010) outlined in their flowchart given in Figure 7 of their paper.}
 
-\item{imputation.method}{"Dist.Free": Missing data are imputed nonparametrically using the method of Sirvastava and Dolatabadi (2009); 
-also see Jamshidian and Jalal (2010). 
+\item{imputation.method}{"Dist.Free": Missing data are imputed nonparametrically using the method of Sirvastava and Dolatabadi (2009);
+also see Jamshidian and Jalal (2010).
 
-"normal": Missing data are imputed assuming that the data come from a multivariate normal distribution. 
-The maximum likelihood estimate of the mean and covariance obtained from Mls is used for generating imputed values. 
-The imputed values are based on the conditional distribution of the missing variables given the observed variables; 
+"normal": Missing data are imputed assuming that the data come from a multivariate normal distribution.
+The maximum likelihood estimate of the mean and covariance obtained from Mls is used for generating imputed values.
+The imputed values are based on the conditional distribution of the missing variables given the observed variables;
 see Jamshidian and Jalal (2010) for more details.}
 
 \item{nrep}{Number of replications used to simulate the Neyman distribution to determine the cut off value for the Neyman test in the program SimNey.
@@ -47,7 +47,7 @@ Larger values increase the accuracy of the Neyman test.}
 
 \item{alpha}{The significance level at which tests are performed.}
 
-\item{imputed.data}{The user can optionally provide an imputed data set. In this case the program will not impute the data and will use the imputed data set for the tests performed. 
+\item{imputed.data}{The user can optionally provide an imputed data set. In this case the program will not impute the data and will use the imputed data set for the tests performed.
 Note that the order of cases in the imputed data set should be the same as that of the incomplete data set.}
 }
 \value{
@@ -57,7 +57,7 @@ Note that the order of cases in the imputed data set should be the same as that 
 
 \code{ordered.data} The analyzed.data ordered according to missing data pattern, usin the function OrderMissing.
 
-\code{caseorder} A mapping of case number indices from ordered.data to the original data. 
+\code{caseorder} A mapping of case number indices from ordered.data to the original data.
 More specifically, the j-th row of the ordered.data is the caseorder[j]-th (the j-th element of caseorder) row of the original data.
 
 \code{pnormality} p-value for the nonparametric test: When imputation.number > 1, this is a vector with each element corresponding to each of the imputed data sets.
@@ -88,16 +88,16 @@ More specifically, the j-th row of the ordered.data is the caseorder[j]-th (the 
 }
 \description{
 This is a function from \code{MissMech} package. The description of this function in the original package is as following:
-The main purpose of this function is to test whether the missing data mechanism, for an incompletely observed data set, 
-is one of missing completely at random (MCAR). As a by product, however, this package has the capabilities of imputing incomplete data, 
-performing a test to determine whether data have a multivariate normal distribution, performing a test of equality of covariances for groups, 
-and obtaining normal-theory maximum likelihood estimates for mean and covariance when data are incomplete. 
-The test of MCAR follows the methodology proposed by Jamshidian and Jalal (2010). 
-It is based on testing equality of covariances between groups having identical missing data patterns. 
-The data are imputed, using two options of normality and distribution free, and the test of equality of covariances between 
-groups with identical missing data patterns is performed also with options of assuming normality (Hawkins test) or non-parametrically. 
-Users can optionally use their own method of data imputation as well. Multiple imputation is an additional feature of the program that can be used 
-as a diagnostic tool to help identify cases or variables that contribute to rejection of MCAR, when the MCAR test is rejecetd 
+The main purpose of this function is to test whether the missing data mechanism, for an incompletely observed data set,
+is one of missing completely at random (MCAR). As a by product, however, this package has the capabilities of imputing incomplete data,
+performing a test to determine whether data have a multivariate normal distribution, performing a test of equality of covariances for groups,
+and obtaining normal-theory maximum likelihood estimates for mean and covariance when data are incomplete.
+The test of MCAR follows the methodology proposed by Jamshidian and Jalal (2010).
+It is based on testing equality of covariances between groups having identical missing data patterns.
+The data are imputed, using two options of normality and distribution free, and the test of equality of covariances between
+groups with identical missing data patterns is performed also with options of assuming normality (Hawkins test) or non-parametrically.
+Users can optionally use their own method of data imputation as well. Multiple imputation is an additional feature of the program that can be used
+as a diagnostic tool to help identify cases or variables that contribute to rejection of MCAR, when the MCAR test is rejecetd
 (See Jamshidian and Jalal, 2010 for details). As explained in Jamshidian, Jalal, and Jansen (2014), this package can also be used for imputing missing data,
  test of multivariate normality, and test of equality of covariances between several groups when data are completly observed.
 }

@@ -37,14 +37,18 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
   if (any(is.na(obs))) { # if there are NA(s)
     obs2 <- as.list(obs)
     obs2[is.na(obs)] <- TRUE
-    prob_matrix <- data.frame(do.call(`[`, c(list(tensor), obs2)))
-    dimt <- dim(prob_matrix)
-    dimt <- dimt[dimt != 1]
-    vec <- c()
-    for (t in c(1:length(dimt))) {
-      vec <- c(vec, apply(prob_matrix, t, sum))
+    prob_matrix <- do.call(`[`, c(list(tensor), obs2))
+    if(is.null(dim(prob_matrix))){
+      obs.disj[names(prob_matrix)] <- prob_matrix
+    } else{
+      dimt <- dim(prob_matrix)
+      dimt <- dimt[dimt != 1]
+      vec <- c()
+      for (t in c(1:length(dimt))) {
+        vec <- c(vec, apply(prob_matrix, t, sum))
+      }
+      obs.disj[names(vec)] <- vec
     }
-    obs.disj[names(vec)] <- vec
   }
   return(unlist(obs.disj))
 }

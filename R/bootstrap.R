@@ -115,7 +115,7 @@ combine_boot <- function(ls_df,
     if (exist_cat && !is_onehot) {
       df_cat <- df[c("index", col_name_cat)] %>%
         dplyr::group_by(index) %>%
-        dplyr::summarise(across(all_of(col_name_cat), Mode_cat))
+        dplyr::summarise(dplyr::across(dplyr::all_of(col_name_cat), Mode_cat))
       ls_df_new[[i]] <- merge(df_num, df_cat, by = "index")
     } else {
       ls_df_new[[i]] <- df_num
@@ -153,7 +153,7 @@ combine_boot <- function(ls_df,
     df_new_merge <- factor_encode(df_new_merge, which(colnames(df_new_merge) %in% col_name_cat))
     df_new_mode_cat <- df_new_merge[c("index", col_name_cat)] %>%
       dplyr::group_by(index) %>%
-      dplyr::summarise(across(all_of(col_name_cat), Mode_cat))
+      dplyr::summarise(dplyr::across(dplyr::all_of(col_name_cat), Mode_cat))
     df_new <- merge(df_new_mean_num, df_new_mode_cat, by = "index")
     df_new <- factor_encode(df_new, which(colnames(df_new_merge) %in% col_name_cat))
     if (is_unalike) {
@@ -161,7 +161,7 @@ combine_boot <- function(ls_df,
     } else {
       df_new_cat_var <- df_new_merge[c("index", col_name_cat)] %>%
         dplyr::group_by(index) %>%
-        dplyr::summarise(across(all_of(col_name_cat), VA_fact))
+        dplyr::summarise(dplyr::across(dplyr::all_of(col_name_cat), VA_fact))
     }
     df_new_var <- merge(df_new_num_var, df_new_cat_var, by = "index")
     # We need to use unalikeability to mesure the uncertainty of the categorical variables
@@ -181,7 +181,7 @@ combine_boot <- function(ls_df,
     else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         dplyr::group_by(index) %>%
-        dplyr::summarise(across(all_of(names_cat), VA_fact))
+        dplyr::summarise(dplyr::across(dplyr::all_of(names_cat), VA_fact))
       # df_new_cat_var = aggregate(.~index , simplify=FALSE, data =df_new_merge[c("index",names_cat)], VA_fact)
     }
     df_new_var <- merge(df_new_num_var, df_new_cat_var, by = "index")

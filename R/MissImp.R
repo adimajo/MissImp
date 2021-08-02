@@ -194,10 +194,10 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     )
   } else { # if resample_method=='none', there will be no resampling
     res <- list()
-    res[[df_result]] <- ls.imp.fact
-    res[[df_result_disj]] <- ls.imp.onehot
-    res[[df_result_var_disj]] <- NA
-    res[[df_result_var]] <- NA
+    res[["df_result"]] <- ls.imp.fact
+    res[["df_result_disj"]] <- ls.imp.onehot
+    res[["df_result_var_disj"]] <- NA
+    res[["df_result_var"]] <- NA
   }
 
 

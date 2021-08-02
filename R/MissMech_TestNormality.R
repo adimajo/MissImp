@@ -704,7 +704,7 @@ Mls <- function(data, mu = NA, sig = NA, tol = 1e-6, Hessian = FALSE) {
   rownames(mu) <- colnames(y)
   colnames(sig) <- colnames(y)
   if (Hessian) {
-    templist <- MissMech::Ddf(y, mu, sig)
+    templist <- Ddf(y, mu, sig)
     hessian <- templist$dd
     stderror <- templist$se
     return(list(mu = mu, sig = sig, hessian = hessian, stderror = stderror, iteration = itcnt))

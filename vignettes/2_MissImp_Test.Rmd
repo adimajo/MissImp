@@ -260,13 +260,13 @@ sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
 
 
 
-```{r write_csv}
+```{r write_csv_2}
 # write.csv(result,"test_MAR1_PCA_boot_diff_dfcomp_result.csv")
 # read.csv("test_MAR1_MIRanger_bis_boot_diff_dfcomp_result.csv")
 ```
 
 
-```{r write_csv}
+```{r write_csv_3}
 # res <- read.csv("test_MAR1_MissRanger_boot_diff_dfcomp_result.csv")
 # x <- res$miss_perc
 # y1 <- res$MSE
@@ -302,10 +302,15 @@ credit_data <- read.csv("../inst/extdata/UCI_Credit_data/crx.data", fileEncoding
 ```
 
 ```{r preprocessing}
+
 credit_data <- data.frame(credit_data)
-col_num <- c(2,3,8,11,14,15)
-col_dis <- c(11,14,15)
-col_cat <- c(1,c(4:7),9,10,12,13,16)
+credit_data <- credit_data[,c(c(1:5),c(8:16))]
+# col_num <- c(2,3,8,11,14,15)
+# col_dis <- c(11,14,15)
+# col_cat <- c(1,4,5,6,7,9,10,12,13,16)
+col_num <- c(2,3,6,9,12,13)
+col_dis <- c(9,12,13)
+col_cat <- c(1,4,5,7,8,10,11,14)
 
 for(j in col_num){
   if(j %in% col_dis){
@@ -327,13 +332,13 @@ head(credit_data)
 
 ```{r rd_param_settings}
 mech <- 'MAR1'
-miss_prop <- 0.4
+miss_prop <- 0.01
 X.complete <- credit_data
 rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
 df <- rs$X.incomp
 df_complete <- X.complete
-col_cat <- c(1,c(4:7),9,10,12,13,16)
-col_dis <- c(11,14,15)
+# col_cat <- c(1,c(4:7),9,10,12,13,16)
+# col_dis <- c(11,14,15)
 maxiter_tree <- 10
 maxiter_pca <- 50
 maxiter_mice <- 5
@@ -345,7 +350,7 @@ n_df <- 4
 n_resample <- 4
 
 
-imp_method <- "PCA"
+imp_method <- "MI_EM"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
