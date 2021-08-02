@@ -1,14 +1,13 @@
 ---
 title: "MissImp Test"
+author: "Xuwen Liu"
+date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette
-  html_document:
-    toc: true
-    toc_float: true
-    df_print: paged
-    number_sections: true
 vignette: >
+  %\VignetteIndexEntry{MissImp Test}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r dependencies, message=FALSE, warning=FALSE}
@@ -87,7 +86,7 @@ cat_combine_by <- "onehot"
 var_cat <- "unalike"
 ```
 
-```{r MissImp}
+```{r MissImp, eval=FALSE}
 res <- MissImp(
   df = df, imp_method = imp_method, resample_method = resample_method,
   n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
@@ -97,7 +96,7 @@ res <- MissImp(
 )
 ```
 
-```{r result_MissImp}
+```{r result_MissImp, eval=FALSE}
 head(df)
 head(res$imp)
 head(res$imp.disj)
@@ -108,14 +107,14 @@ res$F1
 # dens_comp(res$imp,X.complete)
 ```
 
-```{r}
+```{r, eval=FALSE}
 sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
 #0.3: 2.15438
 #0.5: 1.654947
 #0.7: 1.210844
 ```
 
-```{r}
+```{r, eval=FALSE}
 # res_mean_imp <- df
 # col_num <- c(1:6)
 # col_num_name <-  colnames(df)[col_num]
@@ -356,10 +355,7 @@ cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 ```
 
-
-
-
-```{r MissImp}
+```{r MissImp2, eval=FALSE}
 res <- MissImp(
   df = df, imp_method = imp_method, resample_method = resample_method,
   n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
@@ -369,8 +365,7 @@ res <- MissImp(
 )
 ```
 
-
-```{r result_MissImp}
+```{r result_MissImp2, eval=FALSE}
 head(df)
 head(res$imp)
 head(res$imp.disj)

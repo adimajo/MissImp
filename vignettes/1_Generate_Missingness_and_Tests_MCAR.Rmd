@@ -1,14 +1,13 @@
 ---
 title: "Generation of Missingness and Tests of MCAR"
+author: "Xuwen Liu"
+date: "`r Sys.Date()`"
 output:
-
-  html_document:
-    toc: true
-    toc_float: true
-    df_print: paged
-    number_sections: true
+  rmarkdown::html_vignette
 vignette: >
+  %\VignetteIndexEntry{Generation of Missingness and Tests of MCAR}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r dependencies, message=FALSE, warning=FALSE}
