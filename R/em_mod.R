@@ -38,9 +38,9 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
     obs2 <- as.list(obs)
     obs2[is.na(obs)] <- TRUE
     prob_matrix <- do.call(`[`, c(list(tensor), obs2))
-    if(is.null(dim(prob_matrix))){
+    if (is.null(dim(prob_matrix))) {
       obs.disj[names(prob_matrix)] <- prob_matrix
-    } else{
+    } else {
       dimt <- dim(prob_matrix)
       dimt <- dimt[dimt != 1]
       vec <- c()

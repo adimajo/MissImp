@@ -11,6 +11,7 @@ LazyData: true
 Language: en
 RoxygenNote: 7.1.1
 Imports:
+    foreach,
     glmnet,
     LiblineaR,
     stats,

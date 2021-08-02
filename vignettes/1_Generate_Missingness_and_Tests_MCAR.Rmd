@@ -13,25 +13,30 @@ vignette: >
 ```{r dependencies, message=FALSE, warning=FALSE}
 library(MissImp)
 ```
-### Generate data
-#### Complete data
-We generate a complete data set (Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8) with (Y1, Y2, Y3) ~ N(u1, S1), (Y4, Y5)~N(u2,S2), Y6~P(\lambda) and Y7,Y8~Binomial(prob). 
+
+**expliquer ce qu'on veut faire**
+
+# Generate data
+
+## Complete data
+
+We generate a complete data set $(Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8)$ with $(Y1, Y2, Y3) \sim \mathcal{N}(\mu_1, S1)$, (Y4, Y5)~N(u2,S2), Y6~P(\lambda) and Y7,Y8~Binomial(prob). 
 
 ```{r Generate_complete_dataframe}
 n <- 10000
-complete_df_generator <- function(n){
+complete_df_generator <- function(n) {
   mu.X <- c(1, 2, 3)
   Sigma.X <- matrix(c(
-  9, 3, 2,
-  3, 4, 0,
-  2, 0, 1
+    9, 3, 2,
+    3, 4, 0,
+    2, 0, 1
   ), nrow = 3)
   X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X) # multivariate normal distribution
 
   mu1.X <- c(9, 8)
   Sigma1.X <- matrix(c(
-  16, 14,
-  14, 25
+    16, 14,
+    14, 25
   ), nrow = 2)
 
   X.complete.cont1 <- MASS::mvrnorm(n, mu1.X, Sigma1.X) # multivariate normal distribution
@@ -44,7 +49,9 @@ complete_df_generator <- function(n){
   X.complete.cat2 <- stats::rbinom(n, size = 7, prob = 0.6) # binomial
 
   X.complete <- data.frame(cbind(X.complete.cont, X.complete.cont1,
-                                 X.complete.discr, ... = X.complete.cat, X.complete.cat2))
+    X.complete.discr,
+    ... = X.complete.cat, X.complete.cat2
+  ))
   X.complete[, 7] <- as.factor(X.complete[, 7])
   levels(X.complete[, 7]) <- c("F", "E", "D", "C", "B", "A")
   X.complete[, 8] <- as.factor(X.complete[, 8])
@@ -54,9 +61,7 @@ complete_df_generator <- function(n){
 X.complete <- complete_df_generator(n)
 ```
 
-
-
-#### Add missingness
+## Add missingness
 
 We could generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of \code{generate_miss}.
 
@@ -77,7 +82,6 @@ rs.con_dis <- generate_miss_ls(X.complete[, 1:6], miss_perc)
 rs.mix <- generate_miss_ls(X.complete, miss_perc)
 ```
 
-
 ```{r list_of_incomplete_dataframes}
 list_df.con <- list(rs.con$mcar$X.incomp, rs.con$mar1$X.incomp, rs.con$mar2$X.incomp, rs.con$mar3$X.incomp, rs.con$mnar1$X.incomp, rs.con$mnar2$X.incomp)
 
@@ -86,22 +90,23 @@ list_df.con_dis <- list(rs.con_dis$mcar$X.incomp, rs.con_dis$mar1$X.incomp, rs.c
 list_df.mix <- list(rs.mix$mcar$X.incomp, rs.mix$mar1$X.incomp, rs.mix$mar2$X.incomp, rs.mix$mar3$X.incomp, rs.mix$mnar1$X.incomp, rs.mix$mnar2$X.incomp)
 ```
 
+# Statistical test for MCAR 
 
+**raccourcir cette sortie**
 
-### Statistical test for MCAR 
 ```{r p_val}
 p_val <- 0.05
 ```
 
 ```{r tests_for_one_df}
-t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7,8), p_val = p_val)
+t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7, 8), p_val = p_val)
 print(t)
 ```
 
 ```{r p_val_for_each_incomplete_data_with_each_test}
-# A dataframe that record th p-values for each test
-test_p_vals <- data.frame(matrix(rep(0,4),nrow=1)) 
-colnames(test_p_vals) <- c("Dummy.variable.test","Little.s.MCAR.test","Hawkin.s.test","Non.parametric.test")
+# A dataframe that records the p-values for each test
+test_p_vals <- data.frame(matrix(rep(0, 4), nrow = 1))
+colnames(test_p_vals) <- c("Dummy.variable.test", "Little.s.MCAR.test", "Hawkin.s.test", "Non.parametric.test")
 
 ls_test <- list("MCAR", "MAR1", "MAR2", "MAR3", "MNAR1", "MNAR2")
 i <- 1
@@ -115,22 +120,17 @@ for (ls in list(list_df.con, list_df.con_dis, list_df.mix)) {
     else {
       out <- mcar_test_combined(df, c(), p_val)
     }
-    test_p_vals[t, ] <- out$p_values[1,]
+    test_p_vals[t, ] <- out$p_values[1, ]
     t <- t + 1
   }
   i <- i + 1
 }
-test_p_vals[["type"]] <- c(rep("continuous",6), rep("continuous+discrete",6),rep("mix",6))
-test_p_vals[["mechanism"]] <- rep(c("MCAR", "MAR1", "MAR2", "MAR3", "MNAR1", "MNAR2"),3)
-test_results <- data.frame(test_p_vals[,c(1,2)]>p_val)
-test_results[["Miss_Mech_test"]] = c((test_p_vals[["Hawkin.s.test"]] < p_val) * (test_p_vals[["Non.parametric.test"]] < p_val) == 0)
+test_p_vals[["type"]] <- c(rep("continuous", 6), rep("continuous+discrete", 6), rep("mix", 6))
+test_p_vals[["mechanism"]] <- rep(c("MCAR", "MAR1", "MAR2", "MAR3", "MNAR1", "MNAR2"), 3)
+test_results <- data.frame(test_p_vals[, c(1, 2)] > p_val)
+test_results[["Miss_Mech_test"]] <- c((test_p_vals[["Hawkin.s.test"]] < p_val) * (test_p_vals[["Non.parametric.test"]] < p_val) == 0)
 
 test_p_vals
 test_results
 # The result of MissMech test is not very accurate. This may due to the problem of implementation in MissMech package, which is not available on CRAN anymore.
 ```
-
-
-
-
-
