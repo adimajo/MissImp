@@ -1,13 +1,13 @@
 ---
 title: "Generation of Missingness and Tests of MCAR"
 output:
-
   html_document:
     toc: true
     toc_float: true
     df_print: paged
     number_sections: true
 vignette: >
+  %\VignetteIndexEntry{"Generation of Missingness and Tests of MCAR"}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -96,7 +96,7 @@ p_val <- 0.05
 
 ```{r tests_for_one_df}
 t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7,8), p_val = p_val)
-print(t)
+print(t$test_results)
 ```
 
 ```{r p_val_for_each_incomplete_data_with_each_test}

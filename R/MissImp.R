@@ -1,7 +1,34 @@
+#' Imputation of Missing Values with variance calculation
+#'
+#' @description \code{MissImp} is a function that could impute the mix-type missing values with a given imputation method
+#' (signle imputation or multiple imputation). Bootstrap or Jackknife resampling method could also be applied. (To be completed)
+#'
+#'
+#' @param df A \code{data.frame} with missing values to impute.
+#' @param imp_method Imputation method to be chosen. The choices are: "missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM", "MI_PCA", "MICE", "MI_Ranger" and "MI_Ranger_bis".
+#' @param resample_method Resampling method to be chosen. The choices are: "bootstrap", "jackknife" and "none".
+#' @param n_resample Number of datasets created by resampling.
+#' @param col_cat Index of categorical columns.
+#' @param col_dis Index of discrete columns with integer value.
+#' @param maxiter_tree Max number of iterations with tree-based methods ("missRanger", "missForest", "MI_Ranger", "MI_Ranger_bis").
+#' @param maxiter_pca Max number of iterations with PCA-based methods ("PCA", "MI_PCA").
+#' @param maxiter_mice Max number of iterations with MICE imputation method.
+#' @param ncp_pca Number of component for PCA-based methods ("PCA", "MI_PCA").
+#' @param learn_ncp If \code{ncp_pca} is learned. This could lead to long execution time.
+#' @param cat_combine_by Combine method for the categorical part of imputed resampled datasets.
+#' 'factor' means that the mode value of several predictions is taken as the final result. And 'onehot' means that we take the average of the probability vectors before
+#' choosing the category that maximise the probability as the final result.
+#' @param var_cat Method used to caculate the 'variance' on a prediction of categorical variable. 'wilcox_va' means the Wilcox's VarNC index and 'unalike' means unalikeability.
+#' @param df_complete Complete dataset without missing values (if known). With this dataset, the performance of each imputation method could be estimated.
+#' @param num_mi Number of multiple imputation.
+#' @return \code{df_result} The final imputation result.
+#' @export
+#' @importFrom stats var reformulate terms.formula predict setNames
+#'
 MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap",
                     n_resample = 2 * round(log(nrow(df))), col_cat = c(), col_dis = c(),
                     maxiter_tree = 10, maxiter_pca = 100, maxiter_mice = 10, ncp_pca = ncol(df) / 2,
-                    learn_ncp = TRUE, cat_combine_by = "factor", var_cat = "wilcox_va",
+                    learn_ncp = FALSE, cat_combine_by = "factor", var_cat = "wilcox_va",
                     df_complete = NULL, num_mi = NULL) {
   if (all(!is.na(df))) {
     stop("The input dataframe is complete. Imputation is not needed.\n")
@@ -28,23 +55,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     dict_name_cat <- dict_onehot(df, col_cat)
   }
 
-
-
-
-  # dict_name_cat <- list()
-  # if (exist_cat) {
-  #   col_cat_name <- colnames(df)[col_cat]
-  #   for(col in col_cat_name){
-  #     df[[col]] <- factor(as.character(df[[col]]))
-  #     levels(df[[col]]) <- unique(df[[col]])[!is.na(unique(df[[col]]))]
-  #   }
-  #   # remember the levels for each categorical column
-  #   dict_lev <- dict_level(df, col_cat)
-  #   # represent the factor columns with their ordinal levels
-  #   df <- factor_ordinal_encode(df, col_cat)
-  #   # create dictionary for the onehot columns
-  #   dict_name_cat <- dict_onehot(df, col_cat)
-  # }
 
   ## 1. Create several datasets. (Resampling)
   if (resample_method == "bootstrap") {
@@ -205,7 +215,7 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   if (exist_cat) {
     name_cat <- names(dict_lev)
     for (name in name_cat) {
-      res$imp[[name]] <- apply(as.array(res$imp[[name]]), 1, function(x) {
+      res$imp[[name]] <- apply(as.array(as.character(res$imp[[name]])), 1, function(x) {
         unlist(strsplit(x, "_"))[-1]
       })
     }

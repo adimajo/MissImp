@@ -72,6 +72,7 @@ bootsample <- function(df, num_sample) {
 #' @return \code{df_result_var} The variance matrix for the final imputation dataframe with the categorical columns in factor form.
 #' @export
 #' @importFrom dplyr %>%
+#' @importFrom gdata resample
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
 combine_boot <- function(ls_df,
                          col_con,

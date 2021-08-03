@@ -52,8 +52,8 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     for (imp in imp_amelia$imputations) {
       imp$index <- as.numeric(row.names(imp))
       imp_num <- imp[, col_num]
-      dummy <- dummyVars(" ~ .", data = imp[, col_cat], sep = "_")
-      imp_cat <- data.frame(predict(dummy, newdata = imp[, col_cat]))
+      dummy <- dummyVars(" ~ .", data = imp[, col_cat, drop = FALSE], sep = "_")
+      imp_cat <- data.frame(predict(dummy, newdata = imp[, col_cat, drop = FALSE]))
       imp_num$index <- as.numeric(row.names(imp_num))
       imp_cat$index <- as.numeric(row.names(imp_cat))
       imp_amelia_disj[[i]] <- merge(x = imp_num, y = imp_cat, by = "index", all = TRUE)

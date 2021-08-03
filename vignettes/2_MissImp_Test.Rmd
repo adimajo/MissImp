@@ -1,13 +1,13 @@
 ---
 title: "MissImp Test"
 output:
-  rmarkdown::html_vignette
   html_document:
     toc: true
     toc_float: true
     df_print: paged
     number_sections: true
 vignette: >
+  %\VignetteIndexEntry{"MissImp Test"}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -20,7 +20,6 @@ library(MissImp)
 We generate a complete data set (Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8) with (Y1, Y2, Y3) ~ N(u1, S1), (Y4, Y5)~N(u2,S2), Y6~P(\lambda) and Y7,Y8~Binomial(prob). 
 
 ```{r Generate_complete_dataframe}
-n <- 10000
 complete_df_generator <- function(n){
   mu.X <- c(1, 2, 3)
   Sigma.X <- matrix(c(
@@ -108,14 +107,8 @@ res$F1
 # dens_comp(res$imp,X.complete)
 ```
 
-```{r}
-sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
-#0.3: 2.15438
-#0.5: 1.654947
-#0.7: 1.210844
-```
 
-```{r}
+```{r density_comp_with_mean_imp}
 # res_mean_imp <- df
 # col_num <- c(1:6)
 # col_num_name <-  colnames(df)[col_num]
@@ -297,48 +290,63 @@ sum(res$uncertainty, na.rm = TRUE)/(rs$real_miss_perc*10000*8)
 
 ### Real data
 
-```{r read_data}
-credit_data <- read.csv("../inst/extdata/UCI_Credit_data/crx.data", fileEncoding="UTF-8", dec=",", header = FALSE)
+```{r read_real_data}
+# credit_data <- read.csv("../inst/extdata/UCI_Credit_data/crx.data", fileEncoding="UTF-8", dec=",", header = FALSE)
+abalone_data <- read.csv("../inst/extdata/UCI_Abalone_data/abalone.data", fileEncoding="UTF-8", dec=",", header = FALSE)
 ```
 
 ```{r preprocessing}
-
-credit_data <- data.frame(credit_data)
-credit_data <- credit_data[,c(c(1:5),c(8:16))]
+# 
+# credit_data <- data.frame(credit_data)
 # col_num <- c(2,3,8,11,14,15)
 # col_dis <- c(11,14,15)
 # col_cat <- c(1,4,5,6,7,9,10,12,13,16)
-col_num <- c(2,3,6,9,12,13)
-col_dis <- c(9,12,13)
-col_cat <- c(1,4,5,7,8,10,11,14)
-
+# 
+# for(j in col_num){
+#   if(j %in% col_dis){
+#     suppressWarnings(credit_data[,j] <- as.integer(credit_data[,j]))
+#   }
+#   else{
+#     suppressWarnings(credit_data[,j] <- as.numeric(credit_data[,j]))
+#   }
+# }
+# for(j in col_cat){
+#   credit_data[,j][credit_data[,j]=="?"] <- NA
+#   suppressWarnings(credit_data[,j] <- as.factor(credit_data[,j]))
+# }
+# credit_data <- na.omit(credit_data)
+# row.names(credit_data) <- c(1:nrow(credit_data))
+# levels(credit_data$V16) <- c("pos", "neg")  #remove special symbols
+# head(credit_data)
+# 
+abalone_data <- data.frame(abalone_data)
+col_num <- c(2:9)
+col_dis <- c(9)
+col_cat <- c(1)
 for(j in col_num){
   if(j %in% col_dis){
-    suppressWarnings(credit_data[,j] <- as.integer(credit_data[,j]))
+    suppressWarnings(abalone_data[,j] <- as.integer(abalone_data[,j]))
   }
   else{
-    suppressWarnings(credit_data[,j] <- as.numeric(credit_data[,j]))
+    suppressWarnings(abalone_data[,j] <- as.numeric(abalone_data[,j]))
   }
 }
 for(j in col_cat){
-  credit_data[,j][credit_data[,j]=="?"] <- NA
-  suppressWarnings(credit_data[,j] <- as.factor(credit_data[,j]))
+  adult_data[,j][abalone_data[,j]=="?"] <- NA
+  suppressWarnings(abalone_data[,j] <- as.factor(abalone_data[,j]))
 }
-credit_data <- na.omit(credit_data)
-row.names(credit_data) <- c(1:nrow(credit_data))
-levels(credit_data$V16) <- c("pos", "neg")
-head(credit_data)
+adult_data <- na.omit(abalone_data)
+row.names(abalone_data) <- c(1:nrow(abalone_data))
+head(abalone_data)
 ```
 
 ```{r rd_param_settings}
 mech <- 'MAR1'
-miss_prop <- 0.01
-X.complete <- credit_data
+miss_prop <- 0.1
+X.complete <- abalone_data
 rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
 df <- rs$X.incomp
 df_complete <- X.complete
-# col_cat <- c(1,c(4:7),9,10,12,13,16)
-# col_dis <- c(11,14,15)
 maxiter_tree <- 10
 maxiter_pca <- 50
 maxiter_mice <- 5
@@ -346,7 +354,6 @@ ncp_pca <- round(ncol(df_complete)/2)
 learn_ncp <- FALSE
 
 num_mi <- 4
-n_df <- 4
 n_resample <- 4
 
 
@@ -359,7 +366,7 @@ var_cat <- "wilcox_va"
 
 
 
-```{r MissImp}
+```{r rd_MissImp}
 res <- MissImp(
   df = df, imp_method = imp_method, resample_method = resample_method,
   n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
@@ -367,16 +374,42 @@ res <- MissImp(
   learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
   df_complete = df_complete, num_mi=num_mi, maxiter_mice = maxiter_mice
 )
+# head(df)
+# head(res$imp)
+# head(res$imp.disj)
+# head(res$uncertainty)
+# head(res$uncertainty.disj)
+# res$MSE
+# res$F1
+# dens_comp(res$imp,X.complete)
 ```
 
 
-```{r result_MissImp}
-head(df)
-head(res$imp)
-head(res$imp.disj)
-head(res$uncertainty)
-head(res$uncertainty.disj)
-res$MSE
-res$F1
-# dens_comp(res$imp,X.complete)
+```{r rd_result_MissImp}
+i <- 1
+result <- list()
+for(miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)){
+  print(miss_prop)
+  rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
+  miss_prop_real <- rs$real_miss_perc
+  df_incomp <- rs$X.incomp
+  result[["mechanisme"]][i] <- mech
+  result[["miss_perc"]][i] <- miss_prop_real
+  result[["method"]][i] <- imp_method
+  result[["resample"]][i] <- resample_method
+  res_imp <- MissImp(
+    df = df, imp_method = imp_method, resample_method = resample_method,
+    n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
+    maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
+    learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
+    df_complete = df_complete, num_mi=num_mi, maxiter_mice = maxiter_mice
+  )
+  result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
+  result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
+  result[["F1"]][i] <- res_imp$F1$Mean_F1
+  result[["Var_F1"]][i] <- res_imp$F1$Variance_F1
+  i <- i + 1
+}
+
+data.frame(result)
 ```

@@ -28,6 +28,7 @@ factor_encode <- function(df, idx_col_cat) {
 #' @description Change the levels of categorical columns into integer numbers
 #' @param df Dataframe
 #' @param idx_col_cat Categorical columns index
+#' @export
 #' @return Dataframe after encoding the categorical columns
 factor_ordinal_encode <- function(df, idx_col_cat) {
   for (j in idx_col_cat) {

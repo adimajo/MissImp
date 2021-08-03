@@ -38,9 +38,9 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
     obs2 <- as.list(obs)
     obs2[is.na(obs)] <- TRUE
     prob_matrix <- do.call(`[`, c(list(tensor), obs2))
-    if(is.null(dim(prob_matrix))){
+    if (is.null(dim(prob_matrix))) {
       obs.disj[names(prob_matrix)] <- prob_matrix
-    } else{
+    } else {
       dimt <- dim(prob_matrix)
       dimt <- dimt[dimt != 1]
       vec <- c()
@@ -89,7 +89,7 @@ em_mod <- function(df, col_cat) {
   # Create dict_cat with categroical columns
   dict_name_cat <- dict_onehot(df, col_cat)
 
-  df.cat <- df[, col_cat]
+  df.cat <- df[, col_cat, drop = FALSE]
   # prepare for em and imputation
   # The categorical columns must be ordinal encoded and they must be the first columns of the dataframe
   df_for_em <- prepare_df_for_em(df, col_cat)
