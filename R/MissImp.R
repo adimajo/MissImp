@@ -1,3 +1,4 @@
+
 #' Imputation of Missing Values with variance calculation
 #'
 #' @description \code{MissImp} is a function that could impute the mix-type missing values with a given imputation method
@@ -25,6 +26,7 @@
 #' @export
 #' @importFrom stats var reformulate terms.formula predict setNames
 #'
+#' @export
 MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap",
                     n_resample = 2 * round(log(nrow(df))), col_cat = c(), col_dis = c(),
                     maxiter_tree = 10, maxiter_pca = 100, maxiter_mice = 10, ncp_pca = ncol(df) / 2,

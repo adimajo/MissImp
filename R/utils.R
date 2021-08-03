@@ -2,6 +2,7 @@
 #' @description Ordinal encode the categorical columns in a dataframe
 #' @param df Dataframe
 #' @param idx_col_cat Categorical columns index
+#' @export
 #' @return Dataframe after ordinal encoding the categorical columns
 ordinal_encode <- function(df, idx_col_cat) {
   for (j in idx_col_cat) {
@@ -15,6 +16,7 @@ ordinal_encode <- function(df, idx_col_cat) {
 #' @param df Dataframe
 #' @param idx_col_cat Categorical columns index
 #' @return Dataframe after factor encoding the categorical columns
+#' @export
 factor_encode <- function(df, idx_col_cat) {
   for (j in idx_col_cat) {
     df[, j] <- factor(df[, j])

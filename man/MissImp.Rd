@@ -45,8 +45,8 @@ MissImp(
 
 \item{learn_ncp}{If \code{ncp_pca} is learned. This could lead to long execution time.}
 
-\item{cat_combine_by}{Combine method for the categorical part of imputed resampled datasets. 
-'factor' means that the mode value of several predictions is taken as the final result. And 'onehot' means that we take the average of the probability vectors before 
+\item{cat_combine_by}{Combine method for the categorical part of imputed resampled datasets.
+'factor' means that the mode value of several predictions is taken as the final result. And 'onehot' means that we take the average of the probability vectors before
 choosing the category that maximise the probability as the final result.}
 
 \item{var_cat}{Method used to caculate the 'variance' on a prediction of categorical variable. 'wilcox_va' means the Wilcox's VarNC index and 'unalike' means unalikeability.}
@@ -59,6 +59,6 @@ choosing the category that maximise the probability as the final result.}
 \code{df_result} The final imputation result.
 }
 \description{
-\code{MissImp} is a function that could impute the mix-type missing values with a given imputation method 
+\code{MissImp} is a function that could impute the mix-type missing values with a given imputation method
 (signle imputation or multiple imputation). Bootstrap or Jackknife resampling method could also be applied. (To be completed)
 }

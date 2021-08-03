@@ -34,7 +34,6 @@
 #' @param xtrue complete data matrix
 #' @param parallelize TODO
 #' @export
-#' @import foreach
 #' @return \code{ximp} imputed data matrix of same type as 'xmis'.
 #' @return \code{ximp.disj} imputed data matrix of same type as 'xmis' for the numeric columns.
 #'  For the categorical columns, the prediction of probability for each category is shown in form of onehot vector.
@@ -241,7 +240,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
 
     if (parallelize == "variables") {
       for (idx in idxList) {
-        results <- foreach(varInd = idx, .packages = "randomForest") %cols% {
+        results <- foreach::foreach(varInd = idx, .packages = "randomForest") %cols% {
           obsi <- !NAloc[, varInd] # which i's are observed
           misi <- NAloc[, varInd] # which i's are missing
           obsY <- ximp[obsi, varInd] # training response
@@ -327,7 +326,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
           if (typeY == "numeric") {
             if (parallelize == "forests") {
               xntree <- NULL
-              RF <- foreach(
+              RF <- foreach::foreach(
                 xntree = idiv(ntree, chunks = getDoParWorkers()),
                 .combine = "combine", .multicombine = TRUE,
                 .packages = "randomForest"
@@ -374,7 +373,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
               misY <- factor(rep(names(summarY), sum(misi)))
             } else {
               if (parallelize == "forests") {
-                RF <- foreach(
+                RF <- foreach::foreach(
                   xntree = idiv(ntree, chunks = getDoParWorkers()),
                   .combine = "combine", .multicombine = TRUE,
                   .packages = "randomForest"
@@ -524,7 +523,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
 
   if (parallelize == "variables") {
     for (idx in idxList) {
-      results <- foreach(varInd = idx, .packages = "randomForest") %cols% {
+      results <- foreach::foreach(varInd = idx, .packages = "randomForest") %cols% {
         obsi <- !NAloc[, varInd] # which i's are observed
         misi <- NAloc[, varInd] # which i's are missing
         obsY <- ximp[obsi, varInd] # training response
@@ -614,7 +613,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
         if (typeY == "numeric") {
           if (parallelize == "forests") {
             xntree <- NULL
-            RF <- foreach(
+            RF <- foreach::foreach(
               xntree = idiv(ntree, chunks = getDoParWorkers()),
               .combine = "combine", .multicombine = TRUE,
               .packages = "randomForest"
@@ -661,7 +660,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             misY <- factor(rep(names(summarY), sum(misi)))
           } else {
             if (parallelize == "forests") {
-              RF <- foreach(
+              RF <- foreach::foreach(
                 xntree = idiv(ntree, chunks = getDoParWorkers()),
                 .combine = "combine", .multicombine = TRUE,
                 .packages = "randomForest"
