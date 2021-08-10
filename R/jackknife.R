@@ -119,7 +119,7 @@ combine_jack <- function(ls_df,
     # if (exist_cat) {
     #   ls_df_minus[[i]][col_name_cat][ls_df_minus[[i]][col_name_cat] < 0] <- 0
     # }
-    ls_df_minus[[i]]$index <- as.numeric(row.names(ls_df_minus[[i]]))
+    ls_df_minus[[i]][["index"]] <- as.numeric(row.names(ls_df_minus[[i]]))
     i <- i + 1
   }
   # Put all imputed datasets together
@@ -161,7 +161,7 @@ combine_jack <- function(ls_df,
     } else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         dplyr::group_by(index) %>%
-        dplyr::summarise(across(all_of(names_cat), VA_fact))
+        dplyr::summarise(dplyr::across(dplyr::all_of(names_cat), VA_fact))
     }
 
     df_new_var <- merge(df_new_var_disj, df_new_cat_var, by = "index")

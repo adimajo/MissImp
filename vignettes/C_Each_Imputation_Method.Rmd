@@ -190,3 +190,6 @@ imp.ranger.mi <- MI_missRanger(df_with_mv, col_cat = c(7,8), num_mi = 3)
 head(imp.ranger.mi$ximp)
 head(imp.ranger.mi$ximp.disj)
 ```
+
+
+

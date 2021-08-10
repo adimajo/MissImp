@@ -110,8 +110,8 @@ combine_boot <- function(ls_df,
   # Deal with doublets in each imputed dataset
   i <- 1
   for (df in ls_df) {
-    df$index <- as.numeric(row.names(df))
-    df$index <- floor(df$index)
+    df[["index"]] <- as.numeric(row.names(df))
+    df[["index"]] <- floor(df[["index"]])
     df_num <- stats::aggregate(. ~ index, data = df[c("index", col_name_num)], mean)
     if (exist_cat && !is_onehot) {
       df_cat <- df[c("index", col_name_cat)] %>%

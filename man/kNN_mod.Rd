@@ -11,7 +11,7 @@ kNN_mod(
   k = 5,
   dist_var = colnames(data),
   weights = NULL,
-  numFun = median,
+  numFun = stats::median,
   catFun = VIM::maxCat,
   makeNA = NULL,
   NAcond = NULL,

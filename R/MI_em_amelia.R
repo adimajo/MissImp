@@ -40,6 +40,13 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     col_names.disj <- colnames(data.frame(predict(dummy, newdata = df_with_mv)))
     # represent the factor columns with their ordinal levels
     df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
+    # Create the dictionary for disjunctive variable names
+    dummy <- dummyVars(" ~ .", data = df_with_mv, sep = "_")
+    col_names.disj.new <- colnames(data.frame(predict(dummy, newdata = df_with_mv)))
+    dict_name_disj <- list()
+    for (i in seq(length(col_names.disj.new))) {
+      dict_name_disj[[col_names.disj.new[i]]] <- col_names.disj[i]
+    }
     # Create dict_cat with categroical columns
     dict_name_cat <- dict_onehot(df_with_mv, col_cat)
 
@@ -57,6 +64,9 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
       imp_num$index <- as.numeric(row.names(imp_num))
       imp_cat$index <- as.numeric(row.names(imp_cat))
       imp_amelia_disj[[i]] <- merge(x = imp_num, y = imp_cat, by = "index", all = TRUE)
+      names.row <- row.names(df_with_mv)
+      row.names(imp_amelia_disj[[i]]) <- imp_amelia_disj[[i]][["index"]]
+      imp_amelia_disj[[i]] <- imp_amelia_disj[[i]][names.row, ]
       i <- i + 1
     }
     # Combine multiple imputations
@@ -73,8 +83,12 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
       ximp.all[[name]] <- unlist(ximp.all[[name]])
       ximp.all[[name]] <- factor(ximp.all[[name]])
     }
-    ximp <- ximp.all[colnames(df_with_mv)]
-    ximp.disj <- ximp.disj[-c(1)] # remove "index" column
+    names.row <- row.names(df_with_mv)
+    row.names(ximp.all) <- ximp.all[["index"]]
+    row.names(ximp.disj) <- ximp.disj[["index"]]
+    ximp.disj <- ximp.disj[names.row, ]
+    ximp <- ximp.all[names.row, colnames(df_with_mv)]
+    ximp.disj <- ximp.disj[colnames(ximp.disj) != "index"] # remove "index" column
   }
   else {
     imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, boot.type = "none")
@@ -90,19 +104,25 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
       rbind(dtf1, dtf2)
     }, imp_amelia_disj)
     ximp <- stats::aggregate(. ~ index, data = imp_merge, mean)
-    ximp.disj <- ximp[-c(1)]
+    names.row <- row.names(df_with_mv)
+    row.names(ximp) <- ximp[["index"]]
+    ximp <- ximp[names.row, ]
+    ximp.disj <- ximp[colnames(ximp) != "index"]
     ximp <- ximp.disj
   }
+
+
   if (exist_cat) {
     for (col in name_cat) {
       levels(ximp[[col]]) <- dict_lev[[col]]
     }
-    colnames(ximp.disj) <- col_names.disj
+    colnames(ximp.disj) <- dict_name_disj[colnames(ximp.disj)]
     for (i in seq(length(imp_amelia$imputations))) {
       for (col in name_cat) {
         levels(imp_amelia$imputations[[i]][[col]]) <- dict_lev[[col]]
       }
-      colnames(imp_amelia_disj[[i]]) <- col_names.disj
+      imp_amelia_disj[[i]] <- imp_amelia_disj[[i]][colnames(imp_amelia_disj[[i]]) != "index"]
+      colnames(imp_amelia_disj[[i]]) <- dict_name_disj[colnames(imp_amelia_disj[[i]])]
     }
   }
 

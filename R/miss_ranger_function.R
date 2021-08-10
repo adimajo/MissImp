@@ -37,62 +37,7 @@
 #' }
 #' @export
 #'
-#' @examples
-#' irisWithNA <- generateNA(iris, seed = 34)
-#' irisImputed <- missRanger(irisWithNA, pmm.k = 3, num.trees = 100)
-#' head(irisImputed)
-#' head(irisWithNA)
-#' \dontrun{
-#' # With extra trees algorithm
-#' irisImputed_et <- missRanger(irisWithNA, pmm.k = 3, num.trees = 100, splitrule = "extratrees")
-#' head(irisImputed_et)
-#'
-#' # Passing `mtry` as a function of the number of covariables
-#'
-#' # Do not impute Species. Note: Since this variable contains missings, it won't be used
-#' # for imputing other variables.
-#' head(irisImputed <- missRanger(irisWithNA, . - Species ~ ., pmm.k = 3, num.trees = 100))
-#'
-#' # Impute univariately only.
-#' head(irisImputed <- missRanger(irisWithNA, . ~ 1))
-#'
-#' # Use Species and Petal.Length to impute Species and Petal.Length.
-#' head(irisImputed <- missRanger(irisWithNA, Species + Petal.Length ~ Species + Petal.Length,
-#'   pmm.k = 3, num.trees = 100
-#' ))
-#'
-#' # Multiple imputation: Fill data 20 times, run 20 analyses and pool their results.
-#' require(mice)
-#' filled <- replicate(20, missRanger(irisWithNA, verbose = 0, num.trees = 100, pmm.k = 5),
-#'   simplify = FALSE
-#' )
-#' models <- lapply(filled, function(x) lm(Sepal.Length ~ ., x))
-#' summary(pooled_fit <- pool(models)) # Realistically inflated standard errors and p values
-#'
-#' # A data set with logicals, numerics, characters and factors.
-#' n <- 100
-#' X <- data.frame(
-#'   x1 = seq_len(n),
-#'   x2 = log(seq_len(n)),
-#'   x3 = sample(LETTERS[1:3], n, replace = TRUE),
-#'   x4 = factor(sample(LETTERS[1:3], n, replace = TRUE)),
-#'   x5 = seq_len(n) > 50
-#' )
-#' head(X)
-#' X_NA <- generateNA(X, p = seq(0, 0.8, by = .2))
-#' head(X_NA)
-#'
-#' head(X_imp <- missRanger(X_NA))
-#' head(X_imp <- missRanger(X_NA, pmm = 3))
-#' head(X_imp <- missRanger(X_NA, pmm = 3, verbose = 0))
-#' head(X_imp <- missRanger(X_NA, pmm = 3, verbose = 2, returnOOB = TRUE))
-#' attr(X_imp, "oob") # OOB prediction errors per column.
-#'
-#' # The formula interface
-#' head(X_imp <- missRanger(X_NA, x2 ~ x2 + x3, pmm = 3)) # Does not use x3 because of NAs
-#' head(X_imp <- missRanger(X_NA, x2 + x3 ~ x2 + x3, pmm = 3))
-#' head(X_imp <- missRanger(X_NA, x2 + x3 ~ 1, pmm = 3)) # Univariate imputation
-#' }
+
 missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
                            verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
   if (verbose) {
@@ -541,4 +486,77 @@ imputeUnivariate <- function(x, v = NULL, seed = NULL) {
   x[, v] <- lapply(x[, v, drop = FALSE], imputeVec)
 
   x
+}
+
+
+#' Predictive Mean Matching
+#'
+#' For each value in the prediction vector \code{xtest}, one of the closest \code{k} values in the prediction vector \code{xtrain} is randomly chosen and its observed value in \code{ytrain} is returned.
+#'
+#' @importFrom stats rmultinom
+#' @importFrom FNN knnx.index
+#'
+#' @param xtrain Vector with predicted values in the training data. Can be of type logical, numeric, character, or factor.
+#' @param xtest Vector as \code{xtrain} with predicted values in the test data. Missing values are not allowed.
+#' @param ytrain Vector of the observed values in the training data. Must be of same length as \code{xtrain}. Missing values in either of \code{xtrain} or \code{ytrain} will be dropped in a pairwise manner.
+#' @param k Number of nearest neighbours to sample from.
+#' @param seed Integer random seed.
+#'
+#' @return Vector of the same length as \code{xtest} with values from \code{xtrain}.
+#' @export
+#'
+#' @examples
+#' pmm(xtrain = c(0.2, 0.2, 0.8), xtest = 0.3, ytrain = c(0, 0, 1)) # 0
+#' pmm(xtrain = c(TRUE, FALSE, TRUE), xtest = FALSE, ytrain = c(2, 0, 1)) # 0
+#' pmm(xtrain = c(0.2, 0.8), xtest = 0.3, ytrain = c("A", "B"), k = 2) # "A" or "B"
+#' pmm(xtrain = c("A", "A", "B"), xtest = "A", ytrain = c(2, 2, 4), k = 2) # 2
+#' pmm(xtrain = factor(c("A", "B")), xtest = factor("C"), ytrain = 1:2) # 2
+pmm <- function(xtrain, xtest, ytrain, k = 1L, seed = NULL) {
+  stopifnot(
+    length(xtrain) == length(ytrain),
+    sum(ok <- !is.na(xtrain) & !is.na(ytrain)) >= 1L,
+    (nt <- length(xtest)) >= 1L, !anyNA(xtest),
+    mode(xtrain) %in% c("logical", "numeric", "character"),
+    mode(xtrain) == mode(xtest),
+    k >= 1L
+  )
+
+  xtrain <- xtrain[ok]
+  ytrain <- ytrain[ok]
+
+  # Handle trivial case
+  if (length(u <- unique(ytrain)) == 1L) {
+    return(rep(u, nt))
+  }
+
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  # STEP 1: Turn xtrain and xtest into numbers.
+  # Handles the case of inconsistent factor levels of xtrain and xtest.
+  if (is.factor(xtrain) && (nlevels(xtrain) != nlevels(xtest) ||
+    !all(levels(xtrain) == levels(xtest)))) {
+    xtrain <- as.character(xtrain)
+    xtest <- as.character(xtest)
+  }
+
+  # Turns character vectors into factors.
+  if (is.character(xtrain)) {
+    lvl <- unique(c(xtrain, xtest))
+    xtrain <- factor(xtrain, levels = lvl)
+    xtest <- factor(xtest, levels = lvl)
+  }
+
+  # Turns everything into numbers.
+  if (!is.numeric(xtrain) && mode(xtrain) %in% c("logical", "numeric")) {
+    xtrain <- as.numeric(xtrain)
+    xtest <- as.numeric(xtest)
+  }
+
+  # STEP 2: PMM based on k-nearest neightbour.
+  k <- min(k, length(xtrain))
+  nn <- knnx.index(xtrain, xtest, k)
+  take <- t(rmultinom(nt, 1L, rep(1L, k)))
+  ytrain[rowSums(nn * take)]
 }

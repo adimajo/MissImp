@@ -58,63 +58,6 @@ The iterative chaining stops as soon as \code{maxiter} is reached or if the aver
 
 A note on `mtry`: Be careful when passing a non-default `mtry` to `ranger()` because the number of available covariables might be growing during the first iteration, depending on the missing pattern. Values \code{NULL} (default) and 1 are safe choices. Additionally, recent versions of `ranger()` allow `mtry` to be a single-argument function of the number of available covariables, e.g. `mtry = function(m) max(1, m %/% 3)`.
 }
-\examples{
-irisWithNA <- generateNA(iris, seed = 34)
-irisImputed <- missRanger(irisWithNA, pmm.k = 3, num.trees = 100)
-head(irisImputed)
-head(irisWithNA)
-\dontrun{
-# With extra trees algorithm
-irisImputed_et <- missRanger(irisWithNA, pmm.k = 3, num.trees = 100, splitrule = "extratrees")
-head(irisImputed_et)
-
-# Passing `mtry` as a function of the number of covariables
-
-# Do not impute Species. Note: Since this variable contains missings, it won't be used
-# for imputing other variables.
-head(irisImputed <- missRanger(irisWithNA, . - Species ~ ., pmm.k = 3, num.trees = 100))
-
-# Impute univariately only.
-head(irisImputed <- missRanger(irisWithNA, . ~ 1))
-
-# Use Species and Petal.Length to impute Species and Petal.Length.
-head(irisImputed <- missRanger(irisWithNA, Species + Petal.Length ~ Species + Petal.Length,
-  pmm.k = 3, num.trees = 100
-))
-
-# Multiple imputation: Fill data 20 times, run 20 analyses and pool their results.
-require(mice)
-filled <- replicate(20, missRanger(irisWithNA, verbose = 0, num.trees = 100, pmm.k = 5),
-  simplify = FALSE
-)
-models <- lapply(filled, function(x) lm(Sepal.Length ~ ., x))
-summary(pooled_fit <- pool(models)) # Realistically inflated standard errors and p values
-
-# A data set with logicals, numerics, characters and factors.
-n <- 100
-X <- data.frame(
-  x1 = seq_len(n),
-  x2 = log(seq_len(n)),
-  x3 = sample(LETTERS[1:3], n, replace = TRUE),
-  x4 = factor(sample(LETTERS[1:3], n, replace = TRUE)),
-  x5 = seq_len(n) > 50
-)
-head(X)
-X_NA <- generateNA(X, p = seq(0, 0.8, by = .2))
-head(X_NA)
-
-head(X_imp <- missRanger(X_NA))
-head(X_imp <- missRanger(X_NA, pmm = 3))
-head(X_imp <- missRanger(X_NA, pmm = 3, verbose = 0))
-head(X_imp <- missRanger(X_NA, pmm = 3, verbose = 2, returnOOB = TRUE))
-attr(X_imp, "oob") # OOB prediction errors per column.
-
-# The formula interface
-head(X_imp <- missRanger(X_NA, x2 ~ x2 + x3, pmm = 3)) # Does not use x3 because of NAs
-head(X_imp <- missRanger(X_NA, x2 + x3 ~ x2 + x3, pmm = 3))
-head(X_imp <- missRanger(X_NA, x2 + x3 ~ 1, pmm = 3)) # Univariate imputation
-}
-}
 \references{
 \enumerate{
   \item Wright, M. N. & Ziegler, A. (2016). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. Journal of Statistical Software, in press. <arxiv.org/abs/1508.04409>.

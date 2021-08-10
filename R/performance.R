@@ -1,24 +1,23 @@
-#' dens_comp
-#' @description There are density comparing functions for some of the imputation method,
-#' but here we try to define the function that could be used for every method.
-#' @param df_comp One dataset.
-#' @param df_imp Another dataset with the same columns as \code{df_comp}.
-#' @export
-#' @return The comparison of the density distribution for each column.
-dens_comp <- function(df_comp, df_imp) {
-  ls_col_name <- colnames(df_comp)
-  ls_p <- list()
-  for (ycol in ls_col_name) {
-    dat <- data.frame(
-      y = c(df_comp[[ycol]], df_imp[[ycol]]),
-      lines = rep(c("complete", "imputed"), each = nrow(df_comp))
-    )
-    p <- ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
-      ggplot2::geom_density(alpha = 0.3) +
-      ggplot2::labs(x = ycol)
-    show(p)
-  }
-}
+# dens_comp
+# @description There are density comparing functions for some of the imputation method,
+# but here we try to define the function that could be used for every method.
+# @param df_comp One dataset.
+# @param df_imp Another dataset with the same columns as \code{df_comp}.
+# @return The comparison of the density distribution for each column.
+# dens_comp <- function(df_comp, df_imp) {
+#   ls_col_name <- colnames(df_comp)
+#   ls_p <- list()
+#   for (ycol in ls_col_name) {
+#     dat <- data.frame(
+#       "y" = c(df_comp[[ycol]], df_imp[[ycol]]),
+#       "lines" = rep(c("complete", "imputed"), each = nrow(df_comp))
+#     )
+#     p <- ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
+#       ggplot2::geom_density(alpha = 0.3) +
+#       ggplot2::labs(x = ycol)
+#     show(p)
+#   }
+# }
 
 
 #' List of MSE
@@ -56,7 +55,7 @@ ls_MSE <- function(df_comp,
   i <- 1
   for (df_imp in ls_df_imp) {
     df_imp_num <- df_imp[col_name_num]
-    df_imp_num$index <- as.numeric(row.names(df_imp_num))
+    df_imp_num[["index"]] <- as.numeric(row.names(df_imp_num))
     if (resample_method == "bootstrap") {
       df_imp_num$index <- floor(df_imp_num$index)
       df_num <- stats::aggregate(. ~ index, data = df_imp_num[c("index", col_name_num)], mean)
@@ -73,7 +72,7 @@ ls_MSE <- function(df_comp,
       mask_num_i <- mask_num
     }
 
-    mse_result <- sqrt(sum((as.matrix(df_comp_i) * mask_num_i - as.matrix(df_imp_i) * mask_num_i)^2) / sum(mask_num_i))
+    mse_result <- sum((df_comp_i - df_imp_i)^2) / sum(mask_num_i)
     ls_mse_result[i] <- mse_result
 
     # MinMax Scale each variable based on estimated parameters from corresponding complete dataset
@@ -83,7 +82,7 @@ ls_MSE <- function(df_comp,
     })
     df_comp_i_scale <- as.matrix(df_comp_i - min_comp) / t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
     df_imp_i_scale <- as.matrix(df_imp_i - min_comp) / t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
-    mse_result_scale <- sqrt(sum((as.matrix(df_comp_i_scale) * mask_num_i - as.matrix(df_imp_i_scale) * mask_num_i)^2) / sum(mask_num_i))
+    mse_result_scale <- sum((df_comp_i_scale - df_imp_i_scale)^2) / sum(mask_num_i)
     ls_mse_result_scale[i] <- mse_result_scale
 
     i <- i + 1
@@ -152,7 +151,7 @@ ls_F1 <- function(df_comp,
     # Take only the categorical part
     df_imp_cat <- df_imp[, col_cat_imp]
     col_name_cat <- colnames(df_imp_cat)
-    df_imp_cat$index <- as.numeric(row.names(df_imp_cat))
+    df_imp_cat[["index"]] <- as.numeric(row.names(df_imp_cat))
     if (resample_method == "bootstrap") {
       df_imp_cat$index <- floor(df_imp_cat$index)
       if (combine_method == "onehot") { # df_imp_cat in form of onehot
@@ -206,7 +205,7 @@ ls_F1 <- function(df_comp,
     else {
       df_imp_i <- df_imp_cat
       df_comp_i <- df_comp[, col_cat_comp]
-      mask_cat_i <- mask_cat[, col_cat_comp]
+      mask_cat_i <- mask[, col_cat_comp][names_cat] * 1
     }
 
     # Change to one vector

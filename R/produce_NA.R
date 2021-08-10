@@ -68,7 +68,7 @@ logit.bypatterns <- function(data, patterns, mechanism) {
       logit.weights[i, -variablesmissing] <- 1 / ncol(logit.weights)
     } else {
       if (nrow(subdata) >= ncol(subdata) - 1) {
-        logit.weights[i, -variablesmissing] <- glm(newcol ~ ., data = subdata, family = binomial)$coefficients[-1]
+        logit.weights[i, -variablesmissing] <- stats::glm(newcol ~ ., data = subdata, family = "binomial")$coefficients[-1]
       } else {
         x <- model.matrix(~ . - 1, data = subdata[, 1:(ncol(subdata) - 1)])
         cv.fit <- NULL
@@ -79,7 +79,7 @@ logit.bypatterns <- function(data, patterns, mechanism) {
         ), silent = T)
         if (is.null(cv.fit)) {
           lambda.max <- max(svd(x)$d)
-          lambda <- runif(1, 0.2, 0.8) * lambda.max
+          lambda <- stats::runif(1, 0.2, 0.8) * lambda.max
         } else {
           lambda <- cv.fit$lambda.min
         }
@@ -488,9 +488,9 @@ produce_MCAR <- function(data, perc.missing, idx.incomplete) {
   # (without overlap with the initial missing values)
   idx_newNA <- matrix(rep(FALSE, n * p), nrow = n, ncol = p)
   if (nb_initNA != 0) {
-    idx_newNA[!idx_initNA[, which(idx.incomplete == 1)]] <- (runif(n * p.incomp - nb_initNA) <= (perc.missing * (1 + nb_initNA / (p.incomp * n))))
+    idx_newNA[!idx_initNA[, which(idx.incomplete == 1)]] <- (stats::runif(n * p.incomp - nb_initNA) <= (perc.missing * (1 + nb_initNA / (p.incomp * n))))
   } else {
-    idx_newNA[, which(idx.incomplete == 1)] <- (runif(n * p.incomp) <= (perc.missing))
+    idx_newNA[, which(idx.incomplete == 1)] <- (stats::runif(n * p.incomp) <= (perc.missing))
   }
   # avoid having empty observations
   if (p == p.incomp) {
@@ -522,18 +522,18 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
       p.miss <- min(0.495, perc.missing + 0.1)
       if (sum(idx.incomplete) == 1) {
         quantiles <- rbind(
-          quantile(data[, which(idx.incomplete == 1)], p.miss, na.rm = T),
-          quantile(data[, which(idx.incomplete == 1)], 1 - p.miss, na.rm = T)
+          stats::quantile(data[, which(idx.incomplete == 1)], p.miss, na.rm = T),
+          stats::quantile(data[, which(idx.incomplete == 1)], 1 - p.miss, na.rm = T)
         )
       } else {
         quantiles <- rbind(
-          apply(data[, which(idx.incomplete == 1)], 2, function(x) quantile(x, p.miss, na.rm = T)),
-          apply(data[, which(idx.incomplete == 1)], 2, function(x) quantile(x, 1 - p.miss, na.rm = T))
+          apply(data[, which(idx.incomplete == 1)], 2, function(x) stats::quantile(x, p.miss, na.rm = T)),
+          apply(data[, which(idx.incomplete == 1)], 2, function(x) stats::quantile(x, 1 - p.miss, na.rm = T))
         )
       }
       ct <- 1
       for (j in which(idx.incomplete == 1)) {
-        idx_newNA[, j] <- rbinom(
+        idx_newNA[, j] <- stats::rbinom(
           nrow(data), 1,
           pmax(
             data[, j] <= min(quantiles[, ct]),
@@ -546,26 +546,26 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
     if (self.mask == "upper") {
       p.miss <- min(0.99, perc.missing + 0.1)
       if (sum(idx.incomplete) == 1) {
-        quantiles <- quantile(data[, which(idx.incomplete == 1)], 1 - p.miss, na.rm = T)
+        quantiles <- stats::quantile(data[, which(idx.incomplete == 1)], 1 - p.miss, na.rm = T)
       } else {
-        quantiles <- apply(data[, which(idx.incomplete == 1)], 2, function(x) quantile(x, 1 - p.miss, na.rm = T))
+        quantiles <- apply(data[, which(idx.incomplete == 1)], 2, function(x) stats::quantile(x, 1 - p.miss, na.rm = T))
       }
       ct <- 1
       for (j in which(idx.incomplete == 1)) {
-        idx_newNA[, j] <- rbinom(nrow(data), 1, (data[, j] > quantiles[ct]) * dplyr::if_else(perc.missing <= 0.89, perc.missing / p.miss, perc.missing))
+        idx_newNA[, j] <- stats::rbinom(nrow(data), 1, (data[, j] > quantiles[ct]) * dplyr::if_else(perc.missing <= 0.89, perc.missing / p.miss, perc.missing))
         ct <- ct + 1
       }
     }
     if (self.mask == "lower") {
       p.miss <- min(0.99, perc.missing + 0.1)
       if (sum(idx.incomplete) == 1) {
-        quantiles <- quantile(data[, which(idx.incomplete == 1)], p.miss, na.rm = T)
+        quantiles <- stats::quantile(data[, which(idx.incomplete == 1)], p.miss, na.rm = T)
       } else {
-        quantiles <- apply(data[, which(idx.incomplete == 1)], 2, function(x) quantile(x, p.miss, na.rm = T))
+        quantiles <- apply(data[, which(idx.incomplete == 1)], 2, function(x) stats::quantile(x, p.miss, na.rm = T))
       }
       ct <- 1
       for (j in which(idx.incomplete == 1)) {
-        idx_newNA[, j] <- rbinom(nrow(data), 1, (data[, j] <= quantiles[ct]) * dplyr::if_else(perc.missing <= 0.89, perc.missing / p.miss, perc.missing))
+        idx_newNA[, j] <- stats::rbinom(nrow(data), 1, (data[, j] <= quantiles[ct]) * dplyr::if_else(perc.missing <= 0.89, perc.missing / p.miss, perc.missing))
         ct <- ct + 1
       }
     }
@@ -712,7 +712,7 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
           weights.covariates[i, ] <- 1 / ncol(weights.covariates)
         } else {
           if (nrow(subdata) >= ncol(subdata) - 1) {
-            weights.covariates[i, which(idx.covariates[i, ] == 1 & !(missingness.matrix[i, ] == 0))] <- glm(newcol ~ ., data = subdata, family = binomial)$coefficients[-1]
+            weights.covariates[i, which(idx.covariates[i, ] == 1 & !(missingness.matrix[i, ] == 0))] <- stats::glm(newcol ~ ., data = subdata, family = "binomial")$coefficients[-1]
           } else {
             x <- model.matrix(~ . - 1, data = subdata[, 1:(ncol(subdata) - 1)])
             cv.fit <- NULL
@@ -723,7 +723,7 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
             ), silent = T)
             if (is.null(cv.fit)) {
               lambda.max <- max(svd(x)$d)
-              lambda <- runif(1, 0.2, 0.8) * lambda.max
+              lambda <- stats::runif(1, 0.2, 0.8) * lambda.max
             } else {
               lambda <- cv.fit$lambda.min
             }

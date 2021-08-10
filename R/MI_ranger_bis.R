@@ -310,6 +310,13 @@ MI_missRanger_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, 
     col_names.disj <- colnames(data.frame(predict(dummy, newdata = data)))
     # represent the factor columns with their ordinal levels
     data <- factor_ordinal_encode(data, col_cat)
+    # Create the dictionary for disjunctive variable names
+    dummy <- dummyVars(" ~ .", data = data, sep = "_")
+    col_names.disj.new <- colnames(data.frame(predict(dummy, newdata = data)))
+    dict_name_disj <- list()
+    for (i in seq(length(col_names.disj.new))) {
+      dict_name_disj[[col_names.disj.new[i]]] <- col_names.disj[i]
+    }
     # Create dict_cat with categroical columns
     dict_cat <- dict_onehot(data, col_cat)
   }
@@ -338,12 +345,12 @@ MI_missRanger_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, 
     for (col in name_cat) {
       levels(final.imp[[col]]) <- dict_lev[[col]]
     }
-    colnames(final.imp.disj) <- col_names.disj
+    colnames(final.imp.disj) <- dict_name_disj[colnames(final.imp.disj)]
     for (i in seq(length(imputations))) {
       for (col in name_cat) {
         levels(imputations[[i]][[col]]) <- dict_lev[[col]]
       }
-      colnames(imputations.disj[[i]]) <- col_names.disj
+      colnames(imputations.disj[[i]]) <- dict_name_disj[colnames(imputations.disj[[i]])]
     }
   } else {
     final.imp <- final.imp.disj

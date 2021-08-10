@@ -50,7 +50,7 @@ probCat <- function(x, col_names, weights = NULL) {
   }
   s <- summary(x)
   if (!is.null(weights)) {
-    tmpTab <- merge(aggregate(weights, list(x), sum), data.frame("Group.1" = names(s), prob = s))
+    tmpTab <- merge(stats::aggregate(weights, list(x), sum), data.frame("Group.1" = names(s), prob = s))
     s <- tmpTab$prob * tmpTab$x
     names(s) <- tmpTab$Group.1
   }
@@ -122,9 +122,9 @@ check_data <- function(data) {
 #' R package VIM.  *Journal of
 #' Statistical Software*, 74(7), 1-16.
 #' @export
-#' @importFrom data.table `:=`
+#' @importFrom data.table `:=` .SD
 kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_var = colnames(data), weights = NULL,
-                    numFun = median, catFun = VIM::maxCat,
+                    numFun = stats::median, catFun = VIM::maxCat,
                     makeNA = NULL, NAcond = NULL, impNA = TRUE, donorcond = NULL, mixed = vector(), mixed.constant = NULL, trace = FALSE,
                     imp_var = TRUE, imp_suffix = "imp", addRF = FALSE, onlyRF = FALSE, addRandom = FALSE, useImputedDist = TRUE, weightDist = FALSE,
                     col_cat = c()) {
@@ -272,7 +272,7 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
     # create data set without missings for regressors
     # seems to be most efficient way
     # can still be improved...?
-    dataRF <- suppressWarnings(kNN(data[, unique(c(
+    dataRF <- suppressWarnings(VIM::kNN(data[, unique(c(
       unlist(dist_var),
       variable
     )), with = FALSE], imp_var = FALSE))
@@ -323,9 +323,9 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
           dist_var_new[[i]] <- c(dist_var_cur, new_feature)
           if (!is.null(weights) && weights[1] != "auto") {
             if (is.list(weights)) {
-              weights_new[[i]] <- c(weights[[i]], median(weights[[i]]))
+              weights_new[[i]] <- c(weights[[i]], stats::median(weights[[i]]))
             } else {
-              weights_new[[i]] <- c(weights, median(weights))
+              weights_new[[i]] <- c(weights, stats::median(weights))
             }
           }
         }
@@ -384,7 +384,7 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
   }
   if (addRandom) {
     numerical <- c(numerical, "RandomVariableForImputation")
-    data[, "RandomVariableForImputation" := rnorm(ndat)] # ,with=FALSE]
+    data[, "RandomVariableForImputation" := stats::rnorm(ndat)] # ,with=FALSE]
     if (is.list(dist_var)) {
       for (i in 1:length(dist_var)) {
         dist_var[[i]] <- c(dist_var[[i]], "RandomVariableForImputation")
@@ -528,5 +528,6 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
     }
     colnames(data.disj) <- col_names.disj
   }
+  row.names(dataimp) <- row.names(data.disj)
   return(list(ximp = dataimp, ximp.disj = data.disj, R.mask = R.mask))
 }

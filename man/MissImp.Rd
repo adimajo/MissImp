@@ -23,11 +23,30 @@ MissImp(
 )
 }
 \arguments{
-\item{df}{A \code{data.frame} with missing values to impute.}
+\item{df}{A \code{data.frame} with missing values to impute. For categorical variables, most of the preprocessing is included in the package, 
+but no special character ('+', '$', '-' for example) is allowed in the levels of each categorical variable.}
 
-\item{imp_method}{Imputation method to be chosen. The choices are: "missRanger", "kNN", "missForest", "PCA", "EM", "MI_EM", "MI_PCA", "MICE", "MI_Ranger" and "MI_Ranger_bis".}
+\item{imp_method}{Imputation method to be chosen. 
+\itemize{
+\item \strong{missRanger}: Random-forest based imputation method. This is a fast version of 'missForest'
+\item \strong{missForest}: Random-forest based imputation method.
+\item \strong{kNN}: k-Nearest Neighbors based imputation method.
+\item \strong{PCA}: Principle Component Analysis based imputation method. 
+Factor Analysis of Mixed Data (FAMD) is used for mixed-type data. With large proportion of missing data, this method may generate some convergence error.
+\item \strong{EM}: Expectation-Maximization imputation method. This method can not deal with large number of categorical variables.
+\item \strong{MI_EM}: Multiple imputation with EM method.
+\item \strong{MI_PCA}: Multiple imputation with PCA-based method.
+\item \strong{MICE}: Multiple Imputation by Chained Equations (MICE). This is a bayesian based method.
+\item \strong{MI_Ranger}: Multiple imputation with Random Forest based method.
+}}
 
-\item{resample_method}{Resampling method to be chosen. The choices are: "bootstrap", "jackknife" and "none".}
+\item{resample_method}{Resampling method to be chosen. 
+\itemize{
+\item \strong{bootstrap}: Generate \code{n_resample} incomplete datasets by draws with replacement. 
+Each incomplete dataset has the same number of rows as the original one.
+\item \strong{jackknife}: Generate \code{n_resample} incomplete datasets by removing nrows/\code{n_resample} rows of the original dataset.
+\item \strong{none}: No resampling.
+}}
 
 \item{n_resample}{Number of datasets created by resampling.}
 
@@ -46,8 +65,10 @@ MissImp(
 \item{learn_ncp}{If \code{ncp_pca} is learned. This could lead to long execution time.}
 
 \item{cat_combine_by}{Combine method for the categorical part of imputed resampled datasets.
-'factor' means that the mode value of several predictions is taken as the final result. And 'onehot' means that we take the average of the probability vectors before
-choosing the category that maximise the probability as the final result.}
+\itemize{
+\item \strong{factor} The mode value of several predictions is taken as the final result.
+\item \strong{onehot} The average of the probability vectors is taken before choosing the category that maximise the probability as the final result.
+}}
 
 \item{var_cat}{Method used to caculate the 'variance' on a prediction of categorical variable. 'wilcox_va' means the Wilcox's VarNC index and 'unalike' means unalikeability.}
 
@@ -57,8 +78,23 @@ choosing the category that maximise the probability as the final result.}
 }
 \value{
 \code{df_result} The final imputation result.
+
+\code{df_result_disj} The imputation result with probability vector for the categorical columns.
+
+\code{df_result_var} The variance for each imputed value. These variances are calculated based on imputation results of the incomplete datasets after resampling.
+
+\code{df_result_var_disj} The variance for each imputed value and for the probability vector of the categorical columns.
+
+\code{MSE} MSE calculated with the numerical imputations.
+
+\code{F1} F1-score calculated with the categorical imputations.
 }
 \description{
-\code{MissImp} is a function that could impute the mix-type missing values with a given imputation method
-(signle imputation or multiple imputation). Bootstrap or Jackknife resampling method could also be applied. (To be completed)
+\code{MissImp} is a function that could impute the mixed-type missing values with a chosen imputation method
+(single imputation or multiple imputation). It can be used to impute continuous, integer and/or categorical data.
+ Bootstrap or Jackknife resampling method could also be applied to estimate the variance of prediction.
+ This function returns not only the final imputation result \code{df_result}, but also the estimated variance for each imputed value \code{df_result_var}.
+ For the categorical variables, the factor formed result is returned in \code{df_result}, while the probability vector (onehot) formed result
+ is returned in \code{df_result_disj}. If the original complete dataset is also given, a MSE calculated on numerical columns is returned,
+ as well as a F1-score calculated on the categorical columns.
 }

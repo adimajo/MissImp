@@ -199,13 +199,7 @@ generate_miss <- function(df,
 #' @return \code{mnar1} Incomplete dataframe object with MNAR1 mechanism.
 #' @return \code{mnar2} Incomplete dataframe object with MNAR2 mechanism.
 #' @export
-#' @examples
-#' n <- 10000
-#' mu.X <- c(1, 2, 3)
-#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs <- generate_miss_ls(X.complete.cont, 0.4)
-#' rs$mcar$X.incomp
+
 generate_miss_ls <- function(df, miss_perc) {
   return(
     list(

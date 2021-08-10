@@ -101,7 +101,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
   if (method.cv == "kfold") {
     # print("In kfold")
     res <- matrix(NA, ncp.max - ncp.min + 1, nbsim)
-    if (verbose) pb <- txtProgressBar(min = 1 / nbsim * 100, max = 100, style = 3)
+    if (verbose) pb <- utils::txtProgressBar(min = 1 / nbsim * 100, max = 100, style = 3)
     for (sim in 1:nbsim) {
       # print(paste("sim:", sim))
       continue <- TRUE
@@ -124,7 +124,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
           #####################################
         }
       }
-      if (verbose) setTxtProgressBar(pb, sim / nbsim * 100)
+      if (verbose) utils::setTxtProgressBar(pb, sim / nbsim * 100)
     }
     crit <- apply(res, 1, mean, na.rm = TRUE)
     names(crit) <- c(ncp.min:ncp.max)
@@ -135,7 +135,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
   }
 
   if (method.cv == "loo") {
-    if (verbose) pb <- txtProgressBar(min = 0, max = 100, style = 3)
+    if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
     crit <- NULL
     tab.disj.hat <- vrai.tab
     col.in.indicator <- c(0, rep(1, nbquanti), sapply(jeu[, (nbquanti:ncol(jeu)), drop = F], nlevels))
@@ -146,7 +146,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
             jeuNA <- as.matrix(jeu)
             jeuNA[i, j] <- NA
             if (!any(summary(jeuNA[, j] == 0))) {
-              tab.disj.hat[i, (cumsum(col.in.indicator)[j] + 1):(cumsum(col.in.indicator)[j + 1])] <- imputeFAMD(as.data.frame(jeuNA),
+              tab.disj.hat[i, (cumsum(col.in.indicator)[j] + 1):(cumsum(col.in.indicator)[j + 1])] <- imputeFAMD_mod(as.data.frame(jeuNA),
                 ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter
               )$tab.disj[
                 i,
@@ -155,7 +155,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
             }
           }
         }
-        if (verbose) setTxtProgressBar(pb, round((((1:length(ncp.min:ncp.max))[which(nbaxes == (ncp.min:ncp.max))] - 1) * nrow(jeu) + i) / (length(ncp.min:ncp.max) * nrow(jeu)) * 100))
+        if (verbose) utils::setTxtProgressBar(pb, round((((1:length(ncp.min:ncp.max))[which(nbaxes == (ncp.min:ncp.max))] - 1) * nrow(jeu) + i) / (length(ncp.min:ncp.max) * nrow(jeu)) * 100))
       }
       crit <- c(crit, mean((tab.disj.hat - vrai.tab)^2, na.rm = TRUE))
     }
@@ -221,8 +221,8 @@ imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = 
     # remember the levels for each categorical column
     dict_lev <- dict_level(X, col_cat)
     # preserve colnames for ximp.disj
-    dummy <- dummyVars(" ~ .", data = X[, col_cat], sep = "_")
-    col_names.disj <- colnames(data.frame(predict(dummy, newdata = X[, col_cat])))
+    dummy <- dummyVars(" ~ .", data = X[, col_cat, drop = FALSE], sep = "_")
+    col_names.disj <- colnames(data.frame(predict(dummy, newdata = X[, col_cat, drop = FALSE])))
     col_names.disj <- c(colnames(X[, which(sapply(X, is.numeric))]), col_names.disj)
     # represent the factor columns with their ordinal levels
     X <- factor_ordinal_encode(X, col_cat)
@@ -538,7 +538,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
       if (any(is.na(aux.base))) aux.base[missing] <- 0
       ponderation[g] <- FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
       Xhat <- cbind.data.frame(Xhat, aux.base / ponderation[g])
-      if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- rnorm(length(missing))
+      if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- stats::rnorm(length(missing))
     }
     if (type[g] == "c") {
       Xhat2 <- cbind.data.frame(Xhat2, aux.base)
@@ -551,7 +551,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
       if (any(is.na(aux.base))) aux.base[missing] <- 0
       ponderation[g] <- FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
       Xhat <- cbind.data.frame(Xhat, aux.base / ponderation[g])
-      if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- rnorm(length(missing))
+      if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- stats::rnorm(length(missing))
     }
     if (type[g] == "n") {
       tab.disj <- FactoMineR::tab.disjonctif.prop(data.frame(aux.base), seed, row.w = row.w)

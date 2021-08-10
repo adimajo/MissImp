@@ -32,11 +32,3 @@ found in \code{generate_miss} documentation. Each object contains three attribut
 \code{generate_miss_ls} function generates a list of incomplete dataframes. Missing values are generated in the given complete
 dataframe with the all mechanisms in \code{generate_miss} function and the chosen proportion of missingness.
 }
-\examples{
-n <- 10000
-mu.X <- c(1, 2, 3)
-Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
-rs <- generate_miss_ls(X.complete.cont, 0.4)
-rs$mcar$X.incomp
-}

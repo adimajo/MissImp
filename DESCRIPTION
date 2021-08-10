@@ -28,15 +28,20 @@ Imports:
     qualvar,
     VIM,
     data.table,
-    ranger,
+    ranger,                                                                          
     mix,
     Amelia,
-    mice,
     ggplot2,
     devtools,
     missMDA,
     abind,
-    mvtnorm
+    mvtnorm,
+    gdata,
+    naniar,
+    FNN,
+    missForest,
+    iterators,
+    itertools
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr,

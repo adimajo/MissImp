@@ -34,6 +34,7 @@
 #' @param xtrue complete data matrix
 #' @param parallelize TODO
 #' @export
+#' @importFrom foreach %dopar%
 #' @return \code{ximp} imputed data matrix of same type as 'xmis'.
 #' @return \code{ximp.disj} imputed data matrix of same type as 'xmis' for the numeric columns.
 #'  For the categorical columns, the prediction of probability for each category is shown in form of onehot vector.
@@ -130,7 +131,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   ## return feedback on parallelization setup
   parallelize <- match.arg(parallelize)
   if (parallelize %in% c("variables", "forests")) {
-    if (getDoParWorkers() == 1) {
+    if (foreach::getDoParWorkers() == 1) {
       stop("You must register a 'foreach' parallel backend to run 'missForest' in parallel. Set 'parallelize' to 'no' to compute serially.")
     } else if (verbose) {
       if (parallelize == "variables") {
@@ -139,7 +140,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
         cat("  parallelizing computation of the random forest model objects\n")
       }
     }
-    if (getDoParWorkers() > p) {
+    if (foreach::getDoParWorkers() > p) {
       stop("The number of parallel cores should not exceed the number of variables (p=", p, ")")
     }
   }
@@ -184,7 +185,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   nzsort.j <- sort.j[sort.noNAvar > 0]
   if (parallelize == "variables") {
     "%cols%" <- get("%dopar%")
-    idxList <- as.list(isplitVector(nzsort.j, chunkSize = getDoParWorkers()))
+    idxList <- as.list(itertools::isplitVector(nzsort.j, chunkSize = foreach::getDoParWorkers()))
   }
   #   else {
   #     ## force column loop to be sequential
@@ -327,7 +328,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             if (parallelize == "forests") {
               xntree <- NULL
               RF <- foreach::foreach(
-                xntree = idiv(ntree, chunks = getDoParWorkers()),
+                xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
                 .combine = "combine", .multicombine = TRUE,
                 .packages = "randomForest"
               ) %dopar% {
@@ -374,7 +375,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
             } else {
               if (parallelize == "forests") {
                 RF <- foreach::foreach(
-                  xntree = idiv(ntree, chunks = getDoParWorkers()),
+                  xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
                   .combine = "combine", .multicombine = TRUE,
                   .packages = "randomForest"
                 ) %dopar% {
@@ -487,7 +488,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
     }
 
     if (any(!is.na(xtrue))) {
-      err <- suppressWarnings(mixError(ximp, xmis, xtrue))
+      err <- suppressWarnings(missForest::mixError(ximp, xmis, xtrue))
     }
 
     ## return status output, if desired
@@ -614,7 +615,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
           if (parallelize == "forests") {
             xntree <- NULL
             RF <- foreach::foreach(
-              xntree = idiv(ntree, chunks = getDoParWorkers()),
+              xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
               .combine = "combine", .multicombine = TRUE,
               .packages = "randomForest"
             ) %dopar% {
@@ -661,7 +662,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
           } else {
             if (parallelize == "forests") {
               RF <- foreach::foreach(
-                xntree = idiv(ntree, chunks = getDoParWorkers()),
+                xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
                 .combine = "combine", .multicombine = TRUE,
                 .packages = "randomForest"
               ) %dopar% {
@@ -729,7 +730,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
               if (ncol(ximp.disj[misi, dict_cat[[ls_colname[varInd]]]]) == ncol(misY.disj)) {
                 ximp.disj[misi, dict_cat[[ls_colname[varInd]]]] <- misY.disj
               } else { # When there are dropped unused levels
-                colnames(misY.disj) <- paste0(v, "_", colnames(misY.disj))
+                colnames(misY.disj) <- paste0("v", "_", colnames(misY.disj))
                 ximp.disj[misi, colnames(misY.disj)] <- misY.disj
               }
             }
@@ -772,7 +773,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   }
 
   if (any(!is.na(xtrue))) {
-    err <- suppressWarnings(mixError(ximp, xmis, xtrue))
+    err <- suppressWarnings(missForest::mixError(ximp, xmis, xtrue))
   }
 
   ## return status output, if desired
@@ -814,7 +815,7 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
     } else {
       out <- list(
         ximp = Ximp_final, ximp.disj = ximp.disj, OOBerror = OOBerrOld,
-        error = suppressWarnings(mixError(Ximp_final, xmis, xtrue))
+        error = suppressWarnings(missForest::mixError(Ximp_final, xmis, xtrue))
       )
     }
   }
@@ -846,7 +847,7 @@ predict.randomForest <-
     }
     if (missing(newdata)) {
       p <- if (!is.null(object$na.action)) {
-        napredict(object$na.action, object$predicted)
+        stats::napredict(object$na.action, object$predicted)
       } else {
         object$predicted
       }
@@ -867,7 +868,7 @@ predict.randomForest <-
         }
       }
       v <- object$votes
-      if (!is.null(object$na.action)) v <- napredict(object$na.action, v)
+      if (!is.null(object$na.action)) v <- stats::napredict(object$na.action, v)
       if (norm.votes) {
         t1 <- t(apply(v, 1, function(x) {
           x / sum(x)
