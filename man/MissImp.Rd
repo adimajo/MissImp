@@ -23,15 +23,15 @@ MissImp(
 )
 }
 \arguments{
-\item{df}{A \code{data.frame} with missing values to impute. For categorical variables, most of the preprocessing is included in the package, 
+\item{df}{A \code{data.frame} with missing values to impute. For categorical variables, most of the preprocessing is included in the package,
 but no special character ('+', '$', '-' for example) is allowed in the levels of each categorical variable.}
 
-\item{imp_method}{Imputation method to be chosen. 
+\item{imp_method}{Imputation method to be chosen.
 \itemize{
 \item \strong{missRanger}: Random-forest based imputation method. This is a fast version of 'missForest'
 \item \strong{missForest}: Random-forest based imputation method.
 \item \strong{kNN}: k-Nearest Neighbors based imputation method.
-\item \strong{PCA}: Principle Component Analysis based imputation method. 
+\item \strong{PCA}: Principle Component Analysis based imputation method.
 Factor Analysis of Mixed Data (FAMD) is used for mixed-type data. With large proportion of missing data, this method may generate some convergence error.
 \item \strong{EM}: Expectation-Maximization imputation method. This method can not deal with large number of categorical variables.
 \item \strong{MI_EM}: Multiple imputation with EM method.
@@ -40,9 +40,9 @@ Factor Analysis of Mixed Data (FAMD) is used for mixed-type data. With large pro
 \item \strong{MI_Ranger}: Multiple imputation with Random Forest based method.
 }}
 
-\item{resample_method}{Resampling method to be chosen. 
+\item{resample_method}{Resampling method to be chosen.
 \itemize{
-\item \strong{bootstrap}: Generate \code{n_resample} incomplete datasets by draws with replacement. 
+\item \strong{bootstrap}: Generate \code{n_resample} incomplete datasets by draws with replacement.
 Each incomplete dataset has the same number of rows as the original one.
 \item \strong{jackknife}: Generate \code{n_resample} incomplete datasets by removing nrows/\code{n_resample} rows of the original dataset.
 \item \strong{none}: No resampling.

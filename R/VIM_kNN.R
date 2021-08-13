@@ -129,6 +129,9 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
                     imp_var = TRUE, imp_suffix = "imp", addRF = FALSE, onlyRF = FALSE, addRandom = FALSE, useImputedDist = TRUE, weightDist = FALSE,
                     col_cat = c()) {
   check_data(data)
+  is_ranger_package_installed()
+  is_VIM_package_installed()
+  is_data.table_package_installed()
   data_df <- !data.table::is.data.table(data)
   ## Add:
   exist_cat <- !all(c(0, col_cat) == c(0))

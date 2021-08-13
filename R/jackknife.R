@@ -104,6 +104,11 @@ combine_jack <- function(ls_df,
     col_name_cat <- ls_col_name[col_cat]
     var_cat <- match.arg(var_cat, c("unalike", "wilcox_va"))
     is_unalike <- (var_cat == "unalike")
+    if (is_unalike) {
+      is_uwo4419_package_installed()
+    } else {
+      is_qualvar_package_installed()
+    }
     if (is.null(dict_cat)) {
       stop("dict_cat is needed when there are onehot categorical columns")
     }
@@ -160,7 +165,7 @@ combine_jack <- function(ls_df,
       df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
     } else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
-        dplyr::group_by(index) %>%
+        dplyr::group_by(.data$index) %>%
         dplyr::summarise(dplyr::across(dplyr::all_of(names_cat), VA_fact))
     }
 

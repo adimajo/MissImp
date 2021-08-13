@@ -66,6 +66,8 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
 #' @return \code{ximp.disj} imputed data matrix of same type as 'ximp' for the numeric columns.
 #'  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
 em_mod <- function(df, col_cat) {
+  is_norm_package_installed()
+  is_mix_package_installed()
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (!exist_cat) { # if there are only numerical columns
     s <- norm::prelim.norm(as.matrix(df)) # do preliminary manipulations

@@ -32,7 +32,7 @@
 #' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 #' dummy_test_matrix(rs$X.incomp, c())
 #'
-#' dummy_test_matrix(airquality, col_cat = c(5:6))
+#' # dummy_test_matrix(airquality, col_cat = c(5:6))
 dummy_test_matrix <- function(df, col_cat = c()) {
   test_result_dummy <- data.frame()
   df <- factor_encode(df, col_cat) # in case the categorical column is not a factor
@@ -148,7 +148,7 @@ dummy_test_matrix <- function(df, col_cat = c()) {
 #' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 #' dummy_test(rs$X.incomp, c())
 #'
-#' dummy_test(airquality, col_cat = c(5:6))
+#' # dummy_test(airquality, col_cat = c(5:6))
 dummy_test <- function(df, col_cat = c()) {
   p_matrix <- dummy_test_matrix(df, col_cat)
   p_vector <- as.vector(p_matrix)

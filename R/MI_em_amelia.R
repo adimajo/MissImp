@@ -26,6 +26,7 @@
 #'
 #' Statistical Analysis with Missing Data, by Little and Rubin, 2002
 MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
+  is_Amelia_package_installed()
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
     name_cat <- colnames(df_with_mv)[col_cat]

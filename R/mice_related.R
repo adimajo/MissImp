@@ -40,6 +40,7 @@
 #'
 #' Statistical Analysis with Missing Data, by Little and Rubin, 2002
 result_mice <- function(res, impnum, col_cat = c()) {
+  is_abind_package_installed()
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
     dict_cat <- dict_onehot(res$data, col_cat)

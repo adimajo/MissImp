@@ -37,8 +37,3 @@ And \code{False} means that H0 is rejected, the missing data mechanism is not MC
  focus on testing the normality and homoscedasticity according to the variance matrix.
  The conclusion of these three tests as well as their statistics will be returned.
 }
-\examples{
-
-mcar_test_combined(airquality, col_cat = c(5:6))$test_result
-mcar_test_combined(oceanbuoys)$test_result
-}

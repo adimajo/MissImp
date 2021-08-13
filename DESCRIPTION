@@ -1,53 +1,56 @@
 Package: MissImp
 Type: Package
-Title: TODO
+Title: Missing data imputation with MissImp
 Version: 0.0.1
 Author: Xuwen Liu, Adrien Ehrhardt
 Maintainer: Xuwen Liu <xuwen.liu@credit-agricole-sa.fr>
-Description: TODO
+Description: This package provides missing data generation method with a given mechanism and a given proportion,
+ various single and multiple imputation methods combined with bootstrap or jackknife resampling method, 
+ as well as evaluation matrix of the imputation result.
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 Language: en
 RoxygenNote: 7.1.1
 Imports:
-    foreach,
-    glmnet,
-    LiblineaR,
     stats,
     MASS,
-    norm,
     mice,
-    missMethods,
-    pracma,
-    mltools,
-    uwo4419,
     dplyr,
-    randomForest,
-    FactoMineR,
-    qualvar,
-    VIM,
-    data.table,
-    ranger,                                                                          
-    mix,
-    Amelia,
-    ggplot2,
     devtools,
-    missMDA,
-    abind,
-    mvtnorm,
-    gdata,
-    naniar,
-    FNN,
-    missForest,
-    iterators,
-    itertools
+    foreach,
+    data.table,
+    rlang
 Suggests: 
     testthat (>= 2.1.0),
     mathjaxr,
     misaem,
     rmarkdown,
     knitr,
-    laeken
+    laeken,
+    glmnet,
+    LiblineaR,
+    norm,
+    missMethods,
+    pracma,
+    mltools,
+    uwo4419,
+    randomForest,
+    FactoMineR,
+    qualvar,
+    VIM,
+    mix,
+    Amelia,
+    missMDA,
+    abind,
+    mvtnorm,
+    naniar,
+    FNN,
+    missForest,
+    iterators,
+    itertools,
+    ranger,
+    ggplot2,
+    gdata
 RdMacros: mathjaxr
 VignetteBuilder: knitr

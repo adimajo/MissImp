@@ -19,11 +19,9 @@
 #' @return \code{result_little_test} The detailed result from Little's MCAR test.
 #' @return \code{result_missmech} The detailed result from the normality tests (Hawkin's test and non-parametric test).
 #' @export
-#' @examples
-#'
-#' mcar_test_combined(airquality, col_cat = c(5:6))$test_result
-#' mcar_test_combined(oceanbuoys)$test_result
+# mcar_test_combined(airquality, col_cat = c(5:6))$test_result
 mcar_test_combined <- function(df, col_cat = c(), p_val = 0.1) {
+  is_naniar_package_installed()
   out_dummy <- dummy_test(df, col_cat)
   out_little <- naniar::mcar_test(df)
   exist_cat <- !all(c(0, col_cat) == c(0))

@@ -76,7 +76,11 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   ## [add]col_cat      = index of categorical columns
   ## ----------------------------------------------------------------------
   ##
-
+  is_foreach_package_installed()
+  is_randomForest_package_installed()
+  is_missForest_package_installed()
+  is_iterators_package_installed()
+  is_itertools_package_installed()
   ## Add: Create dict_cat with categroical columns
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
@@ -1052,7 +1056,7 @@ predict.randomForest <-
         nodes = as.integer(nodes),
         nodexts = as.integer(nodexts),
         # DUP=FALSE,
-        PACKAGE = "randomForest"
+        PACKAGE = "MissImp"
       )[keepIndex]
       ## Apply bias correction if needed.
       yhat <- rep(NA, length(rn))
@@ -1118,7 +1122,7 @@ predict.randomForest <-
         proxmatrix = as.double(proxmatrix),
         nodes = as.integer(nodes),
         # DUP=FALSE,
-        PACKAGE = "randomForest"
+        PACKAGE = "MissImp"
       )
       if (out.type > 1) {
         out.class.votes <- t(matrix(t1$countts, nrow = nclass, ncol = ntest))

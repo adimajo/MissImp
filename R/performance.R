@@ -173,7 +173,7 @@ ls_F1 <- function(df_comp,
       }
       else { # df_imp_cat in form of factor
         df_cat <- df_imp_cat[c("index", col_name_cat)] %>%
-          dplyr::group_by(index) %>%
+          dplyr::group_by(.data$index) %>%
           dplyr::summarise(dplyr::across(dplyr::all_of(col_name_cat), Mode_cat))
         names_cat <- names(dict_lev)
         for (name in names_cat) {

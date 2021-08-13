@@ -40,6 +40,7 @@
 
 missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
                            verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
+  is_ranger_package_installed()
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
   }
@@ -451,13 +452,7 @@ revert <- function(con, X = con$X) {
 #' @return \code{x} with imputed values.
 #' @export
 #'
-#' @examples
-#' imputeUnivariate(c(NA, 0, 1, 0, 1))
-#' imputeUnivariate(c("A", "A", NA))
-#' imputeUnivariate(as.factor(c("A", "A", NA)))
-#' head(imputeUnivariate(generateNA(iris)))
-#' head(imputeUnivariate(generateNA(iris), v = "Species"))
-#' head(imputeUnivariate(generateNA(iris), v = c("Species", "Petal.Length")))
+
 imputeUnivariate <- function(x, v = NULL, seed = NULL) {
   stopifnot(is.atomic(x) || is.data.frame(x))
 
@@ -494,7 +489,6 @@ imputeUnivariate <- function(x, v = NULL, seed = NULL) {
 #' For each value in the prediction vector \code{xtest}, one of the closest \code{k} values in the prediction vector \code{xtrain} is randomly chosen and its observed value in \code{ytrain} is returned.
 #'
 #' @importFrom stats rmultinom
-#' @importFrom FNN knnx.index
 #'
 #' @param xtrain Vector with predicted values in the training data. Can be of type logical, numeric, character, or factor.
 #' @param xtest Vector as \code{xtrain} with predicted values in the test data. Missing values are not allowed.
@@ -520,7 +514,7 @@ pmm <- function(xtrain, xtest, ytrain, k = 1L, seed = NULL) {
     mode(xtrain) == mode(xtest),
     k >= 1L
   )
-
+  is_FNN_package_installed()
   xtrain <- xtrain[ok]
   ytrain <- ytrain[ok]
 
@@ -556,7 +550,7 @@ pmm <- function(xtrain, xtest, ytrain, k = 1L, seed = NULL) {
 
   # STEP 2: PMM based on k-nearest neightbour.
   k <- min(k, length(xtrain))
-  nn <- knnx.index(xtrain, xtest, k)
+  nn <- FNN::knnx.index(xtrain, xtest, k)
   take <- t(rmultinom(nt, 1L, rep(1L, k)))
   ytrain[rowSums(nn * take)]
 }

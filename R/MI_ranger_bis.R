@@ -295,6 +295,8 @@ missRanger_mod_draw_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter =
 
 MI_missRanger_bis <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
                               verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
+  is_ranger_package_installed()
+  is_abind_package_installed()
   ## Add:
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {

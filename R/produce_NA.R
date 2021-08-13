@@ -129,7 +129,6 @@ logit.bypatterns <- function(data, patterns, mechanism) {
 #' \item{idx_newNA}{a boolean data.frame indicating the indices of the newly generated missing values}
 #'
 #' @export
-#' @importFrom gdata mapLevels
 produce_NA <- function(data,
                        mechanism = "MCAR", # c("MCAR", "MAR", "MNAR"),
                        perc.missing = 0.5,
@@ -144,6 +143,11 @@ produce_NA <- function(data,
                        use.all = FALSE,
                        logit.model = "RIGHT", # c("RIGHT","LEFT","MID","TAIL")
                        seed = NULL) {
+  is_glmnet_package_installed()
+  is_LiblineaR_package_installed()
+  is_mltools_package_installed()
+  is_data.table_package_installed()
+  is_gdata_package_installed()
   if (!is.null(seed)) {
     set.seed(seed)
   }

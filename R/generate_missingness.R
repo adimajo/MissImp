@@ -47,6 +47,8 @@ generate_miss <- function(df,
                           # c("MCAR", "MAR1", "MAR2","MAR3","MNAR1","MNAR2")
                           # We could add here the parameters for produce_NA function in MAR1 and MNAR1
                           mar2.col.ctrl = 1) {
+  is_missMethods_package_installed()
+  is_pracma_package_installed()
   mechanism <-
     match.arg(mechanism, c("MCAR", "MAR1", "MAR2", "MAR3", "MNAR1", "MNAR2"))
   ls_col_name <- colnames(df)

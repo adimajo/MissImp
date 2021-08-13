@@ -207,6 +207,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
 #' \url{https://arxiv.org/abs/1301.4797#'}
 imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-6,
                            ind.sup = NULL, sup.var = NULL, seed = NULL, maxiter = 1000, ...) {
+  is_FactoMineR_package_installed()
   X <- as.data.frame(X)
   ## Add:
   X <- X[, c(which(sapply(X, is.numeric)), which(!sapply(X, is.numeric)))]

@@ -51,9 +51,11 @@ MIFAMD_mod <-
            maxiter = 1000,
            nboot = 20,
            verbose = T) {
-
+    is_FactoMineR_package_installed()
+    is_missMDA_package_installed()
+    is_abind_package_installed()
+    is_mvtnorm_package_installed()
     # intern functions
-
     estim.sigma2 <- function(Xquanti, Xquali, M, Zhat, ncp, WW, D) {
       tab.disjonctif.NA <- function(tab) {
         if (ncol(tab) == 0) {

@@ -41,7 +41,7 @@ X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
 rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
 dummy_test_matrix(rs$X.incomp, c())
 
-dummy_test_matrix(airquality, col_cat = c(5:6))
+# dummy_test_matrix(airquality, col_cat = c(5:6))
 }
 \references{
 Missing value analysis & Data imputation, G. David Garson, 2015.
