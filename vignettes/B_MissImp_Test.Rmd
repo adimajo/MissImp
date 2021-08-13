@@ -24,6 +24,7 @@ library(MissImp)
 We generate a complete data set (Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8) with (Y1, Y2, Y3) ~ N(u1, S1), (Y4, Y5)~N(u2,S2), Y6~P(\lambda) and Y7,Y8~Binomial(prob). 
 
 ```{r Generate_complete_dataframe}
+# Sys.setenv(PATH = "C:\\Users\\LIUXUWE\\R-4.0.5\\bin\\x64;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Users\\LIUXUWE\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\LIUXUWE\\AppData\\Local\\Programs\\Git\\cmd;C:\\Users\\LIUXUWE\\qpdf-7.0.0\\bin;C:\\Users\\LIUXUWE\\binutils-2.28-1-mingw32-bin\\mingw32\\bin")
 complete_df_generator <- function(n){
   mu.X <- c(1, 2, 3)
   Sigma.X <- matrix(c(
