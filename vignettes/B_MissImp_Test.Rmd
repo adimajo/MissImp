@@ -351,7 +351,7 @@ num_mi <- 4
 n_resample <- 4
 n_df <- 5
 
-imp_method <- "PCA"
+imp_method <- "MI_PCA"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -361,13 +361,13 @@ var_cat <- "wilcox_va"
 
 
 ```{r rd_MissImp}
-res <- MissImp(
-  df = df, imp_method = imp_method, resample_method = resample_method,
-  n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
-  maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
-  learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
-  df_complete = df_complete, num_mi = num_mi, maxiter_mice = maxiter_mice
-)
+# res <- MissImp(
+#   df = df, imp_method = imp_method, resample_method = resample_method,
+#   n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
+#   maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
+#   learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
+#   df_complete = df_complete, num_mi = num_mi, maxiter_mice = maxiter_mice
+# )
 # head(df)
 # head(res$imp)
 # head(res$imp.disj)
@@ -436,14 +436,14 @@ res <- MissImp(
 #     ls_mse <- c(ls_mse, res_imp$MSE$Mean_MSE)
 #     ls_scared_mse <- c(ls_scared_mse, res_imp$MSE$Mean_MSE_scale)
 #     ls_f1 <- c(ls_f1, res_imp$F1$Mean_F1)
-#     
+# 
 #     num_colnames <- colnames(df_complete)[col_num]
 #     ximp_num <- res_imp$imp[num_colnames]
 #     xcomp_num <- df_complete[num_colnames]
 #     test_MSE <- sum((xcomp_num-ximp_num)*(xcomp_num-ximp_num))/sum(rs$R.mask[col_num]*1)
 #     ls_test_mse <- c(ls_test_mse, test_MSE)
 #   }
-#   
+# 
 #   result[["mechanisme"]][i] <- mech
 #   result[["miss_perc"]][i] <- mean(miss_prop_real)
 #   result[["method"]][i] <- imp_method
@@ -464,7 +464,7 @@ res <- MissImp(
 
 ```{r rd_write_csv}
 library(ggplot2)
-# write.csv(result,"test1_MAR1_MIEM_boot_result.csv")
+# write.csv(result,"test1_MAR1_MIPCA_boot_result.csv")
 res <- read.csv("test1_MAR1_KNN_boot_result.csv")
 x <- res$miss_perc
 y1 <- res$scaled_MSE
