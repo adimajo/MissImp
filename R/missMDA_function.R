@@ -632,8 +632,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
         if (first_iter[g]) {
           tab.disj <- t(t(tab.disj) * sqrt(MM[[g]]))
           first_iter[g] <- FALSE
-        }
-        else {
+        } else {
           tab.disj <- t(t(tab.disj) * sqrt(MM[[g]]) * ncol(aux.base))
         }
         # print(head(tab.disj-tab.disj0))

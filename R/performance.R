@@ -170,8 +170,7 @@ ls_F1 <- function(df_comp,
         df_imp_i <- df_cat[names_cat]
         df_comp_i <- df_comp[df_cat$index, ][names_cat]
         mask_cat_i <- mask[df_cat$index, ][names_cat] * 1
-      }
-      else { # df_imp_cat in form of factor
+      } else { # df_imp_cat in form of factor
         df_cat <- df_imp_cat[c("index", col_name_cat)] %>%
           dplyr::group_by(.data$index) %>%
           dplyr::summarise(dplyr::across(dplyr::all_of(col_name_cat), Mode_cat))
@@ -186,8 +185,7 @@ ls_F1 <- function(df_comp,
         df_comp_i <- df_comp[df_cat$index, col_cat_comp]
         mask_cat_i <- mask[df_cat$index, col_cat_comp] * 1
       }
-    }
-    else if (resample_method == "jackknife") {
+    } else if (resample_method == "jackknife") {
       # convert onehot to factor form
       names_cat <- names(dict_cat)
       for (name in names_cat) {
@@ -201,8 +199,7 @@ ls_F1 <- function(df_comp,
       df_imp_i <- df_imp_cat[names_cat]
       df_comp_i <- df_comp[df_imp_cat$index, ][names_cat]
       mask_cat_i <- mask[df_imp_cat$index, ][names_cat] * 1
-    }
-    else {
+    } else {
       df_imp_i <- df_imp_cat
       df_comp_i <- df_comp[, col_cat_comp]
       mask_cat_i <- mask[, col_cat_comp][names_cat] * 1

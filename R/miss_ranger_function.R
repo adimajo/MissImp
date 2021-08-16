@@ -262,8 +262,7 @@ missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, see
             colnames(pred.disj) <- paste0(v, "_", colnames(pred.disj))
             data.disj[v.na, colnames(pred.disj)] <- pred.disj
           }
-        }
-        else {
+        } else {
           data.disj[v.na, v] <- if (pmm.k) {
             pmm(
               xtrain = fit$predictions,

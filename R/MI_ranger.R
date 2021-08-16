@@ -267,8 +267,7 @@ missRanger_mod_draw <- function(data,
             colnames(pred_draw.disj) <- paste0(v, "_", colnames(pred_draw.disj))
             data.disj[v.na, colnames(pred_draw.disj)] <- pred_draw.disj
           }
-        }
-        else {
+        } else {
           data.disj[v.na, v] <- if (pmm.k) {
             pmm(
               xtrain = fit$predictions,
