@@ -83,7 +83,7 @@ df <- rs$X.incomp
 
 ```{r em}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
 imp.em <- em_mod(df_with_mv, col_cat = col_cat)
 head(imp.em$ximp)
@@ -96,7 +96,7 @@ head(imp.em$ximp.disj)
 
 ```{r MissForest_boot}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
 imp.forest <- missForest_mod(xmis = df, maxiter = 3, ntree = 100, col_cat = col_cat)
 head(imp.forest$ximp)
@@ -108,7 +108,7 @@ head(imp.forest$ximp.disj)
 
 ```{r MissRanger}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
 imp.ranger <- missRanger_mod(df_with_mv, col_cat = c(7:8), maxiter = 3)
 
@@ -120,9 +120,9 @@ head(imp.ranger$ximp.disj)
 
 ```{r MissMDA}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.pca = imputeFAMD_mod(df_with_mv, ncp = 3, maxiter = 30)
+imp.pca <- imputeFAMD_mod(df_with_mv, ncp = 3, maxiter = 30)
 head(imp.pca$completeObs)
 head(imp.pca$tab.disj)
 ```
@@ -131,7 +131,7 @@ head(imp.pca$tab.disj)
 
 ```{r kNN}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
 imp.knn <- kNN_mod(df_with_mv, col_cat = c(7:8))
 head(imp.knn$ximp)
@@ -146,7 +146,7 @@ head(imp.knn$ximp.disj)
 
 ```{r MIEM}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
 imp.em.mi <- MI_EM_amelia(df_with_mv, col_num = c(1:6), col_cat = col_cat, num_imp = 3)
 head(imp.em.mi$ximp)
@@ -157,10 +157,10 @@ head(imp.em.mi$ximp.disj)
 
 ```{r mice}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-res <- mice::mice(df_with_mv, m=3)
-imp.mice <- result_mice(res, 3, col_cat=c(7,8))
+res <- mice::mice(df_with_mv, m = 3)
+imp.mice <- result_mice(res, 3, col_cat = c(7, 8))
 
 head(imp.mice$ximp)
 head(imp.mice$ximp.disj)
@@ -172,9 +172,9 @@ head(imp.mice$ximp.disj)
 
 ```{r MIPCA}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.pca.mi <- MIFAMD_mod(df_with_mv, ncp=3, maxiter = 50, nboot = 3)
+imp.pca.mi <- MIFAMD_mod(df_with_mv, ncp = 3, maxiter = 50, nboot = 3)
 head(imp.pca.mi$ximp)
 head(imp.pca.mi$ximp.disj)
 ```
@@ -183,9 +183,9 @@ head(imp.pca.mi$ximp.disj)
 
 ```{r MI Ranger}
 df_with_mv <- df
-col_cat <- c(7,8)
+col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.ranger.mi <- MI_missRanger(df_with_mv, col_cat = c(7,8), num_mi = 3)
+imp.ranger.mi <- MI_missRanger(df_with_mv, col_cat = c(7, 8), num_mi = 3)
 
 head(imp.ranger.mi$ximp)
 head(imp.ranger.mi$ximp.disj)
