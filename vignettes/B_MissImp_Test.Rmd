@@ -455,7 +455,7 @@ var_cat <- "wilcox_va"
 # data.frame(result)
 ```
 
-```{r rd_write_csv}
+```{r rd_write_csv, eval=FALSE}
 library(ggplot2)
 # write.csv(result,"test1_MAR1_MIPCA_boot_result.csv")
 res <- read.csv("test1_MAR1_KNN_boot_result.csv")

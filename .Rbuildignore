@@ -6,3 +6,5 @@
 ^docs$
 ^pkgdown$
 ^.gitlab-ci.yml
+^doc$
+^Meta$
