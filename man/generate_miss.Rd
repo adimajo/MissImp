@@ -53,7 +53,7 @@ rs$X.incomp
 \references{
 \itemize{
 \item \url{https://rmisstastic.netlify.app/how-to/generate/misssimul}
-\item \url{https://cran.r-project.org/web/packages/missMethods/vignettes/Generating-missing-values.html}
+\item \url{https://cran.r-project.org/package=missMethods/vignettes/Generating-missing-values.html}
 \item Santos, M. S., R. C. Pereira, A. F. Costa, J. P. Soares, J. Santos, and P. H. Abreu. 2019. Generating Synthetic Missing Data: A Review by Missing Mechanism. IEEE Access 7: 11651–67. \url{https://doi.org/10.1109/ACCESS.2019.2891360}.
 }
 }
