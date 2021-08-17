@@ -329,7 +329,7 @@ for (j in col_cat) {
   abalone_data[, j][abalone_data[, j] == "?"] <- NA
   suppressWarnings(abalone_data[, j] <- as.factor(abalone_data[, j]))
 }
-abalone_data <- na.omit(abalone_data)
+abalone_data <- stats::na.omit(abalone_data)
 row.names(abalone_data) <- c(1:nrow(abalone_data))
 head(abalone_data)
 ```
@@ -357,9 +357,6 @@ cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 ```
 
-
-
-
 ```{r rd_MissImp}
 # res <- MissImp(
 #   df = df, imp_method = imp_method, resample_method = resample_method,
@@ -377,7 +374,6 @@ var_cat <- "wilcox_va"
 # res$F1
 # dens_comp(res$imp,X.complete)
 ```
-
 
 ```{r rd_result_MissImp}
 # i <- 1
@@ -408,7 +404,6 @@ var_cat <- "wilcox_va"
 # }
 #
 # data.frame(result)
-
 
 # i <- 1
 # result <- list()
@@ -460,8 +455,6 @@ var_cat <- "wilcox_va"
 # data.frame(result)
 ```
 
-
-
 ```{r rd_write_csv}
 library(ggplot2)
 # write.csv(result,"test1_MAR1_MIPCA_boot_result.csv")
@@ -487,4 +480,3 @@ p1 <- ggplot(predframe, aes(miss_perc, scaled_MSE)) +
   xlab("Percentage of missing data")
 show(p1)
 ```
-
