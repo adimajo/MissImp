@@ -28,11 +28,9 @@ jacksample <- function(df, num_sample) {
     end <- start + row_tranch - 1
     if (start == 1) {
       df_new <- df[(end + 1):num_row, ]
-    }
-    else if (end == num_row) {
+    } else if (end == num_row) {
       df_new <- df[1:(start - 1), ]
-    }
-    else {
+    } else {
       df_new <- df[c(1:(start - 1), (end + 1):num_row), ]
     }
     # df_new[["old_idx"]] = c(start:end)
@@ -46,8 +44,7 @@ jacksample <- function(df, num_sample) {
     end <- start + (row_tranch + 1) - 1
     if (end >= num_row) {
       df_new <- df[c(1:(start - 1)), ]
-    }
-    else {
+    } else {
       df_new <- df[c(1:(start - 1), (end + 1):num_row), ]
     }
 
@@ -184,8 +181,7 @@ combine_jack <- function(ls_df,
         uncertainty = df_result_var
       )
     )
-  }
-  else {
+  } else {
     return(list(
       imp = df_new[-c(1)],
       imp.disj = df_new[-c(1)],

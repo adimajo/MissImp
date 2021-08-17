@@ -472,8 +472,7 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
           df_tmp <- data.frame(t(data.frame(tmp)))
           data.disj[indexNA2s[, variable[j]], dict_cat[[variable[j]]]] <- df_tmp
           #########################
-        }
-        else if (is.integer(data[, variable[j]])) {
+        } else if (is.integer(data[, variable[j]])) {
           data[indexNA2s[, variable[j]], variable[j]] <- round(sapply(1:ncol(kNNs), function(x) do.call("numFun", list(unlist(kNNs[, x, with = FALSE]), mindi[[2]][, x]))))
           data.disj[indexNA2s[, variable[j]], variable[j]] <- round(sapply(1:ncol(kNNs), function(x) do.call("numFun", list(unlist(kNNs[, x, with = FALSE]), mindi[[2]][, x]))))
         } else {
@@ -488,8 +487,7 @@ kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_
           df_tmp <- data.frame(matrix(unlist(tmp), nrow = length(tmp), byrow = TRUE))
           data.disj[indexNA2s[, variable[j]], dict_cat[[variable[j]]]] <- df_tmp
           #########################
-        }
-        else if (is.integer(data[, variable[j]])) {
+        } else if (is.integer(data[, variable[j]])) {
           data[indexNA2s[, variable[j]], variable[j]] <- round(apply(kNNs, 2, numFun))
           data.disj[indexNA2s[, variable[j]], variable[j]] <- round(apply(kNNs, 2, numFun))
         } else {

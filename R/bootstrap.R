@@ -187,8 +187,7 @@ combine_boot <- function(ls_df,
     }
     if (is_unalike) {
       df_new_cat_var <- stats::aggregate(. ~ df_new_merge[c("index", names_cat)]$index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
-    }
-    else {
+    } else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         dplyr::group_by(.data$index) %>%
         dplyr::summarise(dplyr::across(dplyr::all_of(names_cat), VA_fact))

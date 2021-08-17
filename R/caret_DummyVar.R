@@ -293,8 +293,7 @@ contr.ltfr <- function(n, contrasts = TRUE, sparse = FALSE) {
     } else {
       stop("not enough degrees of freedom to define contrasts")
     }
-  }
-  else {
+  } else {
     levels <- as.character(n)
     n <- length(n)
   }
@@ -313,8 +312,7 @@ contr.dummy <- function(n, ...) {
     } else {
       stop("not enough degrees of freedom to define contrasts")
     }
-  }
-  else {
+  } else {
     levels <- as.character(n)
     n <- length(n)
   }

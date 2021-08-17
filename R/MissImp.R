@@ -111,41 +111,34 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
       res <- missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "missForest") {
+    } else if (imp_method == "missForest") {
       res <- missForest_mod(xmis = dfi, maxiter = maxiter_tree, col_cat = col_cat)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "kNN") {
+    } else if (imp_method == "kNN") {
       res <- suppressWarnings((kNN_mod(dfi, col_cat = col_cat, weightDist = TRUE)))
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "EM") {
+    } else if (imp_method == "EM") {
       res <- em_mod(dfi, col_cat = col_cat) # Error: matrix not sinugular, the categorical variable with too many categories may ends in a sparse matrix
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "PCA") {
+    } else if (imp_method == "PCA") {
       if (learn_ncp) {
         ncp_pca <- estim_ncpFAMD_mod(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
       }
       res <- imputeFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca)
       imp.onehot_i <- res$tab.disj
       imp.fact_i <- res$completeObs
-    }
-    else if (imp_method == "MI_EM") {
+    } else if (imp_method == "MI_EM") {
       res <- MI_EM_amelia(dfi, col_num = c(col_con, col_dis), col_cat = col_cat, num_imp = num_mi)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "MI_PCA") {
+    } else if (imp_method == "MI_PCA") {
       res <- MIFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca, nboot = num_mi)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "MICE") {
+    } else if (imp_method == "MICE") {
       col_cat <- which(!sapply(dfi, is.numeric))
       exist_cat <- !all(c(0, col_cat) == c(0))
       if (exist_cat) {
@@ -173,13 +166,11 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
       }
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "MI_Ranger") {
+    } else if (imp_method == "MI_Ranger") {
       res <- MI_missRanger(data.frame(dfi), col_cat = col_cat, num_mi = num_mi, maxiter = maxiter_tree)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    }
-    else if (imp_method == "MI_Ranger_bis") {
+    } else if (imp_method == "MI_Ranger_bis") {
       res <- MI_missRanger_bis(data.frame(dfi), col_cat = col_cat, num_mi = num_mi, maxiter = maxiter_tree)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
@@ -191,10 +182,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     ls.imp.fact[[i]] <- data.frame(imp.fact_i)
     i <- i + 1
   }
-
-
-
-
 
   ## 3. Final result
   if (resample_method == "bootstrap") {

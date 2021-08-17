@@ -25,7 +25,7 @@ We generate a complete data set (Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8) with (Y1, Y2, Y
 
 ```{r Generate_complete_dataframe}
 # Sys.setenv(PATH = "C:\\Users\\LIUXUWE\\R-4.0.5\\bin\\x64;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Users\\LIUXUWE\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\LIUXUWE\\AppData\\Local\\Programs\\Git\\cmd;C:\\Users\\LIUXUWE\\qpdf-7.0.0\\bin;C:\\Users\\LIUXUWE\\binutils-2.28-1-mingw32-bin\\mingw32\\bin")
-complete_df_generator <- function(n){
+complete_df_generator <- function(n) {
   mu.X <- c(1, 2, 3)
   Sigma.X <- matrix(c(
     9, 3, 2,
@@ -286,16 +286,16 @@ res$F1
 
 ```{r read_real_data}
 # credit_data <- read.csv("../inst/extdata/UCI_Credit_data/crx.data", fileEncoding="UTF-8", dec=",", header = FALSE)
-abalone_data <- read.csv("../inst/extdata/UCI_Abalone_data/abalone.data", fileEncoding="UTF-8", dec=",", header = FALSE)
+abalone_data <- read.csv("../inst/extdata/UCI_Abalone_data/abalone.data", fileEncoding = "UTF-8", dec = ",", header = FALSE)
 ```
 
 ```{r preprocessing}
-# 
+#
 # credit_data <- data.frame(credit_data)
 # col_num <- c(2,3,8,11,14,15)
 # col_dis <- c(11,14,15)
 # col_cat <- c(1,4,5,6,7,9,10,12,13,16)
-# 
+#
 # for(j in col_num){
 #   if(j %in% col_dis){
 #     suppressWarnings(credit_data[,j] <- as.integer(credit_data[,j]))
@@ -312,30 +312,30 @@ abalone_data <- read.csv("../inst/extdata/UCI_Abalone_data/abalone.data", fileEn
 # row.names(credit_data) <- c(1:nrow(credit_data))
 # levels(credit_data$V16) <- c("pos", "neg")  #remove special symbols
 # head(credit_data)
-# 
+#
 abalone_data <- data.frame(abalone_data)
 col_num <- c(2:9)
 col_dis <- c(9)
 col_cat <- c(1)
-for(j in col_num){
-  if(j %in% col_dis){
-    suppressWarnings(abalone_data[,j] <- as.integer(abalone_data[,j]))
+for (j in col_num) {
+  if (j %in% col_dis) {
+    suppressWarnings(abalone_data[, j] <- as.integer(abalone_data[, j]))
   }
-  else{
-    suppressWarnings(abalone_data[,j] <- as.numeric(abalone_data[,j]))
+  else {
+    suppressWarnings(abalone_data[, j] <- as.numeric(abalone_data[, j]))
   }
 }
-for(j in col_cat){
-  abalone_data[,j][abalone_data[,j]=="?"] <- NA
-  suppressWarnings(abalone_data[,j] <- as.factor(abalone_data[,j]))
+for (j in col_cat) {
+  abalone_data[, j][abalone_data[, j] == "?"] <- NA
+  suppressWarnings(abalone_data[, j] <- as.factor(abalone_data[, j]))
 }
-abalone_data <- na.omit(abalone_data)
+abalone_data <- stats::na.omit(abalone_data)
 row.names(abalone_data) <- c(1:nrow(abalone_data))
 head(abalone_data)
 ```
 
 ```{r rd_param_settings}
-mech <- 'MAR1'
+mech <- "MAR1"
 miss_prop <- 0.005
 X.complete <- abalone_data
 rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
@@ -357,9 +357,6 @@ cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
 ```
 
-
-
-
 ```{r rd_MissImp}
 # res <- MissImp(
 #   df = df, imp_method = imp_method, resample_method = resample_method,
@@ -377,7 +374,6 @@ var_cat <- "wilcox_va"
 # res$F1
 # dens_comp(res$imp,X.complete)
 ```
-
 
 ```{r rd_result_MissImp}
 # i <- 1
@@ -406,9 +402,8 @@ var_cat <- "wilcox_va"
 #   result[["Var_scaled_MSE"]][i] <- res_imp$MSE$Variance_MSE_scale
 #   i <- i + 1
 # }
-# 
+#
 # data.frame(result)
-
 
 # i <- 1
 # result <- list()
@@ -460,30 +455,28 @@ var_cat <- "wilcox_va"
 # data.frame(result)
 ```
 
-
-
 ```{r rd_write_csv}
 library(ggplot2)
 write.csv(result,"test1_MAR1_Forest_boot_result.csv")
 res <- read.csv("test1_MAR1_KNN_boot_result.csv")
 x <- res$miss_perc
 y1 <- res$scaled_MSE
-y2 <- res$scaled_MSE + 1.96*sqrt(res$Var_scaled_MSE)
-y3 <- res$scaled_MSE - 1.96*sqrt(res$Var_scaled_MSE)
+y2 <- res$scaled_MSE + 1.96 * sqrt(res$Var_scaled_MSE)
+y3 <- res$scaled_MSE - 1.96 * sqrt(res$Var_scaled_MSE)
 #
 # plot(x, y1, type = "n", ylim = range(c(y1, y2)), xlab = "", ylab = "")
 # lines(x, y1, col = "blue")
 # lines(x, y2, col = "red")
 # lines(x, y3, col = "red")
-predframe <- with(res,data.frame(miss_perc,
-                                scaled_MSE=scaled_MSE, 
-                                lwr=scaled_MSE-1.96*sqrt(Var_scaled_MSE),
-                                upr=scaled_MSE+1.96*sqrt(Var_scaled_MSE)))
-p1 <- ggplot(predframe, aes(miss_perc, scaled_MSE))+
-    geom_point()+
-    geom_line(data=predframe)+
-    geom_ribbon(data=predframe,aes(ymin=lwr,ymax=upr),alpha=0.3, fill='red')+
-    xlab('Percentage of missing data')
+predframe <- with(res, data.frame(miss_perc,
+  scaled_MSE = scaled_MSE,
+  lwr = scaled_MSE - 1.96 * sqrt(Var_scaled_MSE),
+  upr = scaled_MSE + 1.96 * sqrt(Var_scaled_MSE)
+))
+p1 <- ggplot(predframe, aes(miss_perc, scaled_MSE)) +
+  geom_point() +
+  geom_line(data = predframe) +
+  geom_ribbon(data = predframe, aes(ymin = lwr, ymax = upr), alpha = 0.3, fill = "red") +
+  xlab("Percentage of missing data")
 show(p1)
 ```
-

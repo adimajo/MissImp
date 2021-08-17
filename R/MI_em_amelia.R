@@ -90,8 +90,7 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     ximp.disj <- ximp.disj[names.row, ]
     ximp <- ximp.all[names.row, colnames(df_with_mv)]
     ximp.disj <- ximp.disj[colnames(ximp.disj) != "index"] # remove "index" column
-  }
-  else {
+  } else {
     imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, boot.type = "none")
     imp_amelia_disj <- list()
     i <- 1

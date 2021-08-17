@@ -24,7 +24,7 @@ variables:
     - apt-get -y install libssh2-1-dev
     - apt-get -y install pandoc
     - r -e "install.packages('devtools')"
-    - r -e 'devtools::install_deps()'
+    - r -e 'devtools::install_deps(dependencies = TRUE)'
 
 lint:
   extends: .before_script_template

@@ -103,7 +103,7 @@ p_val <- 0.05
 ```
 
 ```{r tests_for_one_df}
-t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7,8), p_val = p_val)
+t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7, 8), p_val = p_val)
 print(t$test_results)
 ```
 

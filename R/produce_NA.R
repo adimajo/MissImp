@@ -234,8 +234,7 @@ produce_NA <- function(data,
           }
           weights.patterns <- logit.bypatterns(data, patterns, mechanism) # this will deal with categorical variables internally
         }
-      }
-      else {
+      } else {
         if (is.null(weights.patterns)) {
           if (sum(is.na(data)) == 0) {
             weights.patterns <- mice::ampute.default.weights(patterns, mechanism)

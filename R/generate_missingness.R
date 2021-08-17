@@ -65,8 +65,7 @@ generate_miss <- function(df,
       "R.mask" = R.mcar,
       "real_miss_perc" = real_miss_perc
     ))
-  }
-  else if (mechanism == "MAR1") {
+  } else if (mechanism == "MAR1") {
     # Logistic regression to determinate the missingness
     # The options in this produce_NA function could be added to the main function
     mar1 <- produce_NA(
@@ -85,8 +84,7 @@ generate_miss <- function(df,
       "R.mask" = R.mar1,
       "real_miss_perc" = real_miss_perc
     ))
-  }
-  else if (mechanism == "MAR2") {
+  } else if (mechanism == "MAR2") {
     # Censoring algorithm. Everything depends on the quantile of one specified complete column.
     # For example, the Y2[i] will be removed if Y1[i]<q(30%) of Y1)
     # For the categorical variable cat, the quantile is taken on the levels(cat)
@@ -109,8 +107,7 @@ generate_miss <- function(df,
       "R.mask" = R.mar2,
       "real_miss_perc" = real_miss_perc
     ))
-  }
-  else if (mechanism == "MAR3") {
+  } else if (mechanism == "MAR3") {
     # Monotone with censoring mechanism, each column depends on the quantile of the observed data of the column before
     X.mar3 <- df
     if (miss_perc * num_col >= (num_col - 1)) {
@@ -144,8 +141,7 @@ generate_miss <- function(df,
       "R.mask" = R.mar3,
       "real_miss_perc" = real_miss_perc
     ))
-  }
-  else if (mechanism == "MNAR1") {
+  } else if (mechanism == "MNAR1") {
     # logistic regression to determinate the missingness, with num_patt_mnar random patterns
     mnar1 <- produce_NA(
       df,
@@ -163,8 +159,7 @@ generate_miss <- function(df,
       "R.mask" = R.mnar1,
       "real_miss_perc" = real_miss_perc
     ))
-  }
-  else if (mechanism == "MNAR2") {
+  } else if (mechanism == "MNAR2") {
     # A missing value in "X", if the x-value is below the miss_perc % quantile of "the first column "X"
     X.mnar2 <- df
     for (coll in ls_col_name) {
