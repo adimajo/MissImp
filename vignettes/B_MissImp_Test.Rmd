@@ -455,7 +455,7 @@ for(miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)){
 data.frame(result)
 ```
 
-```{r rd_write_csv}
+```{r rd_write_csv, eval=FALSE}
 library(ggplot2)
 # write.csv(result,"test1_MAR1_Forest_boot_result.csv")
 res <- read.csv("test1_MAR1_KNN_boot_result.csv")

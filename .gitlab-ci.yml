@@ -23,6 +23,7 @@ variables:
     - apt-get -y install libgit2-dev
     - apt-get -y install libssh2-1-dev
     - apt-get -y install pandoc
+    - apt-get -y install qpdf
     - r -e "install.packages('devtools')"
     - r -e 'devtools::install_deps(dependencies = TRUE)'
 
@@ -61,14 +62,13 @@ checkwarnings:
   stage: check
   script:
     - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
-  allow_failure: true
 
 checknotes:
   extends: .before_script_template
   stage: check
   script:
     - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
-  allow_failure: true
+allow_failure: true
 
 unittestserrors:
   extends: .before_script_template

@@ -1,13 +1,13 @@
 Package: MissImp
 Type: Package
-Title: Missing data imputation with MissImp
+Title: Missing Data Imputation with MissImp
 Version: 0.0.1
 Author: Xuwen Liu, Adrien Ehrhardt
 Maintainer: Xuwen Liu <xuwen.liu@credit-agricole-sa.fr>
-Description: This package provides missing data generation method with a given mechanism and a given proportion,
- various single and multiple imputation methods combined with bootstrap or jackknife resampling method, 
- as well as evaluation matrix of the imputation result.
-License: file LICENSE
+Description: Missing data generation methods, various single and multiple
+    imputation methods combined with bootstrap or jackknife resampling method,
+    as well as evaluation matrix of the imputation result.
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 Language: en
@@ -22,7 +22,7 @@ Imports:
     data.table,
     rlang
 Suggests: 
-    testthat (>= 2.1.0),
+    testthat (>= 3.0.0),
     mathjaxr,
     misaem,
     rmarkdown,
@@ -54,3 +54,4 @@ Suggests:
     gdata
 RdMacros: mathjaxr
 VignetteBuilder: knitr
+Config/testthat/edition: 3
