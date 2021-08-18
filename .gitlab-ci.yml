@@ -68,7 +68,7 @@ checknotes:
   stage: check
   script:
     - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
-allow_failure: true
+  allow_failure: true
 
 unittestserrors:
   extends: .before_script_template
