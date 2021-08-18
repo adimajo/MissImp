@@ -27,7 +27,7 @@
 #' @return \code{ximp} One imputed dataset for multiple imputation in \code{MI_missRanger}.
 #' @return \code{ximp.disj} One disjunctive imputed dataset for multiple imputation in \code{MI_missRanger}.
 missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                                    verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
+                                verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
   }
@@ -354,7 +354,7 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
 #' @return \code{ls_imputations} List of imputed dataset from multiple imputation.
 #' @return \code{ls_imputations.disj} List of disjunctive imputed dataset from multiple imputation.
 MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                              verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
+                          verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
   is_ranger_package_installed()
   is_abind_package_installed()
   ## Add:
