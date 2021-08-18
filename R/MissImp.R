@@ -170,11 +170,12 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
       res <- MI_missRanger(data.frame(dfi), col_cat = col_cat, num_mi = num_mi, maxiter = maxiter_tree)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
-    } else if (imp_method == "MI_Ranger_bis") {
-      res <- MI_missRanger_bis(data.frame(dfi), col_cat = col_cat, num_mi = num_mi, maxiter = maxiter_tree)
-      imp.onehot_i <- res$ximp.disj
-      imp.fact_i <- res$ximp
     }
+    # } else if (imp_method == "MI_Ranger_bis") {
+    #   res <- MI_missRanger_bis(data.frame(dfi), col_cat = col_cat, num_mi = num_mi, maxiter = maxiter_tree)
+    #   imp.onehot_i <- res$ximp.disj
+    #   imp.fact_i <- res$ximp
+    # }
     # in case there is one category that doesn't appear in dfi
     tmp.disj[colnames(imp.onehot_i)] <- imp.onehot_i
     tmp.disj[is.na(tmp.disj)] <- 0
