@@ -1,5 +1,5 @@
-test_that("multiplication works", {
-  n <- 10000
+test_that("generate_missingness", {
+  n <- 1000
   mu.X <- c(1, 2, 3)
   Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
   X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
@@ -8,3 +8,6 @@ test_that("multiplication works", {
   expect_equal(nrow(rs$X.incomp), n)
   expect_equal(ncol(rs$X.incomp), 3)
 })
+
+
+

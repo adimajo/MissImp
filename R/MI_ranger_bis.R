@@ -21,13 +21,13 @@
 #' @param case.weights Vector with non-negative case weights.
 #' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
 #' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
-#' @param col_cat Indices of categorical columns
-#'
+#' @param col_cat Indices of categorical columns.
+#' @param num_mi Number of multiple imputations.
 #' @export
-#' @return \code{ximp} One imputed dataset for multiple imputation in \code{MI_missRanger}.
-#' @return \code{ximp.disj} One disjunctive imputed dataset for multiple imputation in \code{MI_missRanger}.
+#' @return \code{ls_ximp} List of imputed datasets for multiple imputation in \code{MI_missRanger}.
+#' @return \code{ls_ximp.disj} List of disjunctive imputed datasets for multiple imputation in \code{MI_missRanger}.
 missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                                    verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
+                                    verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
   }
@@ -191,7 +191,7 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
   }
 
   if (verbose) {
-    cat("Last iter:\t", sep = "")
+    cat("Last iter and multiple imputation:\t", sep = "")
   }
 
   if (j == maxiter + 1) {
@@ -203,121 +203,131 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
     data <- dataLast2
   }
 
-  for (v in visitSeq) {
-    v.na <- dataNA[, v]
-
-    if (length(completed) == 0L) {
-      data[[v]] <- imputeUnivariate(data[[v]])
-    } else {
-      ## Add: prediction one onehot form for categorical columns
-      fit <- ranger::ranger(
-        formula = reformulate(completed, response = v),
-        data = data[!v.na, union(v, completed), drop = FALSE],
-        case.weights = case.weights[!v.na], ...
-      )
-      # pred <- predict(fit, data[v.na, completed, drop = FALSE])$predictions
-      ### MI###
-      pred1 <- predict(fit, data[v.na, completed, drop = FALSE], predict.all = TRUE)$predictions
-      pred_draw <- apply(pred1, 1, sample, 1)
-      #######
-      if (exist_cat) {
-        if (v %in% name_cat) {
-          fit.disj <- ranger::ranger(
-            formula = reformulate(completed, response = v),
-            data = data[!v.na, union(v, completed), drop = FALSE],
-            case.weights = case.weights[!v.na], probability = TRUE
-          )
-          # pred.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE])$predictions
-          ### MI###
-          pred1.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE], predict.all = TRUE)$predictions
-          tree_chosen <- sample(c(1:fit.disj$num.trees), dim(pred1.disj)[1], replace = TRUE) # choose tree result for each ligne
-          # Draw from tress results
-          df_tmp <- data.frame(tree_chosen)
-          df_tmp$tree_chosen <- factor(df_tmp$tree_chosen)
-          levels(df_tmp$tree_chosen) <- c(1:fit.disj$num.trees)
-          dummy <- dummyVars(" ~ .", data = df_tmp, sep = "_")
-          df.disj <- data.frame(predict(dummy, newdata = df_tmp))
-          mask.disj <- array(as.matrix(df.disj), c(dim(df.disj), dim(pred1.disj)[2]))
-          mask.disj <- aperm(mask.disj, c(1, 3, 2))
-          pred_draw.disj <- apply(mask.disj * pred1.disj, c(1, 2), sum)
-          #######
-          if (pmm.k) {
-            data.disj[v.na, dict_cat[[v]]] <- pmm(
-              xtrain = fit.disj$predictions,
-              xtest = pred_draw.disj,
-              ytrain = data.disj[[v]][!v.na],
-              k = pmm.k
+#### Multiple Imputation ####
+  data_keep <- data
+  ls_ximp <- list()
+  ls_ximp.disj <- list()
+  for(i in seq(num_mi)){
+    data <- data_keep
+    for (v in visitSeq) {
+      v.na <- dataNA[, v]
+      
+      if (length(completed) == 0L) {
+        data[[v]] <- imputeUnivariate(data[[v]])
+      } else {
+        ## Add: prediction one onehot form for categorical columns
+        fit <- ranger::ranger(
+          formula = reformulate(completed, response = v),
+          data = data[!v.na, union(v, completed), drop = FALSE],
+          case.weights = case.weights[!v.na]
+        )
+        # pred <- predict(fit, data[v.na, completed, drop = FALSE])$predictions
+        ### MI###
+        pred1 <- predict(fit, data[v.na, completed, drop = FALSE], predict.all = TRUE)$predictions
+        pred_draw <- apply(pred1, 1, sample, 1)
+        #######
+        if (exist_cat) {
+          if (v %in% name_cat) {
+            fit.disj <- ranger::ranger(
+              formula = reformulate(completed, response = v),
+              data = data[!v.na, union(v, completed), drop = FALSE],
+              case.weights = case.weights[!v.na], probability = TRUE
             )
-          } else if (ncol(data.disj[v.na, dict_cat[[v]]]) == ncol(pred_draw.disj)) {
-            data.disj[v.na, dict_cat[[v]]] <- pred_draw.disj
-          } else { # When there are dropped unused levels
-            colnames(pred_draw.disj) <- paste0(v, "_", colnames(pred_draw.disj))
-            data.disj[v.na, colnames(pred_draw.disj)] <- pred_draw.disj
-          }
-        } else {
-          data.disj[v.na, v] <- if (pmm.k) {
-            pmm(
-              xtrain = fit$predictions,
-              xtest = pred_draw,
-              ytrain = data[[v]][!v.na],
-              k = pmm.k
-            )
+            # pred.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE])$predictions
+            ### MI###
+            pred1.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE], predict.all = TRUE)$predictions
+            tree_chosen <- sample(c(1:fit.disj$num.trees), dim(pred1.disj)[1], replace = TRUE) # choose tree result for each ligne
+            # Draw from tress results
+            df_tmp <- data.frame(tree_chosen)
+            df_tmp$tree_chosen <- factor(df_tmp$tree_chosen)
+            levels(df_tmp$tree_chosen) <- c(1:fit.disj$num.trees)
+            dummy <- dummyVars(" ~ .", data = df_tmp, sep = "_")
+            df.disj <- data.frame(predict(dummy, newdata = df_tmp))
+            mask.disj <- array(as.matrix(df.disj), c(dim(df.disj), dim(pred1.disj)[2]))
+            mask.disj <- aperm(mask.disj, c(1, 3, 2))
+            pred_draw.disj <- apply(mask.disj * pred1.disj, c(1, 2), sum)
+            #######
+            if (pmm.k) {
+              data.disj[v.na, dict_cat[[v]]] <- pmm(
+                xtrain = fit.disj$predictions,
+                xtest = pred_draw.disj,
+                ytrain = data.disj[[v]][!v.na],
+                k = pmm.k
+              )
+            } else if (ncol(data.disj[v.na, dict_cat[[v]]]) == ncol(pred_draw.disj)) {
+              data.disj[v.na, dict_cat[[v]]] <- pred_draw.disj
+            } else { # When there are dropped unused levels
+              colnames(pred_draw.disj) <- paste0(v, "_", colnames(pred_draw.disj))
+              data.disj[v.na, colnames(pred_draw.disj)] <- pred_draw.disj
+            }
           } else {
-            pred_draw
+            data.disj[v.na, v] <- if (pmm.k) {
+              pmm(
+                xtrain = fit$predictions,
+                xtest = pred_draw,
+                ytrain = data[[v]][!v.na],
+                k = pmm.k
+              )
+            } else {
+              pred_draw
+            }
           }
         }
+        data[v.na, v] <- if (pmm.k) {
+          pmm(
+            xtrain = fit$predictions,
+            xtest = pred_draw,
+            ytrain = data[[v]][!v.na],
+            k = pmm.k
+          )
+        } else {
+          pred_draw
+        }
+        predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
+        
+        
+        if (is.nan(predError[[v]])) {
+          predError[[v]] <- 0
+        }
       }
-      data[v.na, v] <- if (pmm.k) {
-        pmm(
-          xtrain = fit$predictions,
-          xtest = pred_draw,
-          ytrain = data[[v]][!v.na],
-          k = pmm.k
-        )
-      } else {
-        pred_draw
+      
+      if (j == 1L && (v %in% imputeBy)) {
+        completed <- union(completed, v)
       }
-      predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
-
-
-      if (is.nan(predError[[v]])) {
-        predError[[v]] <- 0
+      
+      if (verbose == 1) {
+        cat(".")
+      } else if (verbose >= 2) {
+        cat(format(round(predError[[v]], verboseDigits), nsmall = verboseDigits), "\t")
       }
     }
-
-    if (j == 1L && (v %in% imputeBy)) {
-      completed <- union(completed, v)
+    
+    j <- j + 1L
+    crit <- mean(predError) < mean(predErrorLast)
+    ######################################
+    
+    if (verbose) {
+      cat("\n")
     }
-
-    if (verbose == 1) {
-      cat(".")
-    } else if (verbose >= 2) {
-      cat(format(round(predError[[v]], verboseDigits), nsmall = verboseDigits), "\t")
+    
+    if (j == 2L || (j == maxiter && crit)) {
+      dataLast <- data
+      predErrorLast <- predError
     }
+    
+    if (returnOOB) {
+      attr(dataLast, "oob") <- predErrorLast
+    }
+    
+    # Revert the conversions
+    if (!exist_cat) {
+      data.disj <- data
+    }
+    ls_ximp[[i]] <- revert(converted, X = data)
+    ls_ximp.disj[[i]] <- data.disj
   }
-
-  j <- j + 1L
-  crit <- mean(predError) < mean(predErrorLast)
-  ######################################
-
-  if (verbose) {
-    cat("\n")
-  }
-
-  if (j == 2L || (j == maxiter && crit)) {
-    dataLast <- data
-    predErrorLast <- predError
-  }
-
-  if (returnOOB) {
-    attr(dataLast, "oob") <- predErrorLast
-  }
-
-  # Revert the conversions
-  if (!exist_cat) {
-    data.disj <- data
-  }
-  return(list(ximp = revert(converted, X = data), ximp.disj = data.disj))
+  
+  return(list(ls_ximp = ls_ximp, ls_ximp.disj = ls_ximp.disj))
 }
 
 
@@ -384,11 +394,9 @@ MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed
   }
   imputations <- list()
   imputations.disj <- list()
-  for (i in seq(num_mi)) {
-    res <- missRanger_mod_draw(data, formula, pmm.k, maxiter, seed, verbose, returnOOB, case.weights, col_cat)
-    imputations[[i]] <- res$ximp
-    imputations.disj[[i]] <- res$ximp.disj
-  }
+  res <- missRanger_mod_draw(data, formula, pmm.k, maxiter, seed, verbose, returnOOB, case.weights, col_cat, num_mi)
+  imputations <- res$ls_ximp
+  imputations.disj <- res$ls_ximp.disj
   exist_cat <- !all(c(0, col_cat) == c(0))
   df_new_merge <- Reduce(function(dtf1, dtf2) {
     abind::abind(dtf1, dtf2, along = 3)

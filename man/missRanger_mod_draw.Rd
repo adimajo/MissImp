@@ -14,6 +14,7 @@ missRanger_mod_draw(
   returnOOB = FALSE,
   case.weights = NULL,
   col_cat = c(),
+  num_mi = 5,
   ...
 )
 }
@@ -37,15 +38,17 @@ Furthermore, if \code{verbose} is positive, the variables used for imputation ar
 
 \item{case.weights}{Vector with non-negative case weights.}
 
-\item{col_cat}{Indices of categorical columns}
+\item{col_cat}{Indices of categorical columns.}
+
+\item{num_mi}{Number of multiple imputations.}
 
 \item{...}{Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
 The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.}
 }
 \value{
-\code{ximp} One imputed dataset for multiple imputation in \code{MI_missRanger}.
+\code{ls_ximp} List of imputed datasets for multiple imputation in \code{MI_missRanger}.
 
-\code{ximp.disj} One disjunctive imputed dataset for multiple imputation in \code{MI_missRanger}.
+\code{ls_ximp.disj} List of disjunctive imputed datasets for multiple imputation in \code{MI_missRanger}.
 }
 \description{
 \code{missRanger_mod_draw} create one imputation result for multiple imputation with \code{missRanger} method.

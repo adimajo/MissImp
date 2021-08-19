@@ -335,11 +335,11 @@ head(abalone_data)
 ```
 
 ```{r rd_param_settings}
-mech <- "MAR1"
-miss_prop <- 0.005
+mech <- "MAR2"
+miss_prop <- 0.03
 X.complete <- abalone_data
-# rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
-# df <- rs$X.incomp
+rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
+df <- rs$X.incomp
 df_complete <- X.complete
 maxiter_tree <- 10
 maxiter_pca <- 200
@@ -351,7 +351,7 @@ num_mi <- 4
 n_resample <- 4
 n_df <- 5
 
-imp_method <- "MI_Ranger"
+imp_method <- "missRanger"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -417,7 +417,7 @@ for(miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)){
   ls_seed <- sample(1:100, n_df, replace=TRUE)
   for(j in seq(n_df)){
     set.seed(ls_seed[j])
-    rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
+    rs <- generate_miss(df_complete, miss_prop, mechanism = mech, mar2.col.ctrl = 2)
     miss_prop_real <- c(miss_prop_real,rs$real_miss_perc)
     df_incomp <- rs$X.incomp
     res_imp <- MissImp(df = df_incomp, imp_method = imp_method,
@@ -457,7 +457,7 @@ data.frame(result)
 
 ```{r rd_write_csv, eval=FALSE}
 library(ggplot2)
-# write.csv(result,"test1_MAR1_Forest_boot_result.csv")
+# write.csv(result,"test1_MAR2_Ranger_boot_result.csv")
 res <- read.csv("test1_MAR1_KNN_boot_result.csv")
 x <- res$miss_perc
 y1 <- res$scaled_MSE
