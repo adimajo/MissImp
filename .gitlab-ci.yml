@@ -24,6 +24,7 @@ variables:
     - apt-get -y install libssh2-1-dev
     - apt-get -y install pandoc
     - apt-get -y install qpdf
+    - apt-get -y install make
     - r -e "install.packages('devtools')"
     - r -e 'devtools::install_deps(dependencies = TRUE)'
 
@@ -94,7 +95,7 @@ coverage:
     - r -e 'renv::load()'
     - r -e 'renv::restore()'
     - r -e 'renv::install("covr")'
-    - r -e 'print(devtools::test_coverage())'
+    - r -e 'print(devtools::test_coverage(quiet = FALSE, clean = FALSE))'
 
 check_mswin:
   extends: .before_script_template
