@@ -93,6 +93,7 @@ coverage:
     - r -e "install.packages('renv')"
     - r -e 'renv::load()'
     - r -e 'renv::restore()'
+    - r -e 'renv::install("covr")'
     - r -e 'print(devtools::test_coverage())'
 
 check_mswin:

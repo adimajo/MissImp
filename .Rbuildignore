@@ -5,6 +5,8 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^.gitlab-ci.yml
+^.gitlab-ci.yml$
 ^doc$
 ^Meta$
+^.travis.yml$
+^.github$
