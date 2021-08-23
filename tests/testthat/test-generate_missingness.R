@@ -8,6 +8,3 @@ test_that("generate_missingness", {
   expect_equal(nrow(rs$X.incomp), n)
   expect_equal(ncol(rs$X.incomp), 3)
 })
-
-
-

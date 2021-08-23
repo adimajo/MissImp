@@ -27,7 +27,7 @@
 #' @return \code{ls_ximp} List of imputed datasets for multiple imputation in \code{MI_missRanger}.
 #' @return \code{ls_ximp.disj} List of disjunctive imputed datasets for multiple imputation in \code{MI_missRanger}.
 missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                                    verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
+                                verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
   }
@@ -203,15 +203,15 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
     data <- dataLast2
   }
 
-#### Multiple Imputation ####
+  #### Multiple Imputation ####
   data_keep <- data
   ls_ximp <- list()
   ls_ximp.disj <- list()
-  for(i in seq(num_mi)){
+  for (i in seq(num_mi)) {
     data <- data_keep
     for (v in visitSeq) {
       v.na <- dataNA[, v]
-      
+
       if (length(completed) == 0L) {
         data[[v]] <- imputeUnivariate(data[[v]])
       } else {
@@ -284,41 +284,41 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
           pred_draw
         }
         predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
-        
-        
+
+
         if (is.nan(predError[[v]])) {
           predError[[v]] <- 0
         }
       }
-      
+
       if (j == 1L && (v %in% imputeBy)) {
         completed <- union(completed, v)
       }
-      
+
       if (verbose == 1) {
         cat(".")
       } else if (verbose >= 2) {
         cat(format(round(predError[[v]], verboseDigits), nsmall = verboseDigits), "\t")
       }
     }
-    
+
     j <- j + 1L
     crit <- mean(predError) < mean(predErrorLast)
     ######################################
-    
+
     if (verbose) {
       cat("\n")
     }
-    
+
     if (j == 2L || (j == maxiter && crit)) {
       dataLast <- data
       predErrorLast <- predError
     }
-    
+
     if (returnOOB) {
       attr(dataLast, "oob") <- predErrorLast
     }
-    
+
     # Revert the conversions
     if (!exist_cat) {
       data.disj <- data
@@ -326,7 +326,7 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
     ls_ximp[[i]] <- revert(converted, X = data)
     ls_ximp.disj[[i]] <- data.disj
   }
-  
+
   return(list(ls_ximp = ls_ximp, ls_ximp.disj = ls_ximp.disj))
 }
 

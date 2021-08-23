@@ -24,6 +24,7 @@ For example, on row i, Y2[i] will be removed if Y1[i]<q(30\%) of Y1.
 The missingness in every column depends on the quantile of the observed data of the column before.
 For example, on row i, Y2[i],Y3[i],...,Yn[i] will be removed if Y1[i]<q(30\%) of Y1.
 And then on row s, Y3[s],...,Yn[s] will be removed if Y2[s]<q(30\%) of observed Y2 (Those who are not removed in step 1).
+If \strong{MAR3} is chosen, it is better to rearrange \code{df} so the numerical columns are placed before the categorical ones.
  \item \strong{MNAR1} generates missing values by missing not at random mechanism with logistic regression on the observed and missing part of data.
  \item \strong{MNAR2} generates missing values by missing not at random mechanism with censoring mechanism.
  For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Y1.
