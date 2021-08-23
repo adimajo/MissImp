@@ -18,6 +18,7 @@
 #' The missingness in every column depends on the quantile of the observed data of the column before.
 #' For example, on row i, Y2[i],Y3[i],...,Yn[i] will be removed if Y1[i]<q(30\%) of Y1.
 #' And then on row s, Y3[s],...,Yn[s] will be removed if Y2[s]<q(30\%) of observed Y2 (Those who are not removed in step 1).
+#' If \strong{MAR3} is chosen, it is better to rearrange \code{df} so the numerical columns are placed before the categorical ones.
 #'  \item \strong{MNAR1} generates missing values by missing not at random mechanism with logistic regression on the observed and missing part of data.
 #'  \item \strong{MNAR2} generates missing values by missing not at random mechanism with censoring mechanism.
 #'  For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Y1.
@@ -121,7 +122,7 @@ generate_miss <- function(df,
       for (coll in ls_col_name[(i + 1):num_col]) {
         X.mar3[ls_row, coll] <- missMethods::delete_MAR_censoring(X.mar3[ls_row, ], perc, coll,
           cols_ctrl = ls_col_name[i]
-        )[ls_row, coll]
+        )[[coll]]
       }
       # }
       # else{ # the last column adjust the missing percentage to approach the target missing percentage
@@ -213,19 +214,15 @@ generate_miss_ls <- function(df, miss_perc) {
 
 #' monot_quantil
 #' @description Calculate the missing proportion in MAR3, used in 'generate_miss'.
-#' Solve the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1), where m = miss_perc, p = num_co
+#' Solve the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1), where m = miss_perc, p = num_col
 #' @param miss_perc Desired proportion of missingness
 #' @param num_col Number of columns
 #' @return The required percentage for the quantil in MAR3. Solution to the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1)
 monot_quantil <- function(miss_perc, num_col) {
-  m <- miss_perc
-  p <- num_col
-  tmp_result <- c()
-  tempt <- pracma::linspace(0.01, 1, n = 1000)
-  i <- 1
-  for (x in tempt) {
-    tmp_result[i] <- abs((1 - x)^p + (1 - m) * p * x - 1)
-    i <- i + 1
-  }
-  return(tempt[which.min(tmp_result)])
+  poly <- c((1 - miss_perc) * num_col - 1, -(1 - miss_perc) * p, rep(0, num_col - 2), 1)
+  root <- polyroot(poly)
+  prop <- root[abs(Im(root)) < 1e-9]
+  prop <- Re(prop)
+  prop <- prop[(prop > 1e-9 & prop < (1 - 1e-9))]
+  return(1 - prop)
 }
