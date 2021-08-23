@@ -95,7 +95,7 @@ coverage:
     - r -e 'renv::load()'
     - r -e 'renv::restore()'
     - r -e 'renv::install("covr")'
-    - r -e 'print(devtools::test_coverage(quiet = FALSE, clean = FALSE))'
+    - r -e 'print(covr::package_coverage(quiet = FALSE, clean = FALSE))'
 
 check_mswin:
   extends: .before_script_template
