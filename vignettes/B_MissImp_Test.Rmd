@@ -212,7 +212,7 @@ head(abalone_data)
 ```{r rd_param_settings}
 mech <- "MNAR1"
 miss_prop <- 0.03
-X.complete <- abalone_data[,c(c(2:9),1)]
+X.complete <- abalone_data[, c(c(2:9), 1)]
 col_cat <- c(9)
 col_dis <- c(8)
 col_num <- c(1:8)
@@ -269,7 +269,7 @@ for (miss_prop in c( 0.3, 0.5)) { #0.005, 0.01, 0.03, 0.05, 0.07, 0.1,
   for (j in seq(n_df)) {
     set.seed(ls_seed[j])
     rs <- generate_miss(df_complete, miss_prop, mechanism = mech, mar2.col.ctrl = 2)
-    miss_prop_real <- c(miss_prop_real,rs$real_miss_perc)
+    miss_prop_real <- c(miss_prop_real, rs$real_miss_perc)
     df_incomp <- rs$X.incomp
     res_imp <- MissImp(
       df = df_incomp, imp_method = imp_method,
