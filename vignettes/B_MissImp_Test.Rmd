@@ -229,7 +229,7 @@ num_mi <- 4
 n_resample <- 4
 n_df <- 5
 
-imp_method <- "kNN"
+imp_method <- "missForest"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -253,42 +253,12 @@ res$F1
 dens_comp(res$imp, X.complete)
 ```
 
-```{r rd_result_MissImp}
-i <- 1
-result <- list()
-for (miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)) {
-  print(miss_prop)
-  rs <- generate_miss(df_complete, miss_prop, mechanism = mech)
-  miss_prop_real <- rs$real_miss_perc
-  df_incomp <- rs$X.incomp
-  result[["mechanisme"]][i] <- mech
-  result[["miss_perc"]][i] <- miss_prop_real
-  result[["method"]][i] <- imp_method
-  result[["resample"]][i] <- resample_method
-  res_imp <- MissImp(
-    df = df_incomp, imp_method = imp_method, resample_method = resample_method,
-    n_resample = n_resample, col_cat = col_cat, col_dis = col_dis,
-    maxiter_tree = maxiter_tree, maxiter_pca = maxiter_pca, ncp_pca = ncp_pca,
-    learn_ncp = learn_ncp, cat_combine_by = cat_combine_by, var_cat = var_cat,
-    df_complete = df_complete, num_mi = num_mi, maxiter_mice = maxiter_mice
-  )
-  result[["MSE"]][i] <- res_imp$MSE$Mean_MSE
-  result[["Var_MSE"]][i] <- res_imp$MSE$Variance_MSE
-  result[["F1"]][i] <- res_imp$F1$Mean_F1
-  result[["Var_F1"]][i] <- res_imp$F1$Variance_F1
-  result[["scaled_MSE"]][i] <- res_imp$MSE$Mean_MSE_scale
-  result[["Var_scaled_MSE"]][i] <- res_imp$MSE$Variance_MSE_scale
-  i <- i + 1
-}
-
-data.frame(result)
-```
 
 
 ```{r different_miss_proportion}
 i <- 1
 result <- list()
-for (miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)) {
+for (miss_prop in c( 0.3, 0.5)) { #0.005, 0.01, 0.03, 0.05, 0.07, 0.1,
   print(miss_prop)
   miss_prop_real <- c()
   ls_mse <- c()
@@ -340,26 +310,80 @@ data.frame(result)
 
 ```{r rd_write_csv}
 library(ggplot2)
-# write.csv(result,"test1_MNAR1_kNN_boot_result.csv")
-res <- read.csv("test1_MAR2_EM_boot_result.csv")
-x <- res$miss_perc
-y1 <- res$scaled_MSE
-y2 <- res$scaled_MSE + 1.96 * sqrt(res$Var_scaled_MSE)
-y3 <- res$scaled_MSE - 1.96 * sqrt(res$Var_scaled_MSE)
-#
-# plot(x, y1, type = "n", ylim = range(c(y1, y2)), xlab = "", ylab = "")
-# lines(x, y1, col = "blue")
-# lines(x, y2, col = "red")
-# lines(x, y3, col = "red")
-predframe <- with(res, data.frame(miss_perc,
-  scaled_MSE = scaled_MSE,
-  lwr = scaled_MSE - 1.96 * sqrt(Var_scaled_MSE),
-  upr = scaled_MSE + 1.96 * sqrt(Var_scaled_MSE)
-))
-p1 <- ggplot(predframe, aes(miss_perc, scaled_MSE)) +
-  geom_point() +
-  geom_line(data = predframe) +
-  geom_ribbon(data = predframe, aes(ymin = lwr, ymax = upr), alpha = 0.3, fill = "red") +
-  xlab("Percentage of missing data")
-show(p1)
+# write.csv(result,"test1_MNAR2_Forest_boot_result.csv")
+res_Ranger <- read.csv("test1_MAR2_Ranger_boot_result.csv")
+res_EM <- read.csv("test1_MAR2_EM_boot_result.csv")
+res_kNN <- read.csv("test1_MAR2_kNN_boot_result.csv")
+res_Forest <- read.csv("test1_MAR2_Forest_boot_result.csv")
+res_PCA <- read.csv("test1_MAR2_PCA_boot_result.csv")
+res_MIRanger <- read.csv("test1_MAR2_MIRanger_boot_result.csv")
+res_MIEM <- read.csv("test1_MAR2_MIEM_boot_result.csv")
+res_MICE <- read.csv("test1_MAR2_MICE_boot_result.csv")
+
+predframe <- data.frame(row.names = c(1:8))
+predframe[["miss_perc"]] <- c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)
+predframe[["scaled_MSE_Ranger"]] <- res_Ranger$scaled_MSE
+predframe[["lwr_Ranger"]] <- res_Ranger$scaled_MSE - 1 * sqrt(res_Ranger$Var_scaled_MSE)
+predframe[["upr_Ranger"]] <- res_Ranger$scaled_MSE + 1 * sqrt(res_Ranger$Var_scaled_MSE)
+predframe[["scaled_MSE_EM"]] <- res_EM$scaled_MSE
+predframe[["lwr_EM"]] <- res_EM$scaled_MSE - 1 * sqrt(res_EM$Var_scaled_MSE)
+predframe[["upr_EM"]] <- res_EM$scaled_MSE + 1 * sqrt(res_EM$Var_scaled_MSE)
+predframe[["scaled_MSE_kNN"]] <- res_kNN$scaled_MSE
+predframe[["lwr_kNN"]] <- res_kNN$scaled_MSE - 1 * sqrt(res_kNN$Var_scaled_MSE)
+predframe[["upr_kNN"]] <- res_kNN$scaled_MSE + 1 * sqrt(res_kNN$Var_scaled_MSE)
+predframe[["scaled_MSE_Forest"]] <- res_Forest$scaled_MSE
+predframe[["lwr_Forest"]] <- res_Forest$scaled_MSE - 1 * sqrt(res_Forest$Var_scaled_MSE)
+predframe[["upr_Forest"]] <- res_Forest$scaled_MSE + 1 * sqrt(res_Forest$Var_scaled_MSE)
+predframe[["scaled_MSE_PCA"]] <- res_PCA$scaled_MSE
+predframe[["lwr_PCA"]] <- res_PCA$scaled_MSE - 1 * sqrt(res_PCA$Var_scaled_MSE)
+predframe[["upr_PCA"]] <- res_PCA$scaled_MSE + 1 * sqrt(res_PCA$Var_scaled_MSE)
+predframe[["scaled_MSE_MIRanger"]] <- res_MIRanger$scaled_MSE
+predframe[["lwr_MIRanger"]] <- res_MIRanger$scaled_MSE - 1 * sqrt(res_MIRanger$Var_scaled_MSE)
+predframe[["upr_MIRanger"]] <- res_MIRanger$scaled_MSE + 1 * sqrt(res_MIRanger$Var_scaled_MSE)
+predframe[["scaled_MSE_MIEM"]] <- res_MIEM$scaled_MSE
+predframe[["lwr_MIEM"]] <- res_MIEM$scaled_MSE - 1 * sqrt(res_MIEM$Var_scaled_MSE)
+predframe[["upr_MIEM"]] <- res_MIEM$scaled_MSE + 1 * sqrt(res_MIEM$Var_scaled_MSE)
+predframe[["scaled_MSE_MICE"]] <- res_MICE$scaled_MSE
+predframe[["lwr_MICE"]] <- res_MICE$scaled_MSE - 1 * sqrt(res_MICE$Var_scaled_MSE)
+predframe[["upr_MICE"]] <- res_MICE$scaled_MSE + 1 * sqrt(res_MICE$Var_scaled_MSE)
+```
+
+
+```{r draw}
+colors <- c("Ranger"="red", "EM"="yellow", "kNN"="blue", "Forest"="orange", 
+            "PCA" = "green", "MIEM" = "#56B4E9", "MICE" = "#CC79A7",
+            "MIRanger" = "#009E73")
+
+p2 <- ggplot(predframe, aes(x = miss_perc)) +
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  geom_line(aes(y = scaled_MSE_Ranger, colour = "Ranger")) +
+  geom_point(aes(y = scaled_MSE_Ranger, colour = "Ranger")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_Ranger, ymax = upr_Ranger, fill = "Ranger"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_MSE_EM, colour = "EM")) +
+  geom_point(aes(y = scaled_MSE_EM, colour = "EM")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_EM, ymax = upr_EM, fill = "EM"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_MSE_kNN, colour = "kNN")) +
+  geom_point(aes(y = scaled_MSE_kNN, colour = "kNN")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_kNN, ymax = upr_kNN, fill = "kNN"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_MSE_Forest, colour = "Forest")) +
+  geom_point(aes(y = scaled_MSE_Forest, colour = "Forest")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_Forest, ymax = upr_Forest, fill = "Forest"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_MSE_PCA, colour = "PCA")) +
+  geom_point(aes(y = scaled_MSE_PCA, colour = "PCA")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_PCA, ymax = upr_PCA, fill = "PCA"), alpha = 0.3) +
+  geom_line(aes(y = scaled_MSE_MIEM, colour = "MIEM")) +
+  geom_point(aes(y = scaled_MSE_MIEM, colour = "MIEM")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_MIEM, ymax = upr_MIEM, fill = "MIEM"), alpha = 0.3) +
+  geom_line(aes(y = scaled_MSE_MICE, colour = "MICE")) +
+  geom_point(aes(y = scaled_MSE_MICE, colour = "MICE")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_MICE, ymax = upr_MICE, fill = "MICE"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_MSE_MIRanger, colour = "MIRanger")) +
+  geom_point(aes(y = scaled_MSE_MIRanger, colour = "MIRanger")) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_MIRanger, ymax = upr_MIRanger, fill = "MIRanger"), alpha = 0.3, show.legend = FALSE) +
+  xlab("Proportion of missing data") +
+  ylab("Scaled MSE") +
+  labs(colour = "Imputation method")
+
+show(p2)
 ```

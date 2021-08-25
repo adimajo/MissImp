@@ -21,7 +21,7 @@
 #' If \strong{MAR3} is chosen, it is better to rearrange \code{df} so the numerical columns are placed before the categorical ones.
 #'  \item \strong{MNAR1} generates missing values by missing not at random mechanism with logistic regression on the observed and missing part of data.
 #'  \item \strong{MNAR2} generates missing values by missing not at random mechanism with censoring mechanism.
-#'  For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Y1.
+#'  For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Yj.
 #' }
 #' @param mar2.col.ctrl Control column in mechanism MAR2
 #'
@@ -219,7 +219,7 @@ generate_miss_ls <- function(df, miss_perc) {
 #' @param num_col Number of columns
 #' @return The required percentage for the quantil in MAR3. Solution to the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1)
 monot_quantil <- function(miss_perc, num_col) {
-  poly <- c((1 - miss_perc) * num_col - 1, -(1 - miss_perc) * p, rep(0, num_col - 2), 1)
+  poly <- c((1 - miss_perc) * num_col - 1, -(1 - miss_perc) * num_col, rep(0, num_col - 2), 1)
   root <- polyroot(poly)
   prop <- root[abs(Im(root)) < 1e-9]
   prop <- Re(prop)
