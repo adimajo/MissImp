@@ -27,7 +27,7 @@ And then on row s, Y3[s],...,Yn[s] will be removed if Y2[s]<q(30\%) of observed 
 If \strong{MAR3} is chosen, it is better to rearrange \code{df} so the numerical columns are placed before the categorical ones.
  \item \strong{MNAR1} generates missing values by missing not at random mechanism with logistic regression on the observed and missing part of data.
  \item \strong{MNAR2} generates missing values by missing not at random mechanism with censoring mechanism.
- For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Y1.
+ For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Yj.
 }}
 
 \item{mar2.col.ctrl}{Control column in mechanism MAR2}

@@ -82,7 +82,7 @@ print(rs$real_miss_perc)
 Next, a list of incomplete dataframes are generated with every mechanism that is implemented in \code{generate_miss}. First a list of incomplete dataframes are generated on the continuous variables (Y1,...,Y5), with the result in rs.con; then on the continous + discrete varaibles (Y1,...,Y6), with the result in rs.con_dis; and at last on continous + discrete + categorical variables, with the result in rs.mix.
 
 ```{r add_miss_all_mechanism}
-miss_perc <- 0.4
+miss_perc <- 0.3
 rs.con <- generate_miss_ls(X.complete[, 1:5], miss_perc)
 rs.con_dis <- generate_miss_ls(X.complete[, 1:6], miss_perc)
 rs.mix <- generate_miss_ls(X.complete, miss_perc)
@@ -103,7 +103,7 @@ p_val <- 0.05
 ```
 
 ```{r tests_for_one_df}
-t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7, 8), p_val = p_val)
+t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7,8), p_val = p_val)
 print(t$test_results)
 ```
 
