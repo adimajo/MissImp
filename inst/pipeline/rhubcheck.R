@@ -14,7 +14,7 @@ if (!is.element(platform, rhub::platforms()[[1L]])) {
 }
 
 rhub::validate_email(
-  email = substr(utils::maintainer(pkg = "Phantasme"), regexec("<", utils::maintainer(pkg = "Phantasme"))[[1]][1] + 1, nchar(utils::maintainer(pkg = "Phantasme")) - 1),
+  email = substr(utils::maintainer(pkg = "MissImp"), regexec("<", utils::maintainer(pkg = "MissImp"))[[1]][1] + 1, nchar(utils::maintainer(pkg = "MissImp")) - 1),
   token = token
 )
 cr <- rhub::check(platform = platform, show_status = TRUE)
