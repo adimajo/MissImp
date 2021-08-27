@@ -225,3 +225,68 @@ ls_F1 <- function(df_comp,
     Variance_F1 = var(ls_f1_result)
   ))
 }
+
+
+
+# Version jackknife estimate using estimation on the full incomplete dataset
+# ls_MSE_bis <- function(df_comp,
+#                    ls_df_imp,
+#                    df_full,
+#                    mask,
+#                    col_num_comp,
+#                    resample_method = "bootstrap") {
+#   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
+#   ls_mse_result <- c()
+#   ls_mse_result_scale <- c()
+#   mask_num <- mask[, col_num_comp] * 1
+#   col_names <- colnames(df_comp)
+#   df_comp_num <- df_comp[, col_num_comp]
+#   col_name_num <- colnames(df_comp_num)
+#   df_full_num <- df_full[col_name_num]
+#   n_sample <- length(ls_df_imp)
+#   i <- 1
+#   for (df_imp in ls_df_imp) {
+#     df_imp_num <- df_imp[col_name_num]
+#     df_imp_num[["index"]] <- as.numeric(row.names(df_imp_num))
+#     if (resample_method == "bootstrap") {
+#       df_imp_num$index <- floor(df_imp_num$index)
+#       df_num <- stats::aggregate(. ~ index, data = df_imp_num[c("index", col_name_num)], mean)
+#       df_imp_i <- df_num[col_name_num]
+#       df_comp_i <- df_comp_num[df_num$index, ]
+#       mask_num_i <- mask_num[df_num$index, ]
+#     } else if (resample_method == "jackknife") {
+#       df_full_num$index <- as.numeric(row.names(df_full_num))
+#       df_imp_i <- n_sample * df_full_num[df_imp_num$index, ] - (n_sample - 1) * df_imp_num
+#       df_imp_i <- df_imp_i[col_name_num]
+#       df_comp_i <- df_comp_num[df_imp_num$index, ]
+#       mask_num_i <- mask_num[df_imp_num$index, ]
+#     } else {
+#       df_imp_i <- df_imp_num
+#       df_comp_i <- df_comp_num
+#       mask_num_i <- mask_num
+#     }
+#
+#     mse_result <- sum((df_comp_i - df_imp_i)^2) / sum(mask_num_i)
+#     ls_mse_result[i] <- mse_result
+#
+#     # MinMax Scale each variable based on estimated parameters from corresponding complete dataset
+#     min_comp <- apply(df_comp_i, 2, min)
+#     max_min_comp <- apply(df_comp_i, 2, function(x) {
+#       max(x) - min(x)
+#     })
+#     df_comp_i_scale <- as.matrix(df_comp_i - min_comp) / t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
+#     df_imp_i_scale <- as.matrix(df_imp_i - min_comp) / t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
+#     mse_result_scale <- sum((df_comp_i_scale - df_imp_i_scale)^2) / sum(mask_num_i)
+#     ls_mse_result_scale[i] <- mse_result_scale
+#
+#     i <- i + 1
+#   }
+#   return(list(
+#     list_MSE = ls_mse_result,
+#     Mean_MSE = mean(ls_mse_result),
+#     Variance_MSE = var(ls_mse_result),
+#     list_MSE_scale = ls_mse_result_scale,
+#     Mean_MSE_scale = mean(ls_mse_result_scale),
+#     Variance_MSE_scale = var(ls_mse_result_scale)
+#   ))
+# }

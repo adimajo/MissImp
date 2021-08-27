@@ -210,7 +210,7 @@ head(abalone_data)
 ```
 
 ```{r rd_param_settings}
-mech <- "MNAR1"
+mech <- "MNAR2"
 miss_prop <- 0.03
 X.complete <- abalone_data[, c(c(2:9), 1)]
 col_cat <- c(9)
@@ -229,7 +229,7 @@ num_mi <- 4
 n_resample <- 4
 n_df <- 5
 
-imp_method <- "missForest"
+imp_method <- "missRanger"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
@@ -258,7 +258,7 @@ dens_comp(res$imp, X.complete)
 ```{r different_miss_proportion}
 i <- 1
 result <- list()
-for (miss_prop in c( 0.3, 0.5)) { #0.005, 0.01, 0.03, 0.05, 0.07, 0.1,
+for (miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)) {
   print(miss_prop)
   miss_prop_real <- c()
   ls_mse <- c()
@@ -310,15 +310,15 @@ data.frame(result)
 
 ```{r rd_write_csv}
 library(ggplot2)
-# write.csv(result,"test1_MNAR2_Forest_boot_result.csv")
-res_Ranger <- read.csv("test1_MAR2_Ranger_boot_result.csv")
-res_EM <- read.csv("test1_MAR2_EM_boot_result.csv")
-res_kNN <- read.csv("test1_MAR2_kNN_boot_result.csv")
-res_Forest <- read.csv("test1_MAR2_Forest_boot_result.csv")
-res_PCA <- read.csv("test1_MAR2_PCA_boot_result.csv")
-res_MIRanger <- read.csv("test1_MAR2_MIRanger_boot_result.csv")
-res_MIEM <- read.csv("test1_MAR2_MIEM_boot_result.csv")
-res_MICE <- read.csv("test1_MAR2_MICE_boot_result.csv")
+write.csv(result,"test1_MNAR2_Ranger_boot_result.csv")
+res_Ranger <- read.csv("test1_MNAR1_Ranger_boot_result.csv")
+res_EM <- read.csv("test1_MNAR1_EM_boot_result.csv")
+res_kNN <- read.csv("test1_MNAR1_kNN_boot_result.csv")
+res_Forest <- read.csv("test1_MNAR1_Forest_boot_result.csv")
+res_PCA <- read.csv("test1_MNAR1_PCA_boot_result.csv")
+res_MIRanger <- read.csv("test1_MNAR1_MIRanger_boot_result.csv")
+res_MIEM <- read.csv("test1_MNAR1_MIEM_boot_result.csv")
+res_MICE <- read.csv("test1_MNAR1_MICE_boot_result.csv")
 
 predframe <- data.frame(row.names = c(1:8))
 predframe[["miss_perc"]] <- c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)
@@ -346,35 +346,63 @@ predframe[["upr_MIEM"]] <- res_MIEM$scaled_MSE + 1 * sqrt(res_MIEM$Var_scaled_MS
 predframe[["scaled_MSE_MICE"]] <- res_MICE$scaled_MSE
 predframe[["lwr_MICE"]] <- res_MICE$scaled_MSE - 1 * sqrt(res_MICE$Var_scaled_MSE)
 predframe[["upr_MICE"]] <- res_MICE$scaled_MSE + 1 * sqrt(res_MICE$Var_scaled_MSE)
+
+
+framef1 <- data.frame(row.names = c(1:8))
+framef1[["miss_perc"]] <- c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)
+framef1[["scaled_F1_Ranger"]] <- res_Ranger$F1
+framef1[["lwr_Ranger"]] <- res_Ranger$F1 - 1 * sqrt(res_Ranger$Var_F1)
+framef1[["upr_Ranger"]] <- res_Ranger$F1 + 1 * sqrt(res_Ranger$Var_F1)
+framef1[["scaled_F1_EM"]] <- res_EM$F1
+framef1[["lwr_EM"]] <- res_EM$F1 - 1 * sqrt(res_EM$Var_F1)
+framef1[["upr_EM"]] <- res_EM$F1 + 1 * sqrt(res_EM$Var_F1)
+framef1[["scaled_F1_kNN"]] <- res_kNN$F1
+framef1[["lwr_kNN"]] <- res_kNN$F1 - 1 * sqrt(res_kNN$Var_F1)
+framef1[["upr_kNN"]] <- res_kNN$F1 + 1 * sqrt(res_kNN$Var_F1)
+framef1[["scaled_F1_Forest"]] <- res_Forest$F1
+framef1[["lwr_Forest"]] <- res_Forest$F1 - 1 * sqrt(res_Forest$Var_F1)
+framef1[["upr_Forest"]] <- res_Forest$F1 + 1 * sqrt(res_Forest$Var_F1)
+framef1[["scaled_F1_PCA"]] <- res_PCA$F1
+framef1[["lwr_PCA"]] <- res_PCA$F1 - 1 * sqrt(res_PCA$Var_F1)
+framef1[["upr_PCA"]] <- res_PCA$F1 + 1 * sqrt(res_PCA$Var_F1)
+framef1[["scaled_F1_MIRanger"]] <- res_MIRanger$F1
+framef1[["lwr_MIRanger"]] <- res_MIRanger$F1 - 1 * sqrt(res_MIRanger$Var_F1)
+framef1[["upr_MIRanger"]] <- res_MIRanger$F1 + 1 * sqrt(res_MIRanger$Var_F1)
+framef1[["scaled_F1_MIEM"]] <- res_MIEM$F1
+framef1[["lwr_MIEM"]] <- res_MIEM$F1 - 1 * sqrt(res_MIEM$Var_F1)
+framef1[["upr_MIEM"]] <- res_MIEM$F1 + 1 * sqrt(res_MIEM$Var_F1)
+framef1[["scaled_F1_MICE"]] <- res_MICE$F1
+framef1[["lwr_MICE"]] <- res_MICE$F1 - 1 * sqrt(res_MICE$Var_F1)
+framef1[["upr_MICE"]] <- res_MICE$F1 + 1 * sqrt(res_MICE$Var_F1)
 ```
 
 
-```{r draw}
+```{r draw_MSE}
 colors <- c("Ranger"="red", "EM"="yellow", "kNN"="blue", "Forest"="orange", 
             "PCA" = "green", "MIEM" = "#56B4E9", "MICE" = "#CC79A7",
             "MIRanger" = "#009E73")
 
-p2 <- ggplot(predframe, aes(x = miss_perc)) +
+p1 <- ggplot(predframe, aes(x = miss_perc)) +
   scale_colour_manual(values = colors) +
   scale_fill_manual(values = colors) +
   geom_line(aes(y = scaled_MSE_Ranger, colour = "Ranger")) +
   geom_point(aes(y = scaled_MSE_Ranger, colour = "Ranger")) +
   geom_ribbon(data = predframe, aes(ymin = lwr_Ranger, ymax = upr_Ranger, fill = "Ranger"), alpha = 0.3, show.legend = FALSE) +
-  geom_line(aes(y = scaled_MSE_EM, colour = "EM")) +
-  geom_point(aes(y = scaled_MSE_EM, colour = "EM")) +
-  geom_ribbon(data = predframe, aes(ymin = lwr_EM, ymax = upr_EM, fill = "EM"), alpha = 0.3, show.legend = FALSE) +
+  # geom_line(aes(y = scaled_MSE_EM, colour = "EM")) +
+  # geom_point(aes(y = scaled_MSE_EM, colour = "EM")) +
+  # geom_ribbon(data = predframe, aes(ymin = lwr_EM, ymax = upr_EM, fill = "EM"), alpha = 0.3, show.legend = FALSE) +
   geom_line(aes(y = scaled_MSE_kNN, colour = "kNN")) +
   geom_point(aes(y = scaled_MSE_kNN, colour = "kNN")) +
   geom_ribbon(data = predframe, aes(ymin = lwr_kNN, ymax = upr_kNN, fill = "kNN"), alpha = 0.3, show.legend = FALSE) +
   geom_line(aes(y = scaled_MSE_Forest, colour = "Forest")) +
   geom_point(aes(y = scaled_MSE_Forest, colour = "Forest")) +
   geom_ribbon(data = predframe, aes(ymin = lwr_Forest, ymax = upr_Forest, fill = "Forest"), alpha = 0.3, show.legend = FALSE) +
-  geom_line(aes(y = scaled_MSE_PCA, colour = "PCA")) +
-  geom_point(aes(y = scaled_MSE_PCA, colour = "PCA")) +
-  geom_ribbon(data = predframe, aes(ymin = lwr_PCA, ymax = upr_PCA, fill = "PCA"), alpha = 0.3) +
+  # geom_line(aes(y = scaled_MSE_PCA, colour = "PCA")) +
+  # geom_point(aes(y = scaled_MSE_PCA, colour = "PCA")) +
+  # geom_ribbon(data = predframe, aes(ymin = lwr_PCA, ymax = upr_PCA, fill = "PCA"), alpha = 0.3, show.legend = FALSE) +
   geom_line(aes(y = scaled_MSE_MIEM, colour = "MIEM")) +
   geom_point(aes(y = scaled_MSE_MIEM, colour = "MIEM")) +
-  geom_ribbon(data = predframe, aes(ymin = lwr_MIEM, ymax = upr_MIEM, fill = "MIEM"), alpha = 0.3) +
+  geom_ribbon(data = predframe, aes(ymin = lwr_MIEM, ymax = upr_MIEM, fill = "MIEM"), alpha = 0.3, show.legend = FALSE) +
   geom_line(aes(y = scaled_MSE_MICE, colour = "MICE")) +
   geom_point(aes(y = scaled_MSE_MICE, colour = "MICE")) +
   geom_ribbon(data = predframe, aes(ymin = lwr_MICE, ymax = upr_MICE, fill = "MICE"), alpha = 0.3, show.legend = FALSE) +
@@ -385,5 +413,45 @@ p2 <- ggplot(predframe, aes(x = miss_perc)) +
   ylab("Scaled MSE") +
   labs(colour = "Imputation method")
 
-show(p2)
+show(p1)
 ```
+
+```{r draw_F1}
+colors <- c("Ranger"="red", "EM"="yellow", "kNN"="blue", "Forest"="orange", 
+            "PCA" = "green", "MIEM" = "#56B4E9", "MICE" = "#CC79A7",
+            "MIRanger" = "#009E73")
+
+p1 <- ggplot(framef1, aes(x = miss_perc)) +
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  geom_line(aes(y = scaled_F1_Ranger, colour = "Ranger")) +
+  geom_point(aes(y = scaled_F1_Ranger, colour = "Ranger")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_Ranger, ymax = upr_Ranger, fill = "Ranger"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_F1_EM, colour = "EM")) +
+  geom_point(aes(y = scaled_F1_EM, colour = "EM")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_EM, ymax = upr_EM, fill = "EM"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_F1_kNN, colour = "kNN")) +
+  geom_point(aes(y = scaled_F1_kNN, colour = "kNN")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_kNN, ymax = upr_kNN, fill = "kNN"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_F1_Forest, colour = "Forest")) +
+  geom_point(aes(y = scaled_F1_Forest, colour = "Forest")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_Forest, ymax = upr_Forest, fill = "Forest"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_F1_PCA, colour = "PCA")) +
+  geom_point(aes(y = scaled_F1_PCA, colour = "PCA")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_PCA, ymax = upr_PCA, fill = "PCA"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_F1_MIEM, colour = "MIEM")) +
+  geom_point(aes(y = scaled_F1_MIEM, colour = "MIEM")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_MIEM, ymax = upr_MIEM, fill = "MIEM"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_F1_MICE, colour = "MICE")) +
+  geom_point(aes(y = scaled_F1_MICE, colour = "MICE")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_MICE, ymax = upr_MICE, fill = "MICE"), alpha = 0.3, show.legend = FALSE) +
+  geom_line(aes(y = scaled_F1_MIRanger, colour = "MIRanger")) +
+  geom_point(aes(y = scaled_F1_MIRanger, colour = "MIRanger")) +
+  geom_ribbon(data = framef1, aes(ymin = lwr_MIRanger, ymax = upr_MIRanger, fill = "MIRanger"), alpha = 0.3, show.legend = FALSE) +
+  xlab("Proportion of missing data") +
+  ylab("Scaled MSE") +
+  labs(colour = "Imputation method")
+
+show(p1)
+```
+
