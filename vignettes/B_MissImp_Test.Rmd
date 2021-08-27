@@ -310,7 +310,7 @@ data.frame(result)
 
 ```{r rd_write_csv}
 library(ggplot2)
-write.csv(result,"test1_MNAR2_Ranger_boot_result.csv")
+# write.csv(result,"test1_MNAR2_Ranger_boot_result.csv")
 res_Ranger <- read.csv("test1_MNAR1_Ranger_boot_result.csv")
 res_EM <- read.csv("test1_MNAR1_EM_boot_result.csv")
 res_kNN <- read.csv("test1_MNAR1_kNN_boot_result.csv")
