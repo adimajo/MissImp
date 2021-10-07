@@ -1,5 +1,5 @@
 ---
-title: "MissImp Test"
+title: "Oracle Simple Test"
 author: "Xuwen Liu"
 date: "`r Sys.Date()`"
 output:
@@ -9,7 +9,7 @@ output:
     df_print: paged
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{"MissImp Test"}
+  %\VignetteIndexEntry{"Oracle Simple Test"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
