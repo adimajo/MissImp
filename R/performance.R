@@ -152,7 +152,7 @@ ls_F1 <- function(df_comp,
     # Take only the categorical part
     df_imp_cat <- df_imp[, col_cat_imp]
     col_name_cat <- colnames(df_imp_cat)
-    
+
     if (resample_method == "bootstrap") {
       df_imp_cat[["index"]] <- as.numeric(row.names(df_imp_cat))
       df_imp_cat$index <- floor(df_imp_cat$index)

@@ -19,5 +19,3 @@ test_that("jacksample", {
   expect_equal(nrow(ls_jack[[1]]), 3 * n / 4)
   expect_equal(ncol(ls_jack[[1]]), 3)
 })
-
-
