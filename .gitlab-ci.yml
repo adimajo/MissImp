@@ -102,6 +102,7 @@ check_mswin:
   stage: checkrhub
   script:
     - r -e 'devtools::install()'
+    - r -e 'library(MissImp)'
     - Rscript inst/pipeline/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
 
 check_macos:
@@ -109,6 +110,7 @@ check_macos:
   stage: checkrhub
   script:
     - r -e 'devtools::install()'
+    - r -e 'library(MissImp)'
     - Rscript inst/pipeline/rhubcheck.R "macos-highsierra-release-cran" "$RHUB_TOKEN"
 
 deploy:
