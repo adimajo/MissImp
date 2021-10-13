@@ -190,3 +190,115 @@ combine_jack <- function(ls_df,
     ))
   }
 }
+
+
+
+# Version jackknife estimate using estimation on the full incomplete dataset
+# combine_jack_bis <- function(ls_df,
+#                              df_full,
+#                          col_con,
+#                          col_dis = c(),
+#                          col_cat = c(),
+#                          method = "onehot",
+#                          dict_cat = NULL,
+#                          var_cat = "unalike") {
+#   ls_df_minus <- ls_df
+#   ls_col_name <- colnames(ls_df[[1]])
+#   exist_dis <- !all(c(0, col_dis) == c(0))
+#   if (exist_dis) {
+#     col_name_dis <- ls_col_name[col_dis]
+#   }
+#   exist_cat <- !all(c(0, col_cat) == c(0))
+#   if (exist_cat) {
+#     col_name_cat <- ls_col_name[col_cat]
+#     var_cat <- match.arg(var_cat, c("unalike", "wilcox_va"))
+#     is_unalike <- (var_cat == "unalike")
+#     if (is_unalike) {
+#       is_uwo4419_package_installed()
+#     } else {
+#       is_qualvar_package_installed()
+#     }
+#     if (is.null(dict_cat)) {
+#       stop("dict_cat is needed when there are onehot categorical columns")
+#     }
+#   }
+#   i <- 1
+#   n_sample <- length(ls_df)
+#   df_full$index <- as.numeric(row.names(df_full))
+#   while (i <= n_sample) {
+#     ls_df[[i]]$index <- as.numeric(row.names(ls_df[[i]]))
+#     # only for numeric columns
+#     ls_df_minus[[i]] <- n_sample * df_full[ls_df[[i]]$index, ] - (n_sample -
+#       1) * ls_df[[i]]
+#     if (exist_cat) {
+#       ls_df_minus[[i]][col_name_cat][ls_df_minus[[i]][col_name_cat] < 0] <- 0
+#     }
+#     ls_df_minus[[i]][["index"]] <- as.numeric(row.names(ls_df_minus[[i]]))
+#     i <- i + 1
+#   }
+#   # Put all imputed datasets together
+#   df_new_merge <- Reduce(function(dtf1, dtf2) {
+#     rbind(dtf1, dtf2)
+#   }, ls_df_minus)
+#   # Add the combined result for categorical variables deducted from the onehot result
+#   if (exist_cat) {
+#     names_cat <- names(dict_cat)
+#     for (name in names_cat) {
+#       df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+#       df_new_merge[[name]] <- unlist(df_new_merge[[name]])
+#       df_new_merge[[name]] <- factor(df_new_merge[[name]])
+#     }
+#   }
+#
+#
+#
+#   # By Jackknife combining rules for disjunctive part
+#   df_new <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], mean) # Here for each indice, there are n_sample-1 values
+#   if (exist_dis) {
+#     df_new[col_name_dis] <- round(df_new[col_name_dis]) # round for the discret variables
+#   }
+#   df_new_var_disj <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], var)
+#   # df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (n_sample -
+#   #   1)
+#
+#
+#   # Final result according to the mean of onehot probability
+#   if (exist_cat) {
+#     for (name in names_cat) {
+#       df_new[[name]] <- apply(df_new[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+#       df_new[[name]] <- unlist(df_new[[name]])
+#       df_new[[name]] <- factor(df_new[[name]])
+#     }
+#     df_result <- df_new[-c(1, col_cat + 1)] # remove the index and the onehot columns
+#     if (is_unalike) {
+#       df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
+#     } else {
+#       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
+#         dplyr::group_by(.data$index) %>%
+#         dplyr::summarise(dplyr::across(dplyr::all_of(names_cat), VA_fact))
+#     }
+#
+#     df_new_var <- merge(df_new_var_disj, df_new_cat_var, by = "index")
+#     df_result_var <- df_new_var[-c(1, col_cat + 1)] # remove the index and the onehot columns
+#
+#
+#     # remove index column and the combined categorical columns
+#     df_result_disj <- df_new[, !(names(df_new) %in% c(names_cat, "index"))]
+#     df_result_var_disj <- df_new_var[, !(names(df_new) %in% c(names_cat, "index"))]
+#     return(
+#       list(
+#         imp.disj = df_result_disj,
+#         uncertainty.disj = df_result_var_disj,
+#         imp = df_result,
+#         uncertainty = df_result_var
+#       )
+#     )
+#   } else {
+#     return(list(
+#       imp = df_new[-c(1)],
+#       imp.disj = df_new[-c(1)],
+#       uncertainty = df_new_var_disj[-c(1)],
+#       uncertainty.disj = df_new_var_disj[-c(1)]
+#     ))
+#   }
+# }

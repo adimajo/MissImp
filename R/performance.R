@@ -55,14 +55,15 @@ ls_MSE <- function(df_comp,
   i <- 1
   for (df_imp in ls_df_imp) {
     df_imp_num <- df_imp[col_name_num]
-    df_imp_num[["index"]] <- as.numeric(row.names(df_imp_num))
     if (resample_method == "bootstrap") {
+      df_imp_num[["index"]] <- as.numeric(row.names(df_imp_num))
       df_imp_num$index <- floor(df_imp_num$index)
       df_num <- stats::aggregate(. ~ index, data = df_imp_num[c("index", col_name_num)], mean)
       df_imp_i <- df_num[col_name_num]
       df_comp_i <- df_comp_num[df_num$index, ]
       mask_num_i <- mask_num[df_num$index, ]
     } else if (resample_method == "jackknife") {
+      df_imp_num[["index"]] <- as.numeric(row.names(df_imp_num))
       df_imp_i <- df_imp_num[col_name_num]
       df_comp_i <- df_comp_num[df_imp_num$index, ]
       mask_num_i <- mask_num[df_imp_num$index, ]
@@ -137,7 +138,7 @@ ls_F1 <- function(df_comp,
   if (resample_method == "jackknife" && combine_method == "factor") {
     stop("With jackknife resampling method, combine_method could only be 'onehot'.\n")
   }
-  if (combine_method == "onehot" && is.null(dict_cat)) {
+  if (resample_method != "none" && combine_method == "onehot" && is.null(dict_cat)) {
     stop("With onehot combining method, dict_cat is needed.\n")
   }
   dict_lev <- dict_level(df_comp, col_cat_comp)
@@ -151,8 +152,9 @@ ls_F1 <- function(df_comp,
     # Take only the categorical part
     df_imp_cat <- df_imp[, col_cat_imp]
     col_name_cat <- colnames(df_imp_cat)
-    df_imp_cat[["index"]] <- as.numeric(row.names(df_imp_cat))
+
     if (resample_method == "bootstrap") {
+      df_imp_cat[["index"]] <- as.numeric(row.names(df_imp_cat))
       df_imp_cat$index <- floor(df_imp_cat$index)
       if (combine_method == "onehot") { # df_imp_cat in form of onehot
         # take average of the onehot probabilities for the doublons
@@ -187,6 +189,7 @@ ls_F1 <- function(df_comp,
       }
     } else if (resample_method == "jackknife") {
       # convert onehot to factor form
+      df_imp_cat[["index"]] <- as.numeric(row.names(df_imp_cat))
       names_cat <- names(dict_cat)
       for (name in names_cat) {
         df_imp_cat[[name]] <- apply(df_imp_cat[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
@@ -202,7 +205,7 @@ ls_F1 <- function(df_comp,
     } else {
       df_imp_i <- df_imp_cat
       df_comp_i <- df_comp[, col_cat_comp]
-      mask_cat_i <- mask[, col_cat_comp][names_cat] * 1
+      mask_cat_i <- data.frame(mask[, col_cat_comp] * 1)
     }
 
     # Change to one vector
@@ -225,3 +228,68 @@ ls_F1 <- function(df_comp,
     Variance_F1 = var(ls_f1_result)
   ))
 }
+
+
+
+# Version jackknife estimate using estimation on the full incomplete dataset
+# ls_MSE_bis <- function(df_comp,
+#                    ls_df_imp,
+#                    df_full,
+#                    mask,
+#                    col_num_comp,
+#                    resample_method = "bootstrap") {
+#   resample_method <- match.arg(resample_method, c("bootstrap", "jackknife", "none"))
+#   ls_mse_result <- c()
+#   ls_mse_result_scale <- c()
+#   mask_num <- mask[, col_num_comp] * 1
+#   col_names <- colnames(df_comp)
+#   df_comp_num <- df_comp[, col_num_comp]
+#   col_name_num <- colnames(df_comp_num)
+#   df_full_num <- df_full[col_name_num]
+#   n_sample <- length(ls_df_imp)
+#   i <- 1
+#   for (df_imp in ls_df_imp) {
+#     df_imp_num <- df_imp[col_name_num]
+#     df_imp_num[["index"]] <- as.numeric(row.names(df_imp_num))
+#     if (resample_method == "bootstrap") {
+#       df_imp_num$index <- floor(df_imp_num$index)
+#       df_num <- stats::aggregate(. ~ index, data = df_imp_num[c("index", col_name_num)], mean)
+#       df_imp_i <- df_num[col_name_num]
+#       df_comp_i <- df_comp_num[df_num$index, ]
+#       mask_num_i <- mask_num[df_num$index, ]
+#     } else if (resample_method == "jackknife") {
+#       df_full_num$index <- as.numeric(row.names(df_full_num))
+#       df_imp_i <- n_sample * df_full_num[df_imp_num$index, ] - (n_sample - 1) * df_imp_num
+#       df_imp_i <- df_imp_i[col_name_num]
+#       df_comp_i <- df_comp_num[df_imp_num$index, ]
+#       mask_num_i <- mask_num[df_imp_num$index, ]
+#     } else {
+#       df_imp_i <- df_imp_num
+#       df_comp_i <- df_comp_num
+#       mask_num_i <- mask_num
+#     }
+#
+#     mse_result <- sum((df_comp_i - df_imp_i)^2) / sum(mask_num_i)
+#     ls_mse_result[i] <- mse_result
+#
+#     # MinMax Scale each variable based on estimated parameters from corresponding complete dataset
+#     min_comp <- apply(df_comp_i, 2, min)
+#     max_min_comp <- apply(df_comp_i, 2, function(x) {
+#       max(x) - min(x)
+#     })
+#     df_comp_i_scale <- as.matrix(df_comp_i - min_comp) / t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
+#     df_imp_i_scale <- as.matrix(df_imp_i - min_comp) / t(matrix(rep(max_min_comp, nrow(df_comp_i)), nrow = length(max_min_comp)))
+#     mse_result_scale <- sum((df_comp_i_scale - df_imp_i_scale)^2) / sum(mask_num_i)
+#     ls_mse_result_scale[i] <- mse_result_scale
+#
+#     i <- i + 1
+#   }
+#   return(list(
+#     list_MSE = ls_mse_result,
+#     Mean_MSE = mean(ls_mse_result),
+#     Variance_MSE = var(ls_mse_result),
+#     list_MSE_scale = ls_mse_result_scale,
+#     Mean_MSE_scale = mean(ls_mse_result_scale),
+#     Variance_MSE_scale = var(ls_mse_result_scale)
+#   ))
+# }
