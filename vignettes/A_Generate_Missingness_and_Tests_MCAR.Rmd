@@ -18,15 +18,15 @@ vignette: >
 library(MissImp)
 ```
 
-In the first session of "Generate data", a complete mix-type dataset is first generated with 5 continuous variables, 1 integer variable and 2 categorical variables. Then given the desired missing data proportion and the missing data mechanism, based on the complete dataset, an incomplete dataset with missing values is created. 
+In the [first section](#generate), some data are generated. first, [a compete mixed-type dataset](#complete) is drawn with 5 continuous variables, 1 integer variable and 2 categorical variables. Then given the desired missing data proportion and the missing data mechanism, based on the complete dataset, [an incomplete dataset](#generate) with missing values is created. 
 
-In the second part of this document "Statistical tests for MCAR", three tests are performed to show if an incomplete dataset follows Missing Completely At Random (MCAR) mechanism. These three tests are independently used on several generated incomplete datasets with different mechanisms, in order to show their capacity.
+In the [second section](#tests) of this document "Statistical tests for MCAR", three tests are performed to show if an incomplete dataset follows a Missing Completely At Random (MCAR) mechanism. These three tests are independently used on several generated incomplete datasets with different mechanisms, in order to show their capacity.
 
-# Generate data
+# Generate data {#generate}
 
-## Complete data
+## Complete data {#complete}
 
-We generate a complete data set $(Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8)$ with $(Y1, Y2, Y3) \sim \mathcal{N}(\mu_1, S1)$, (Y4, Y5)~N(u2,S2), Y6~P(\lambda) and Y7,Y8~Binomial(prob). 
+We generate a complete data set $(Y_j)_{1 \leq j \leq 8}$ with $(Y_1_1, Y_2, Y_3) \sim \mathcal{N}(\mu_1, \Sigma_1)$, $(Y_4, Y_5) \sim \mathcal{N}(\mu_2, \Sigma_2)$, $Y_6 \sim P(\lambda)$ and $Y_7, Y_8 \sim \text{Bin}(\gamma)$. 
 
 ```{r Generate_complete_dataframe}
 n <- 10000
@@ -37,22 +37,24 @@ complete_df_generator <- function(n) {
     3, 4, 0,
     2, 0, 1
   ), nrow = 3)
-  X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X) # multivariate normal distribution
+  # multivariate normal distribution
+  X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
 
   mu1.X <- c(9, 8)
   Sigma1.X <- matrix(c(
     16, 14,
     14, 25
   ), nrow = 2)
-
-  X.complete.cont1 <- MASS::mvrnorm(n, mu1.X, Sigma1.X) # multivariate normal distribution
+  # multivariate normal distribution
+  X.complete.cont1 <- MASS::mvrnorm(n, mu1.X, Sigma1.X)
 
   lambda <- 4.3
-  X.complete.discr <- stats::rpois(n, lambda) # poisson distribution
-
-  X.complete.cat <- stats::rbinom(n, size = 5, prob = 0.4) # binomial
-
-  X.complete.cat2 <- stats::rbinom(n, size = 7, prob = 0.6) # binomial
+  # poisson distribution
+  X.complete.discr <- stats::rpois(n, lambda)
+  # binomial
+  X.complete.cat <- stats::rbinom(n, size = 5, prob = 0.4)
+  # binomial
+  X.complete.cat2 <- stats::rbinom(n, size = 7, prob = 0.6)
 
   X.complete <- data.frame(cbind(X.complete.cont, X.complete.cont1,
     X.complete.discr,
@@ -67,9 +69,9 @@ complete_df_generator <- function(n) {
 X.complete <- complete_df_generator(n)
 ```
 
-## Add missingness
+## Add missingness {#missingness}
 
-We could generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of \code{generate_miss}.
+We could generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of `generate_miss`.
 
 ```{r add_miss_one_mechanism}
 miss_perc <- 0.4
@@ -79,7 +81,7 @@ head(rs$R.mask)
 print(rs$real_miss_perc)
 ```
 
-Next, a list of incomplete dataframes are generated with every mechanism that is implemented in \code{generate_miss}. First a list of incomplete dataframes are generated on the continuous variables (Y1,...,Y5), with the result in rs.con; then on the continous + discrete varaibles (Y1,...,Y6), with the result in rs.con_dis; and at last on continous + discrete + categorical variables, with the result in rs.mix.
+Next, a list of incomplete dataframes is generated with every mechanism that is implemented in `generate_miss`. First a list of incomplete dataframes is generated on the continuous variables $(Y_1, \dots, Y_5)$, with the result in `rs.con`; then on the continous + discrete variables $(Y_1, \dots, Y_6)$, with the result in `rs.con_dis`; and at last on continuous + discrete + categorical variables, with the result in `rs.mix`.
 
 ```{r add_miss_all_mechanism}
 miss_perc <- 0.3
@@ -96,7 +98,7 @@ list_df.con_dis <- list(rs.con_dis$mcar$X.incomp, rs.con_dis$mar1$X.incomp, rs.c
 list_df.mix <- list(rs.mix$mcar$X.incomp, rs.mix$mar1$X.incomp, rs.mix$mar2$X.incomp, rs.mix$mar3$X.incomp, rs.mix$mnar1$X.incomp, rs.mix$mnar2$X.incomp)
 ```
 
-# Statistical tests for MCAR 
+# Statistical tests for MCAR {#tests}
 
 ```{r p_val}
 p_val <- 0.05

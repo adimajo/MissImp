@@ -19,11 +19,13 @@ library(stats)
 library(MissImp)
 knitr::opts_chunk$set(eval = FALSE)
 ```
+
 # Generate data
 
-We generate a complete data set $(Y_1, ..., Y_8)$ with $(Y_1, Y_2) \sim \mathcal{N}(\mu_1, \Sigma_1), Y_3 \sim \text{Binomial}(p)$, and $Y_4$ is a binary variable that depends logistically on the values of $Y_1$ and $Y_2$.
+We generate a complete data set $(Y_j)_{1 \leq j \leq 8}$ with $(Y_1, Y_2) \sim \mathcal{N}(\mu_1, \Sigma_1)$, $Y_3 \sim \text{Bin}(p)$, and $Y_4$ is a binary variable that depends on the values of $Y_1$ and $Y_2$ through a logistic regression.
 
 ```{r Generate_complete_dataframe}
+
 complete_df_generator <- function(n) {
   mu1.X <- c(9, 8)
   Sigma1.X <- matrix(c(
@@ -47,10 +49,11 @@ complete_df_generator <- function(n) {
 
 n <- 4000
 X.complete <- complete_df_generator(n)
+
 ```
 
-
 ```{r rd_param_settings}
+
 mech <- "MAR1"
 miss_prop <- 0.3
 col_cat <- c(3,4)
@@ -73,10 +76,11 @@ imp_method <- "PCA"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
+
 ```
 
-
 ```{r oracle}
+
 oracle_impute <- function(x){
   mask <- is.na(x)
   mu1.X <- c(9, 8)
@@ -119,16 +123,17 @@ oracle_impute <- function(x){
   }
 }
 
-
 # df.imp <- data.frame(t(apply(df, 1, oracle_impute)))
 # for(i in col_num){
 #   df.imp[, i] <- as.numeric(df.imp[, i])
 # }
 # ls_MSE(X.complete, list(df.imp), is.na(df), col_num, resample_method = "none")
 # ls_F1(X.complete, list(df.imp), is.na(df), col_cat, col_cat, resample_method = "none")
+
 ```
 
 ```{r different_miss_perc}
+
 i <- 1
 result <- list()
 for (miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)) {
@@ -191,15 +196,17 @@ for (miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)) {
   i <- i + 1
 }
 data.frame(result)
-```
 
+```
 
 ```{r write_csv}
+
 # write.csv(result,"test_MAR1_PCA_boot_oracle.csv")
+
 ```
 
-
 ```{r draw}
+
 library(ggplot2)
 res_EM <- read.csv("test_MAR1_EM_boot_oracle.csv")
 predframe <- data.frame(row.names = c(1:8))
@@ -227,5 +234,5 @@ p1 <- ggplot(predframe, aes(x = miss_perc)) +
   labs(colour = "Imputation method")
 
 show(p1)
-```
 
+```

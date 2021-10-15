@@ -22,7 +22,7 @@ knitr::opts_chunk$set(eval = FALSE)
 
 # Generate data
 
-We generate a complete data set $(Y_1, ..., Y_8) with (Y_1, Y_2, Y_3) \sim \mathcal{N}(\mu_1, \Sigma_1), (Y_4, Y_5) \sim \mathcal{N}(\mu_2, \Sigma_2), Y_6 \sim P(\lambda)$ and $Y_7, Y_8 \sim \text{Binomial}(p)$.
+We generate a complete data set $(Y_1, ..., Y_8)$ with $(Y_1, Y_2, Y_3) \sim \mathcal{N}(\mu_1, \Sigma_1)$, $(Y_4, Y_5) \sim \mathcal{N}(\mu_2, \Sigma_2)$, $Y_6 \sim P(\lambda)$ and $Y_7, Y_8 \sim \text{Bin}(\gamma)$.
 
 ```{r Generate_complete_dataframe}
 complete_df_generator <- function(n) {
@@ -61,7 +61,7 @@ complete_df_generator <- function(n) {
 }
 ```
 
-We could generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of \code{generate_miss}.
+We can generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of \code{generate_miss}.
 
 ```{r add_missingness}
 n <- 10000
@@ -162,7 +162,7 @@ credit_data <- read.csv("../inst/extdata/UCI_Credit_data/crx.data", fileEncoding
 abalone_data <- read.csv("../inst/extdata/UCI_Abalone_data/abalone.data", fileEncoding = "UTF-8", dec = ",", header = FALSE)
 ```
 
-```{r preprocessing}
+```{r preprocessing_credit}
 credit_data <- data.frame(credit_data)
 col_num <- c(2, 3, 8, 11, 14, 15)
 col_dis <- c(11, 14, 15)
@@ -184,9 +184,10 @@ credit_data <- stats::na.omit(credit_data)
 row.names(credit_data) <- c(1:nrow(credit_data))
 levels(credit_data$V16) <- c("pos", "neg") # remove special symbols
 head(credit_data)
+```
 
 
-
+```{r preprocessing_abalone}
 
 abalone_data <- data.frame(abalone_data)
 col_num <- c(2:9)
@@ -252,8 +253,6 @@ res$MSE
 res$F1
 dens_comp(res$imp, X.complete)
 ```
-
-
 
 ```{r different_miss_proportion}
 i <- 1
@@ -376,7 +375,6 @@ framef1[["lwr_MICE"]] <- res_MICE$F1 - 1 * sqrt(res_MICE$Var_F1)
 framef1[["upr_MICE"]] <- res_MICE$F1 + 1 * sqrt(res_MICE$Var_F1)
 ```
 
-
 ```{r draw_MSE}
 colors <- c("Ranger"="red", "EM"="yellow", "kNN"="blue", "Forest"="orange", 
             "PCA" = "green", "MIEM" = "#56B4E9", "MICE" = "#CC79A7",
@@ -454,4 +452,3 @@ p1 <- ggplot(framef1, aes(x = miss_perc)) +
 
 show(p1)
 ```
-

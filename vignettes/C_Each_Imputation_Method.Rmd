@@ -19,13 +19,13 @@ knitr::opts_chunk$set(eval = FALSE)
 library(MissImp)
 ```
 
-In the first session of "Generate data", a complete mix-type dataset is first generated with 5 continuous variables, 1 integer variable and 2 categorical variables. Then given the desired missing data proportion and the missing data mechanism, based on the complete dataset, an incomplete dataset with missing values is created. 
+In the [first section](#generate), a complete mix-type dataset is first generated with 5 continuous variables, 1 integer variable and 2 categorical variables. Then given the desired missing data proportion and the missing data mechanism, based on the complete dataset, an incomplete dataset with missing values is created. 
 
-Then in the second part of this document "Single Imputation", several imputation methods are shown separately to replace the missing part with predictions in the generated incomplete dataset. For the categorical variable, both the final result and the predicted probability of each category are presented. 
+Then in the [second section](#imputation), several imputation methods are shown separately to replace the missing part with predictions in the generated incomplete dataset. For the categorical variable, both the final result and the predicted probability of each category are presented. 
 
-# Generate data
+# Generate data {#generate}
 
-We generate a complete data set $(Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8)$ with $(Y1, Y2, Y3) \sim \mathcal{N}(\mu_u1, \Sigma_1)$, (Y4, Y5)~N(u2,S2), Y6~P(\lambda) and Y7,Y8~Binomial(prob). 
+We generate a complete data set $(Y_j)_{1 \leq j \leq 8}$ with $(Y_1, Y_2, Y_3) \sim \mathcal{N}(\mu_u1, \Sigma_1)$, $(Y_4, Y_5) \sim \mathcal{N}(\mu_2, \Sigma_2)$, $Y_6 \sim P(\lambda)$ and $Y_7, Y_8 \sim \text{Bin}(\gamma)$. 
 
 ```{r Generate_complete_dataframe}
 n <- 10000
@@ -65,7 +65,7 @@ complete_df_generator <- function(n) {
 }
 ```
 
-We could generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of \code{generate_miss}.
+We can generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of `generate_miss`.
 
 ```{r add_missingness}
 n <- 10000
@@ -76,8 +76,7 @@ rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
 df <- rs$X.incomp
 ```
 
-
-# Single Imputation
+# Single Imputation {#imputation}
 
 ## EM
 
@@ -90,8 +89,6 @@ head(imp.em$ximp)
 head(imp.em$ximp.disj)
 ```
 
-
-
 ## Missforest
 
 ```{r MissForest_boot}
@@ -102,7 +99,6 @@ imp.forest <- missForest_mod(xmis = df, maxiter = 3, ntree = 100, col_cat = col_
 head(imp.forest$ximp)
 head(imp.forest$ximp.disj)
 ```
-
 
 ## MissRanger
 
@@ -138,8 +134,6 @@ head(imp.knn$ximp)
 head(imp.knn$ximp.disj)
 ```
 
-
-
 # Multiple Imputation
 
 ## MI EM Amelia
@@ -166,8 +160,6 @@ head(imp.mice$ximp)
 head(imp.mice$ximp.disj)
 ```
 
-
-
 ## MI PCA
 
 ```{r MIPCA}
@@ -190,6 +182,3 @@ imp.ranger.mi <- MI_missRanger(df_with_mv, col_cat = c(7, 8), num_mi = 3)
 head(imp.ranger.mi$ximp)
 head(imp.ranger.mi$ximp.disj)
 ```
-
-
-
