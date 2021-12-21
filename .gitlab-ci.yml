@@ -1,90 +1,229 @@
-image: r-base:4.0.5
+.common_r: &common_r
+  image:
+    name: ${DOCKER_REGISTRY}r-base:4.0.5
+
+.ci_tools: &ci_tools
+  image:
+    name: layer-kraft.registry.saas.cagip.group.gca/ci-tools:latest
+
+.common_tag: &common_tag
+  tags:
+  - kubernetes
+
+.common_deploy: &common_deploy
+  before_script:
+    # Install ssh-agent if not already installed, it is required by Docker.
+    # (change apt-get to yum if you use a CentOS-based image)
+    - 'which ssh-agent || ( apk --update add openssh-client )'
+
+    # Run ssh-agent (inside the build environment)
+    - eval $(ssh-agent -s)
+
+    # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    - echo "$BOOT_GITLAB_SSH_KEY" | tr -d ' ' | base64 -d | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan gitlab.ca.cib >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - apk add --no-cache git
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
 
 stages:
   - lint
-  - build
+  - build package
   - document
   - check
   - test
   - coverage
   - checkrhub
+  - sonar_check
   - deploy
 
 variables:
   _R_CHECK_CRAN_INCOMING_: "false"
   _R_CHECK_FORCE_SUGGESTS_: "true"
+  _R_CHECK_SYSTEM_CLOCK_: 0
 
 .before_script_template:
   before_script:
-    - apt-get update
-    - apt-get -y install libxml2-dev
-    - apt-get -y install libssl-dev
-    - apt-get -y install libcurl4-openssl-dev
-    - apt-get -y install libgit2-dev
-    - apt-get -y install libssh2-1-dev
-    - apt-get -y install pandoc
-    - apt-get -y install qpdf
-    - apt-get -y install make
-    - r -e "install.packages('devtools')"
-    - r -e 'devtools::install_deps(dependencies = TRUE)'
+  - apt-get update
+  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc
+  - r -e "install.packages('devtools')"
+  - r -e 'devtools::install_deps(dependencies = TRUE)'
 
 lint:
+  artifacts:
+    paths:
+      - lintr_out.json
   extends: .before_script_template
   stage: lint
+  <<: *common_r
+  <<: *common_tag
   script:
     - r -e "install.packages('styler')"
+    - r -e "install.packages('lintr')"
     - r inst/pipeline/lint.R
-  allow_failure: true 
-  
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+
 buildbinary:
+  artifacts:
+    paths:
+      - build.env
   extends: .before_script_template
-  stage: build
+  stage: build package
+  <<: *common_r
+  <<: *common_tag
   script:
-    - r -e 'devtools::build(binary = TRUE, args="--no-multiarch")'
+    - r -e 'devtools::build(binary = TRUE)'
+    - r -e 'devtools::install()'
+    - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - Dockerfile
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 documentation:
+  artifacts:
+    paths:
+      - man
+      - docs
   extends: .before_script_template
   stage: document
+  <<: *common_r
+  <<: *common_tag
   script:
-    - apt-get -y install libfontconfig1-dev
-    - apt-get -y install libharfbuzz-dev libfribidi-dev
-    - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
     - r -e "install.packages('pkgdown')"
     - r inst/pipeline/document.R
+    - git config --global http.sslverify false
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git clone https://$BOOT_GITLAB_SRV_ACCOUNT:$BOOT_GITLAB_CAGIP_TOKEN@$BOOT_GITLAB_DOCS_REPO docs_to_publish
+    - rm -rf docs_to_publish/public
+    - mkdir docs_to_publish/public
+    - cp -r docs/* docs_to_publish/public/
+    - cd docs_to_publish
+    - git add -A
+    - |-
+        if ! git diff-index --quiet HEAD --; then
+            git commit -am "Rollout version $APPLICATION_TAG_VERSION"
+            git push
+        else
+            echo "Nothing to push"
+        fi
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 checkerrors:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 checkwarnings:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
+  allow_failure: true
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 checknotes:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
   allow_failure: true
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 unittestserrors:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: test
   script:
     - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 unittestswarnings:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: test
   script:
     - r -e 'if (sum(as.data.frame(devtools::test())[["warning"]]) > 0) stop("Some tests yielded a warning.")'
   allow_failure: true
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 coverage:
+  artifacts:
+    paths:
+      - coverage.xml
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: coverage
   script:
@@ -95,7 +234,43 @@ coverage:
     - r -e 'renv::load()'
     - r -e 'renv::restore()'
     - r -e 'renv::install("covr")'
-    - r -e 'print(covr::package_coverage(quiet = FALSE, clean = FALSE))'
+    - r -e 'renv::install("DT")'
+    - r inst/pipeline/sonarqube.R
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+
+quality_check:
+  stage: sonar_check
+  image:
+    name: docker-remote.registry.saas.cagip.group.gca/sonarsource/sonar-scanner-cli:4.6
+  <<: *common_tag
+  variables:
+    SONAR_TOKEN: "${BOOT_SONAR_TOKEN}"
+    SONAR_HOST_URL: "${BOOT_SONAR_INSTANCE}"
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: 0  # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_SCANNER_OPTS: "-Djavax.net.ssl.trustStore=cacerts"
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - wget -qO - http://crl-priv-pki.credit-agricole.fr/ca/cacreditagricoleserver.crt >> cacreditagricoleserver.crt
+    - apk --update add java-common
+    - keytool -import -alias mycert -file cacreditagricoleserver.crt -storetype jks -trustcacerts -noprompt -keypass keypass -keystore cacerts -storepass test@123
+    - sonar-scanner -Dsonar.exclusions=inst/**,tests/**,docs/**,renv/**,coverage.xml,README.md -Dsonar.coverageReportPaths=coverage.xml -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$BOOT_SONAR_KEY -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
+  only:
+    refs:
+      - master
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
 
 check_mswin:
   extends: .before_script_template
