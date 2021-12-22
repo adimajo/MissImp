@@ -23,12 +23,12 @@ jobs:
         run: install.packages("devtools")
         shell: Rscript {0}
       - name: Check code style
-        run: Rscript inst/lint.R
+        run: Rscript inst/pipeline/lint.R
       - name: Install dependencies
         run: devtools::install_deps(dependencies = TRUE)
         shell: Rscript {0}
       - name: Check documentation
-        run: Rscript inst/document.R
+        run: Rscript inst/pipeline/document.R
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
         shell: Rscript {0}
