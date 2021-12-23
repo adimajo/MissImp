@@ -48,7 +48,7 @@ variables:
 .before_script_template:
   before_script:
   - apt-get update
-  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc
+  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
   - r -e "install.packages('devtools')"
   - r -e 'devtools::install_deps(dependencies = TRUE)'
 
@@ -244,6 +244,7 @@ coverage:
       - DESCRIPTION
       - R/**/*
       - inst/**/*
+  timeout: 3 hours
 
 quality_check:
   stage: sonar_check
