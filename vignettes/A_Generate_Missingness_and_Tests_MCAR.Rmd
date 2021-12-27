@@ -26,7 +26,7 @@ In the [second section](#tests) of this document "Statistical tests for MCAR", t
 
 ## Complete data {#complete}
 
-We generate a complete data set $(Y_j)_{1 \leq j \leq 8}$ with $(Y_1_1, Y_2, Y_3) \sim \mathcal{N}(\mu_1, \Sigma_1)$, $(Y_4, Y_5) \sim \mathcal{N}(\mu_2, \Sigma_2)$, $Y_6 \sim P(\lambda)$ and $Y_7, Y_8 \sim \text{Bin}(\gamma)$. 
+We generate a complete data set $(Y_j)_{1 \leq j \leq 8}$ with $(Y_1, Y_2, Y_3) \sim \mathcal{N}(\mu_1, \Sigma_1)$, $(Y_4, Y_5) \sim \mathcal{N}(\mu_2, \Sigma_2)$, $Y_6 \sim P(\lambda)$ and $Y_7, Y_8 \sim \text{Bin}(\gamma)$. 
 
 ```{r Generate_complete_dataframe}
 n <- 10000
@@ -104,12 +104,14 @@ list_df.mix <- list(rs.mix$mcar$X.incomp, rs.mix$mar1$X.incomp, rs.mix$mar2$X.in
 p_val <- 0.05
 ```
 
-```{r tests_for_one_df}
+After the generation of incomplete datasets, we test if the missing data mechanism is MCAR by performing three classical statistic tests: the dummy variable test \code{dummy_test}, Little's MCAR test \code{mcar_test} from package \code{naniar} and the normality tests (Hawkin's test and non-parametric test included) \code{TestMCARNormality} from package \code{MissMech}. Our null hypothesis H0 is that the missing data mechanism is MCAR. As the normality test is only written for numerical data, here the test is performed on only the numerical part of the input dataframe.
+
+```{r tests_for_one_df, warning=FALSE}
 t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7,8), p_val = p_val)
 print(t$test_results)
 ```
 
-```{r p_val_for_each_incomplete_data_with_each_test}
+```{r p_val_for_each_incomplete_data_with_each_test, warning=FALSE}
 # A dataframe that records the p-values for each test
 test_p_vals <- data.frame(matrix(rep(0, 4), nrow = 1))
 colnames(test_p_vals) <- c("Dummy.variable.test", "Little.s.MCAR.test", "Hawkin.s.test", "Non.parametric.test")
@@ -135,8 +137,10 @@ test_p_vals[["type"]] <- c(rep("continuous", 6), rep("continuous+discrete", 6), 
 test_p_vals[["mechanism"]] <- rep(c("MCAR", "MAR1", "MAR2", "MAR3", "MNAR1", "MNAR2"), 3)
 test_results <- data.frame(test_p_vals[, c(1, 2)] > p_val)
 test_results[["Miss_Mech_test"]] <- c((test_p_vals[["Hawkin.s.test"]] < p_val) * (test_p_vals[["Non.parametric.test"]] < p_val) == 0)
+test_p_vals <- test_p_vals[c("type", "mechanism", "Dummy.variable.test", "Little.s.MCAR.test", "Hawkin.s.test", "Non.parametric.test")]
 
 test_p_vals
-test_results
-# The result of MissMech test is not very accurate. This may due to the problem of implementation in MissMech package, which is not available on CRAN anymore.
+test_results 
 ```
+
+The result of MissMech test is not very accurate. This may due to the problem of implementation in MissMech package, which is not available on CRAN anymore.

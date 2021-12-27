@@ -55,3 +55,5 @@ Suggests:
 RdMacros: mathjaxr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Depends: 
+    R (>= 2.10)

@@ -201,7 +201,8 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
       col_con_boot <- which(colnames(ls.imp.onehot[[1]]) %in% con_name)
       col_dis_boot <- which(colnames(ls.imp.onehot[[1]]) %in% dis_name)
     }
-    res <- combine_boot(ls.imp.tmp,
+    res <- combine_boot(
+      ls_df = ls.imp.tmp,
       col_con = col_con_boot, col_dis = col_dis_boot, col_cat = col_cat_boot,
       num_row_origin = num_row, method = cat_combine_by, dict_cat = dict_name_cat,
       var_cat = var_cat

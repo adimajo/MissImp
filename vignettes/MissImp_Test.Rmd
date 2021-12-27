@@ -1,0 +1,151 @@
+---
+title: "MissImp Test"
+author: "Xuwen Liu"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{"MissImp Test"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r dependencies, message=FALSE, warning=FALSE}
+library(stats)
+library(MissImp)
+# knitr::opts_chunk$set(eval = FALSE)
+```
+
+# Test on the abalone data
+In the package, 100 rows of the abalone dataset is stored to test different functions.
+
+```{r load_data}
+load('../data/test_abalone.rda')
+```
+
+```{r preprocessing_abalone}
+abalone_data <- data.frame(test_abalone)
+col_num <- c(1:8)
+col_dis <- c(8)
+col_cat <- c(9)
+for (j in col_num) {
+  if (j %in% col_dis) {
+    suppressWarnings(abalone_data[, j] <- as.integer(abalone_data[, j]))
+  }
+  else {
+    suppressWarnings(abalone_data[, j] <- as.numeric(abalone_data[, j]))
+  }
+}
+for (j in col_cat) {
+  abalone_data[, j][abalone_data[, j] == "?"] <- NA
+  suppressWarnings(abalone_data[, j] <- as.factor(abalone_data[, j]))
+}
+abalone_data <- stats::na.omit(abalone_data)
+row.names(abalone_data) <- c(1:nrow(abalone_data))
+head(abalone_data)
+```
+After loading and preprocessing the abalone dataset, we can create incomplete datasets with different mechanisms and proportions of missing data. Here for demonstration we chose the "MAR1" missing data mechanism and 20% missing data percentage. (More details about the generation of missing data could be found in vignette "A_Generate_Missingness_and_Tests_MCAR")
+
+```{r incomplet_data_creation}
+X.complete <- abalone_data
+mech <- "MAR1"
+miss_prop <- 0.3
+rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
+```
+
+Then a model could be chosen to impute the incomplete dataset. The parameters shown below need to be chosen wisely. 
+
+```{r param_setting}
+df <- rs$X.incomp
+df_complete <- X.complete
+col_cat <- c(9)
+col_dis <- c(8)
+col_num <- c(1:8)
+
+maxiter_tree <- 10
+maxiter_pca <- 200
+maxiter_mice <- 10
+ncp_pca <- round(ncol(df_complete) / 2)
+learn_ncp <- FALSE
+
+num_mi <- 4
+n_resample <- 4
+n_df <- 5
+
+imp_method <- "MI_Ranger"
+resample_method <- "bootstrap"
+cat_combine_by <- "onehot"
+var_cat <- "wilcox_va"
+```
+
+```{r MissImp, include=FALSE}
+res <- MissImp(
+  df = df,
+  imp_method = imp_method,
+  resample_method = resample_method,
+  n_resample = n_resample,
+  col_cat = col_cat,
+  col_dis = col_dis,
+  maxiter_tree = maxiter_tree,
+  maxiter_pca = maxiter_pca,
+  ncp_pca = ncp_pca,
+  learn_ncp = learn_ncp,
+  cat_combine_by = cat_combine_by,
+  var_cat = var_cat,
+  df_complete = df_complete,
+  num_mi = num_mi,
+  maxiter_mice = maxiter_mice
+)
+```
+
+```{r result_MissImp}
+head(df)
+head(res$imp)
+head(res$imp.disj)
+head(res$uncertainty)
+head(res$uncertainty.disj)
+res$MSE
+res$F1
+```
+
+```{r density_comp_with_mean_imp}
+res_mean_imp <- df
+col_num <- c(1:8)
+col_num_name <- colnames(df)[col_num]
+for (y in col_num_name) {
+  res_mean_imp[[y]][is.na(res_mean_imp[[y]])] <- mean(res_mean_imp[[y]], na.rm = TRUE)
+}
+
+
+ycol <- "V5"
+X.miss <- X.complete
+X.miss[!is.na(df)] <- NA
+dat <- data.frame(
+  y = c(X.complete[[ycol]][rs$R.mask[[ycol]]], res$imp[[ycol]][rs$R.mask[[ycol]]], res_mean_imp[[ycol]][rs$R.mask[[ycol]]]),
+  lines = rep(c("complete", "imputed", "mean_imputed"), each = sum(rs$R.mask[[ycol]]))
+)
+ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
+  ggplot2::geom_density(alpha = 0.3) +
+  ggplot2::labs(x = ycol)
+
+dat <- data.frame(
+  y = c(X.miss[[ycol]][rs$R.mask[[ycol]]] - res$imp[[ycol]][rs$R.mask[[ycol]]], X.miss[[ycol]][rs$R.mask[[ycol]]] - res_mean_imp[[ycol]][rs$R.mask[[ycol]]]),
+  lines = rep(c("imputed_error", "mean_imputed_error"), each = sum(rs$R.mask[[ycol]]))
+)
+ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
+  ggplot2::geom_density(alpha = 0.3) +
+  ggplot2::labs(x = ycol)
+
+#dat <- data.frame(
+#  y = c(X.miss[[ycol]], df[[ycol]]),
+#  lines = rep(c("missing", "observed"), each = length(df[[ycol]]))
+#)
+#ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
+#  ggplot2::geom_density(alpha = 0.3) +
+#  ggplot2::labs(x = ycol)
+```
+

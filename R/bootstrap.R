@@ -123,6 +123,7 @@ combine_boot <- function(ls_df,
     df[["index"]] <- as.numeric(row.names(df))
     df[["index"]] <- floor(df[["index"]])
     df_num <- stats::aggregate(. ~ df[c("index", col_name_num)]$index, data = df[c("index", col_name_num)], mean)
+    df_num <- df_num[-c(1)]
     if (exist_cat && !is_onehot) {
       df_cat <- df[c("index", col_name_cat)] %>%
         dplyr::group_by(.data$index) %>%
@@ -155,7 +156,9 @@ combine_boot <- function(ls_df,
 
   # By Bootstrap combining rules
   df_new_mean_num <- stats::aggregate(. ~ df_new_merge[c("index", col_name_num)]$index, data = df_new_merge[c("index", col_name_num)], mean)
-  df_new_num_var <- stats::aggregate(. ~ df_new_merge[c("index", col_name_num)]$index, data = df_new_merge[c("index", col_name_num)], var)
+  df_new_mean_num <- df_new_mean_num[-c(1)]
+  df_new_num_var <- stats::aggregate(. ~ df_new_merge[c("index", col_name_num)]$index, data = df_new_merge[c(col_name_num)], var)
+  colnames(df_new_num_var)[1] <- "index"
   if (exist_dis) {
     df_new_mean_num[col_name_dis] <- round(df_new_mean_num[col_name_dis]) # for the discret variables
   }
@@ -169,6 +172,7 @@ combine_boot <- function(ls_df,
     df_new <- factor_encode(df_new, which(colnames(df_new_merge) %in% col_name_cat))
     if (is_unalike) {
       df_new_cat_var <- stats::aggregate(. ~ df_new_merge[c("index", col_name_cat)]$index, data = df_new_merge[c("index", col_name_cat)], uwo4419::unalike)
+      df_new_cat_var <- df_new_cat_var[-c(1)]
     } else {
       df_new_cat_var <- df_new_merge[c("index", col_name_cat)] %>%
         dplyr::group_by(.data$index) %>%
@@ -188,6 +192,7 @@ combine_boot <- function(ls_df,
     }
     if (is_unalike) {
       df_new_cat_var <- stats::aggregate(. ~ df_new_merge[c("index", names_cat)]$index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
+      df_new_cat_var <- df_new_cat_var[-c(1)]
     } else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         dplyr::group_by(.data$index) %>%

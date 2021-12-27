@@ -162,6 +162,11 @@ credit_data <- read.csv("../inst/extdata/UCI_Credit_data/crx.data", fileEncoding
 abalone_data <- read.csv("../inst/extdata/UCI_Abalone_data/abalone.data", fileEncoding = "UTF-8", dec = ",", header = FALSE)
 ```
 
+```{r create_test_abalone}
+test_abalone <- abalone_data[c(1:100),c(c(2:9), 1)]
+usethis::use_data(test_abalone, test_abalone, overwrite = TRUE)
+```
+
 ```{r preprocessing_credit}
 credit_data <- data.frame(credit_data)
 col_num <- c(2, 3, 8, 11, 14, 15)
@@ -188,7 +193,6 @@ head(credit_data)
 
 
 ```{r preprocessing_abalone}
-
 abalone_data <- data.frame(abalone_data)
 col_num <- c(2:9)
 col_dis <- c(9)
