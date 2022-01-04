@@ -68,7 +68,7 @@ complete_df_generator <- function(n) {
 We can generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of `generate_miss`.
 
 ```{r add_missingness}
-n <- 10000
+n <- 1000
 mech <- "MAR1"
 miss_prop <- 0.4
 X.complete <- complete_df_generator(n)
