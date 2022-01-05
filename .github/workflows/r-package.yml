@@ -30,7 +30,9 @@ jobs:
         run: devtools::install_deps(dependencies = TRUE)
         shell: Rscript {0}
       - name: Check documentation
-        run: Rscript inst/pipeline/document.R
+        run: |
+          Rscript -e 'install.packages("pkgdown")'
+          Rscript inst/pipeline/document.R
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
         shell: Rscript {0}
