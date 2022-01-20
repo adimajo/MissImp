@@ -20,10 +20,10 @@ Imports:
     devtools,
     foreach,
     data.table,
+    mathjaxr,
     rlang
 Suggests: 
     testthat (>= 3.0.0),
-    mathjaxr,
     misaem,
     rmarkdown,
     knitr,
