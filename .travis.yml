@@ -5,6 +5,9 @@ addons:
     update: true
 
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+env:
+  global:
+    - _R_CHECK_FORCE_SUGGESTS_=FALSE
 
 language: R
 sudo: false
