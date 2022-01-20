@@ -1,5 +1,5 @@
 before_install:
-  - sudo apt-get -y install libgsl-dev
+  - sudo apt-get -y install libgsl-dev r-cran-glmnet
 addons:
   apt:
     update: true
