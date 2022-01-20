@@ -1,5 +1,8 @@
 before_install:
   - sudo apt-get -y install libgsl-dev r-cran-glmnet build-essential
+  - Rscript -e "install.packages('devtools')"
+  - Rscript -e "devtools::install_deps(dependencies=TRUE)"
+  - Rscript -e "devtools::document()"
 addons:
   apt:
     update: true
