@@ -15,10 +15,7 @@ jobs:
       - name: Install dependencies for devtools
         run: |
           sudo apt-get update -y
-          sudo apt-get install libgit2-dev -y
-          sudo apt-get install libssh2-1-dev -y
-          sudo apt-get install libcurl4-openssl-dev -y
-          sudo apt-get install pandoc -y
+          sudo apt-get install libgit2-dev libssh2-1-dev libcurl4-openssl-dev pandoc libharfbuzz-dev libfribidi-dev -y
       - name: Install devtools
         run: install.packages("devtools")
         shell: Rscript {0}
