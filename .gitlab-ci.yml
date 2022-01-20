@@ -276,6 +276,7 @@ quality_check:
 check_mswin:
   extends: .before_script_template
   stage: checkrhub
+  <<: *common_tag
   script:
     - r -e 'devtools::install()'
     - r -e 'library(MissImp)'
@@ -284,6 +285,7 @@ check_mswin:
 
 check_macos:
   extends: .before_script_template
+  <<: *common_tag
   stage: checkrhub
   script:
     - r -e 'devtools::install()'

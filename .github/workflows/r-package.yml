@@ -36,11 +36,16 @@ jobs:
       - name: Install package
         run: devtools::install()
         shell: Rscript {0}
+      - name: Save package version
+          export APPLICATION_TAG_VERSION=`Rscript -e 'library(MissImp); paste(utils::packageVersion("MissImp"))'`
+          echo "APPLICATION_TAG_VERSION=$APPLICATION_TAG_VERSION" >> $GITHUB_ENV
       - name: Testthat
         run: devtools::test(quiet = FALSE, clean = FALSE)
         shell: Rscript {0}
       - name: Coverage
-        run: print(devtools::test_coverage())
+        run: |
+          install.packages("covr")
+          print(devtools::test_coverage())
         shell: Rscript {0}
       - name: Check on Mac OS
         env:
@@ -50,3 +55,13 @@ jobs:
         env:
           RHUB_TOKEN: ${{ secrets.RHUB_TOKEN }}
         run: Rscript inst/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.APPLICATION_TAG_VERSION }}
+          release_name: MissImp
+          draft: false
+          prerelease: false
