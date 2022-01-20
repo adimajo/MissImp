@@ -37,6 +37,7 @@ jobs:
         run: devtools::install()
         shell: Rscript {0}
       - name: Save package version
+        run: |
           export APPLICATION_TAG_VERSION=`Rscript -e 'library(MissImp); paste(utils::packageVersion("MissImp"))'`
           echo "APPLICATION_TAG_VERSION=$APPLICATION_TAG_VERSION" >> $GITHUB_ENV
       - name: Testthat
