@@ -227,9 +227,7 @@ coverage:
   extends: .before_script_template
   stage: coverage
   script:
-    - apt-get -y install libfontconfig1-dev
-    - apt-get -y install libharfbuzz-dev libfribidi-dev
-    - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
     - r -e "install.packages('renv')"
     - r -e 'renv::load()'
     - r -e 'renv::restore()'
@@ -263,7 +261,7 @@ quality_check:
     - wget -qO - http://crl-priv-pki.credit-agricole.fr/ca/cacreditagricoleserver.crt >> cacreditagricoleserver.crt
     - apk --update add java-common
     - keytool -import -alias mycert -file cacreditagricoleserver.crt -storetype jks -trustcacerts -noprompt -keypass keypass -keystore cacerts -storepass test@123
-    - sonar-scanner -Dsonar.exclusions=inst/**,tests/**,docs/**,renv/**,coverage.xml,README.md -Dsonar.coverageReportPaths=coverage.xml -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$BOOT_SONAR_KEY -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
+    - sonar-scanner -Dsonar.exclusions=src/**,inst/**,tests/**,docs/**,renv/**,coverage.xml,README.md -Dsonar.coverageReportPaths=coverage.xml -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$BOOT_SONAR_KEY -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
   only:
     refs:
       - master
@@ -276,6 +274,7 @@ quality_check:
 check_mswin:
   extends: .before_script_template
   stage: checkrhub
+  <<: *common_r
   <<: *common_tag
   script:
     - r -e 'devtools::install()'
@@ -285,6 +284,7 @@ check_mswin:
 
 check_macos:
   extends: .before_script_template
+  <<: *common_r
   <<: *common_tag
   stage: checkrhub
   script:
