@@ -18,10 +18,10 @@ Imports:
     dplyr,
     foreach,
     data.table,
+    mathjaxr,
     rlang
 Suggests: 
     MASS,
-    mathjaxr,
     testthat (>= 3.0.0),
     misaem,
     rmarkdown,

@@ -127,9 +127,9 @@ logit.bypatterns <- function(data, patterns, mechanism) {
 #'
 #' @export
 produce_NA <- function(data,
-                       mechanism = "MCAR",  # c("MCAR", "MAR", "MNAR"),
+                       mechanism = "MCAR", # c("MCAR", "MAR", "MNAR"),
                        perc.missing = 0.5,
-                       self.mask = NULL,  # c("sym","upper","lower")
+                       self.mask = NULL, # c("sym","upper","lower")
                        idx.incomplete = NULL,
                        idx.covariates = NULL,
                        weights.covariates = NULL,
@@ -138,7 +138,7 @@ produce_NA <- function(data,
                        freq.patterns = NULL,
                        weights.patterns = NULL,
                        use.all = FALSE,
-                       logit.model = "RIGHT",  # c("RIGHT","LEFT","MID","TAIL")
+                       logit.model = "RIGHT", # c("RIGHT","LEFT","MID","TAIL")
                        seed = NULL) {
   is_glmnet_package_installed()
   is_LiblineaR_package_installed()
