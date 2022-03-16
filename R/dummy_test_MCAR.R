@@ -24,15 +24,6 @@
 #' @export
 #' @references
 #' Missing value analysis & Data imputation, G. David Garson, 2015.
-#' @examples
-#' n <- 10000
-#' mu.X <- c(1, 2, 3)
-#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
-#' dummy_test_matrix(rs$X.incomp, c())
-#'
-#' # dummy_test_matrix(airquality, col_cat = c(5:6))
 dummy_test_matrix <- function(df, col_cat = c()) {
   test_result_dummy <- data.frame()
   df <- factor_encode(df, col_cat) # in case the categorical column is not a factor
@@ -135,15 +126,7 @@ dummy_test_matrix <- function(df, col_cat = c()) {
 #' @export
 #' @references
 #' Missing value analysis & Data imputation, G. David Garson, 2015
-#' @examples
-#' n <- 10000
-#' mu.X <- c(1, 2, 3)
-#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
-#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MAR1")
-#' dummy_test(rs$X.incomp, c())
-#'
-#' # dummy_test(airquality, col_cat = c(5:6))
+
 dummy_test <- function(df, col_cat = c()) {
   p_matrix <- dummy_test_matrix(df, col_cat)
   p_vector <- as.vector(p_matrix)

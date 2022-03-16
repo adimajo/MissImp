@@ -123,10 +123,10 @@ col_cat <- c(7:8)
 for (ls in list(list_df.con, list_df.con_dis, list_df.mix)) {
   for (df in ls) {
     if (i == 3) {
-      out <- mcar_test_combined(df, col_cat, p_val)
+      out <- suppressWarnings(mcar_test_combined(df, col_cat, p_val))
     }
     else {
-      out <- mcar_test_combined(df, c(), p_val)
+      out <- suppressWarnings(mcar_test_combined(df, c(), p_val))
     }
     test_p_vals[t, ] <- out$p_values[1, ]
     t <- t + 1
