@@ -22,7 +22,7 @@
 #' Honaker, J., King, G., Blackwell, M. (2011).
 #' Amelia II: A Program for Missing Data.
 #' \emph{Journal of Statistical Software}, \bold{45(7)}, 1--47.
-#' \url{http://www.jstatsoft.org/v45/i07/}.
+#' \url{https://www.jstatsoft.org/v45/i07/}.
 #'
 #' Statistical Analysis with Missing Data, by Little and Rubin, 2002
 MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
@@ -50,7 +50,6 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     }
     # Create dict_cat with categroical columns
     dict_name_cat <- dict_onehot(df_with_mv, col_cat)
-
 
     # imputation
     imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, noms = col_cat, boot.type = "none")
@@ -110,7 +109,6 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     ximp.disj <- ximp[colnames(ximp) != "index"]
     ximp <- ximp.disj
   }
-
 
   if (exist_cat) {
     for (col in name_cat) {

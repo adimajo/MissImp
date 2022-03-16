@@ -1,6 +1,6 @@
 #' Fast Imputation of Missing Values by Chained Random Forests
 #'
-#' @description \code{missRanger_mod} is a modified imputation function of \code{missRanger} in 'missRanger' package.
+#' @description \code{missRanger} is a modified imputation function of \code{missRanger} in 'missRanger' package.
 #' The only difference is that the disjunctive imputed dataset is also returned (with categorical columns in form of onehot probability vector).
 #'
 #' Uses the "ranger" package (Wright & Ziegler) to do fast missing value imputation by chained random forests, see Stekhoven & Buehlmann and Van Buuren & Groothuis-Oudshoorn.
@@ -37,9 +37,8 @@
 #' }
 #' @export
 #'
-
-missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                           verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
+missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
+                       verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
   is_ranger_package_installed()
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
@@ -208,7 +207,6 @@ missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, see
     cat("\n")
   }
 
-
   ##### Add: Get the onehot probability result for categorical columns
   if (exist_cat) {
     dummy <- dummyVars(" ~ .", data = data, sep = "_")
@@ -337,12 +335,6 @@ missRanger_mod <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, see
   return(list(ximp = ximp, ximp.disj = data.disj))
 }
 
-
-
-
-
-
-
 #' A version of \code{typeof} internally used by \code{missRanger}.
 #'
 #' @description Returns either "numeric" (double or integer), "factor", "character", "logical", "special" (mode numeric, but neither double nor integer) or "" (otherwise).
@@ -451,7 +443,6 @@ revert <- function(con, X = con$X) {
 #' @return \code{x} with imputed values.
 #' @export
 #'
-
 imputeUnivariate <- function(x, v = NULL, seed = NULL) {
   stopifnot(is.atomic(x) || is.data.frame(x))
 
@@ -481,7 +472,6 @@ imputeUnivariate <- function(x, v = NULL, seed = NULL) {
 
   x
 }
-
 
 #' Predictive Mean Matching
 #'

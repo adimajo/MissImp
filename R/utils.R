@@ -24,8 +24,6 @@ factor_encode <- function(df, idx_col_cat) {
   return(df)
 }
 
-
-
 #' factor_ordinal_encode
 #' @description Change the levels of categorical columns into integer numbers
 #' @param df Dataframe
@@ -49,7 +47,6 @@ normalize_num <- function(df, idx_col_num) {
   return(df)
 }
 
-
 #' VA_fact
 #' @description Calculate the Wilcox's VarNC for a vector of categorical values
 #' @param x A vector of categorical variable
@@ -59,7 +56,6 @@ VA_fact <- function(x) {
   freq <- table(x) / length(x)
   return(qualvar::VA(c(freq, rep(0, lev_miss))))
 }
-
 
 #' dict_onehot
 #' @description Create the dictionary for categorical columns. For example, {Y7:Y7_1,Y7_2,...}.
@@ -87,7 +83,6 @@ Mode_cat <- function(x) {
   return(ux[which.max(tabulate(match(x, ux)))])
 }
 
-
 #' dict_level
 #' @description Create the dictionary for categorical columns levels. For example, {Y7:A,B,C,...}.
 #' @param df Dataframe.
@@ -103,7 +98,6 @@ dict_level <- function(df, col_cat) {
   return(res)
 }
 
-
 #' which.max.random
 #' @description Determines the location, i.e., index of the maximum of a numeric (or logical) vector.
 #' In case of tie, the index is selected randomly.
@@ -117,7 +111,6 @@ which.max.random <- function(vec) {
   }
   return(maxima)
 }
-
 
 which_max_cat <- function(x, name, dict_cat) {
   return(dict_cat[[name]][which.max.random(x)])

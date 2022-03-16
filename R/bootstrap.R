@@ -48,7 +48,6 @@ bootsample <- function(df, num_sample) {
   return(ls_df_new)
 }
 
-
 #' combine_boot: combine imputed bootstrap datasets
 #'
 #' @description
@@ -135,7 +134,8 @@ combine_boot <- function(ls_df,
 
     # the expected number of rows is n(1-(n-1)^k/n^k) where k = n
     # expectation of unique rows for sampling with replacement
-    # We need a varaince matrix here to pass ? No, see https://stats.stackexchange.com/questions/399382/bootstrap-rubins-rules-and-uncertainty-of-sub-estimates
+    # We need a variance matrix here to pass ?
+    # No, see https://stats.stackexchange.com/questions/399382/bootstrap-rubins-rules-and-uncertainty-of-sub-estimates
 
     i <- i + 1
   }
@@ -234,8 +234,6 @@ combine_boot <- function(ls_df,
     df_result_var_disj <- df_result_var_with_idx[-c(1)]
   }
 
-
-
   # Final result for the categorical variables
   if (is_onehot) {
     names_num <- colnames(ls_df[[1]])[c(col_con, col_dis)]
@@ -245,8 +243,6 @@ combine_boot <- function(ls_df,
     df_result <- df_result_disj
     df_result_var <- df_result_var_disj
   }
-
-
 
   return(
     list(

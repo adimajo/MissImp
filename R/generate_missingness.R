@@ -33,7 +33,7 @@
 #' \itemize{
 #' \item \url{https://rmisstastic.netlify.app/how-to/generate/misssimul}
 #' \item \url{https://cran.r-project.org/package=missMethods/vignettes/Generating-missing-values.html}
-#' \item Santos, M. S., R. C. Pereira, A. F. Costa, J. P. Soares, J. Santos, and P. H. Abreu. 2019. Generating Synthetic Missing Data: A Review by Missing Mechanism. IEEE Access 7: 11651–67. \url{https://doi.org/10.1109/ACCESS.2019.2891360}.
+#' \item Santos, M. S., R. C. Pereira, A. F. Costa, J. P. Soares, J. Santos, and P. H. Abreu. 2019. Generating Synthetic Missing Data: A Review by Missing Mechanism. IEEE Access 7: 11651–67. \doi{10.1109/ACCESS.2019.2891360}.
 #' }
 #' @examples
 #' n <- 10000
@@ -177,7 +177,6 @@ generate_miss <- function(df,
   }
 }
 
-
 #' generate_miss_ls: Generate a list of incomplete dataframes with different missing mechanisms
 #'
 #' @description
@@ -197,7 +196,6 @@ generate_miss <- function(df,
 #' @return \code{mnar1} Incomplete dataframe object with MNAR1 mechanism.
 #' @return \code{mnar2} Incomplete dataframe object with MNAR2 mechanism.
 #' @export
-
 generate_miss_ls <- function(df, miss_perc) {
   return(
     list(
@@ -210,7 +208,6 @@ generate_miss_ls <- function(df, miss_perc) {
     )
   )
 }
-
 
 #' monot_quantil
 #' @description Calculate the missing proportion in MAR3, used in 'generate_miss'.

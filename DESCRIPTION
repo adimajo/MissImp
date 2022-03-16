@@ -1,9 +1,9 @@
 Package: MissImp
 Type: Package
-Title: Missing Data Imputation with MissImp
+Title: Missing Data Imputation
 Version: 0.0.1
 Author: Xuwen Liu, Adrien Ehrhardt
-Maintainer: Xuwen Liu <lxwgale@gmail.com>
+Maintainer: Adrien Ehrhardt <adrien.ehrhardt@polytechnique.edu>
 Description: Missing data generation methods, various single and multiple
     imputation methods combined with bootstrap or jackknife resampling method,
     as well as evaluation matrix of the imputation result.
@@ -14,15 +14,14 @@ Language: en
 RoxygenNote: 7.1.2
 Imports:
     stats,
-    MASS,
     mice,
     dplyr,
-    devtools,
     foreach,
     data.table,
-    mathjaxr,
     rlang
 Suggests: 
+    MASS,
+    mathjaxr,
     testthat (>= 3.0.0),
     misaem,
     rmarkdown,

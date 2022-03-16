@@ -19,14 +19,21 @@
 #' @return \code{result_little_test} The detailed result from Little's MCAR test.
 #' @return \code{result_missmech} The detailed result from the normality tests (Hawkin's test and non-parametric test).
 #' @export
-# mcar_test_combined(airquality, col_cat = c(5:6))$test_result
+#' @examples
+#' n <- 10000
+#' mu.X <- c(1, 2, 3)
+#' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
+#' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
+#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MAR1")
+#' mcar_test_combined(data.frame(rs$X.incomp))$test_result
 mcar_test_combined <- function(df, col_cat = c(), p_val = 0.1) {
   is_naniar_package_installed()
   out_dummy <- dummy_test(df, col_cat)
   out_little <- naniar::mcar_test(df)
   exist_cat <- !all(c(0, col_cat) == c(0))
   if (exist_cat) {
-    print("The normality test is written for numerical dataframes. Here the test is performed on only the numerical part of the input dataframe.\n")
+    print("The normality test is written for numerical dataframes.
+          Here the test is performed on only the numerical part of the input dataframe.\n")
     df <- subset(df, select = -col_cat)
   }
   out_missmech <- TestMCARNormality(df)
@@ -44,6 +51,7 @@ mcar_test_combined <- function(df, col_cat = c(), p_val = 0.1) {
   )
   return(list(
     test_results = test_results, p_values = p_values,
-    result_dummy_test = out_dummy, result_little_test = out_little, result_missmech = out_missmech
+    result_dummy_test = out_dummy, result_little_test = out_little,
+    result_missmech = out_missmech
   ))
 }

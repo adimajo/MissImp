@@ -15,12 +15,10 @@
 #' pred <- ifelse(logreg$fitted.values < 0.5, 0, 1)
 #' ConfusionMatrix(y_pred = pred, y_true = mtcars$vs)
 #' @export
-
 ConfusionMatrix <- function(y_pred, y_true) {
   Confusion_Mat <- table(y_true, y_pred)
   return(Confusion_Mat)
 }
-
 
 #' @title Confusion Matrix (Data Frame Format)
 #'
@@ -40,7 +38,6 @@ ConfusionMatrix <- function(y_pred, y_true) {
 #' ConfusionDF(y_pred = pred, y_true = mtcars$vs)
 #' @keywords internal
 #' @export
-
 ConfusionDF <- function(y_pred, y_true) {
   Confusion_DF <- transform(as.data.frame(ConfusionMatrix(y_pred, y_true)),
     y_true = as.character(y_true),
@@ -50,9 +47,6 @@ ConfusionDF <- function(y_pred, y_true) {
   return(Confusion_DF)
 }
 utils::globalVariables("Freq")
-
-
-
 
 #' @title Precision (micro averaged)
 #'
@@ -71,7 +65,6 @@ utils::globalVariables("Freq")
 #' pred <- sample(labels, 10, replace = TRUE)
 #' Precision_micro(y_pred = pred, y_true = truth, labels)
 #' @export
-
 Precision_micro <- function(y_true, y_pred, labels = NULL) {
   Confusion_DF <- ConfusionDF(y_pred, y_true)
 
@@ -101,7 +94,6 @@ Precision_micro <- function(y_true, y_pred, labels = NULL) {
   return(Precision_micro)
 }
 
-
 #' @title Recall (micro averaged)
 #'
 #' @description
@@ -119,7 +111,6 @@ Precision_micro <- function(y_true, y_pred, labels = NULL) {
 #' pred <- sample(labels, 10, replace = TRUE)
 #' Recall_micro(y_pred = pred, y_true = truth, labels)
 #' @export
-
 Recall_micro <- function(y_true, y_pred, labels = NULL) {
   Confusion_DF <- ConfusionDF(y_pred, y_true)
 
@@ -147,7 +138,6 @@ Recall_micro <- function(y_true, y_pred, labels = NULL) {
   return(Recall_micro)
 }
 
-
 #' @title F1 Score (micro averaged)
 #'
 #' @description
@@ -165,7 +155,6 @@ Recall_micro <- function(y_true, y_pred, labels = NULL) {
 #' pred <- sample(labels, 10, replace = TRUE)
 #' F1_Score_micro(y_pred = pred, y_true = truth, labels)
 #' @export
-
 F1_Score_micro <- function(y_true, y_pred, labels = NULL) {
   if (is.null(labels) == TRUE) {
     labels <- unique(c(y_true, y_pred))

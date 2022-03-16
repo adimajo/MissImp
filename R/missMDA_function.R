@@ -1,9 +1,9 @@
-#' estim_ncpFAMD_mod
+#' estim_ncpFAMD
 #'
 #' @description Estimate the number of dimensions for the Factorial Analysis of Mixed Data by cross-validation.
 #' This function is nearly identical with \code{estim_ncpFAMD} function in 'missMDA' package. The only difference is
-#' that in this function \code{imputeFAMD_mod} is used, which then calls \code{imputeMFA_mod}, then \code{impute_mod}.
-#'  In \code{impute_mod}, some changes have been made to avoid the convergence error.
+#' that in this function \code{imputeFAMD} is used, which then calls \code{imputeMFA}, then \code{impute_mod}.
+#' In \code{impute_mod}, some changes have been made to avoid the convergence error.
 #'
 #' @param don a data.frame with categorical variables; with missing entries or not.
 #' @param ncp.min integer corresponding to the minimum number of components to test.
@@ -16,7 +16,7 @@
 #' @param sup.var a vector indicating the indexes of the supplementary variables (quantitative and categorical).
 #' @param threshold the threshold for assessing convergence
 #' @param verbose boolean. TRUE means that a progressbar is writtent.
-#' @param maxiter max iteration number for \code{imputeFAMD_mod}
+#' @param maxiter max iteration number for \code{imputeFAMD}
 #'
 #' @export
 #' @return \code{ncp} 	the number of components retained for the FAMD.
@@ -25,9 +25,9 @@
 #' @references
 #' Audigier, V., Husson, F. & Josse, J. (2014). A principal components method to impute mixed data. Advances in Data Analysis and Classification.
 #'
-estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"),
-                              method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05, ind.sup = NULL, sup.var = NULL,
-                              threshold = 1e-04, verbose = TRUE, maxiter = 1000) {
+estim_ncpFAMD <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"),
+                          method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05, ind.sup = NULL, sup.var = NULL,
+                          threshold = 1e-04, verbose = TRUE, maxiter = 1000) {
   tab.disjonctif.NA <- function(tab) {
     # print("In tab.disjonctif.NA")
     tab <- as.data.frame(tab)
@@ -114,7 +114,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
       #####################################
       for (nbaxes in ncp.min:ncp.max) {
         # print(paste("nbaxes:", nbaxes))
-        tab.disj.comp <- imputeFAMD_mod(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter)$tab.disj
+        tab.disj.comp <- imputeFAMD(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter)$tab.disj
         if (sum(is.na(jeuNA)) != sum(is.na(jeu))) {
           ######### Changed part 2##############
           # original code:
@@ -146,7 +146,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
             jeuNA <- as.matrix(jeu)
             jeuNA[i, j] <- NA
             if (!any(summary(jeuNA[, j] == 0))) {
-              tab.disj.hat[i, (cumsum(col.in.indicator)[j] + 1):(cumsum(col.in.indicator)[j + 1])] <- imputeFAMD_mod(as.data.frame(jeuNA),
+              tab.disj.hat[i, (cumsum(col.in.indicator)[j] + 1):(cumsum(col.in.indicator)[j + 1])] <- imputeFAMD(as.data.frame(jeuNA),
                 ncp = nbaxes, method = method, threshold = threshold, maxiter = maxiter
               )$tab.disj[
                 i,
@@ -167,15 +167,15 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
   }
 }
 
-#' imputeFAMD_mod
+#' imputeFAMD
 #'
 #' @description Impute the missing values of a mixed dataset (with continuous and categorical variables) using the principal
 #' component method "factorial analysis for mixed data" (FAMD).
 #' Can be used as a preliminary step before performing FAMD on an incomplete dataset.
 #'
 #' This function is nearly identical with \code{imputeFAMD} function in 'missMDA' package. The only difference is
-#' that in this function \code{imputeMFA_mod}is used, which then calls \code{impute_mod}.
-#'  In \code{impute_mod}, some changes have been made to avoid the convergence error.
+#' that in this function \code{imputeMFA}is used, which then calls \code{impute_mod}.
+#' In \code{impute}, some changes have been made to avoid the convergence error.
 #'
 #' @param X a data.frame with continuous and categorical variables containing missing values.
 #' @param ncp integer corresponding to the number of components used to predict the missing entries.
@@ -190,7 +190,7 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
 #' @param ind.sup a vector indicating the indexes of the supplementary individuals.
 #' @param sup.var a vector indicating the indexes of the supplementary variables (quantitative and categorical).
 #' @param threshold the threshold for assessing convergence
-#' @param maxiter max iteration number for \code{imputeFAMD_mod}
+#' @param maxiter max iteration number for \code{imputeFAMD}
 #' @param ... further arguments passed to or from other methods.
 #' @export
 #' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and
@@ -205,8 +205,8 @@ estim_ncpFAMD_mod <- function(don, ncp.min = 0, ncp.max = 5, method = c("Regular
 #' @references
 #' Audigier, V., Husson, F. & Josse, J. (2013). A principal components method to impute mixed data. Advances in Data Analysis and Classification, 10(1), 5-26.
 #' \url{https://arxiv.org/abs/1301.4797#'}
-imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-6,
-                           ind.sup = NULL, sup.var = NULL, seed = NULL, maxiter = 1000, ...) {
+imputeFAMD <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-6,
+                       ind.sup = NULL, sup.var = NULL, seed = NULL, maxiter = 1000, ...) {
   is_FactoMineR_package_installed()
   X <- as.data.frame(X)
   ## Add:
@@ -230,7 +230,6 @@ imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = 
     # Create dict_cat with categroical columns
     dict_cat <- dict_onehot(X, col_cat)
   }
-
 
   method <- match.arg(method, c("Regularized", "regularized", "EM", "em"), several.ok = T)[1]
   method <- tolower(method)
@@ -276,7 +275,7 @@ imputeFAMD_mod <- function(X, ncp = 2, method = c("Regularized", "EM"), row.w = 
 #' @param ind.sup a vector indicating the indexes of the supplementary individuals.
 #' @param num.group.sup a vector indicating the group of variables that are supplementary.
 #' @param threshold the threshold for assessing convergence
-#' @param maxiter max iteration number for \code{imputeFAMD_mod}
+#' @param maxiter max iteration number for \code{imputeFAMD}
 #' @param ... further arguments passed to or from other methods.
 #' @export
 #' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and
@@ -333,7 +332,7 @@ imputeMFA_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
 #' @param ind.sup a vector indicating the indexes of the supplementary individuals.
 #' @param num.group.sup a vector indicating the group of variables that are supplementary.
 #' @param threshold the threshold for assessing convergence
-#' @param maxiter max iteration number for \code{imputeFAMD_mod}
+#' @param maxiter max iteration number for \code{imputeFAMD}
 #' @param ... further arguments passed to or from other methods.
 #' @export
 #' @return \code{tab.disj} 	the imputed matrix; the observed values are kept for the non-missing entries and
@@ -494,7 +493,6 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
     }
 
     # ind.var, group.mod
-
     for (g in 1:length(group)) {
       if (g == 1) {
         aux.base <- X[, 1:group[1], drop = FALSE]
@@ -521,7 +519,6 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
     result$call$ind.var <- ind.var
     return(result)
   }
-
 
   for (g in 1:length(group)) {
     if (g == 1) {
@@ -622,7 +619,6 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
       }
       if (type[g] == "n") {
 
-
         ####### New: equivalent code of the calculation############
         # Original code:
         # tab.disj0 = t(t(aux.base)/sqrt(MM[[g]])) + matrix(1, nrow(aux.base), ncol(aux.base))
@@ -638,11 +634,9 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
         # print(head(tab.disj-tab.disj0))
         #######################################################
 
-
         ####### correct some computational error e-17######
         tab.disj[idx_obs[[g]], ] <- tab.disj.comp[[g]][idx_obs[[g]], ]
         ##################################################
-
 
         tab.disj.comp[[g]] <- tab.disj
         MM[[g]] <- apply(tab.disj, 2, moy.p, row.w) / ncol(aux.base)
@@ -658,9 +652,7 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
         }
         ##################################################
 
-
-
-        ####### Change: equivalent code of the calculation############
+        ####### Change: equivalent code of the calculation #######
         # Original code:
         # Z = t(t(tab.disj)/apply(tab.disj, 2, moy.p, row.w))
         # Z = t(t(Z) - apply(Z, 2, moy.p, row.w))
@@ -737,8 +729,6 @@ impute_mod <- function(X, group, ncp = 2, type = rep("s", length(group)),
       warning(paste("Stopped after ", maxiter, " iterations\n"))
     }
   }
-
-
 
   # Xhat[missing] <- fittedX[missing]  ## A ajouter ?
   for (g in 1:length(group)) {

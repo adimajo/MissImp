@@ -1,4 +1,3 @@
-
 #' Imputation of Missing Values with variance calculation
 #'
 #' @description \code{MissImp} is a function that could impute the mixed-type missing values with a chosen imputation method
@@ -78,15 +77,11 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   col_con <- c(1:num_col)
   col_con <- col_con[!col_con %in% c(col_cat, col_dis)]
 
-
-
-
   ## 0. Preparation
   if (exist_cat) {
     dict_lev <- dict_level(df, col_cat)
     dict_name_cat <- dict_onehot(df, col_cat)
   }
-
 
   ## 1. Create several datasets. (Resampling)
   if (resample_method == "bootstrap") {
@@ -96,7 +91,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   } else { # if resample_method=='none', there will be no resampling
     ls_df <- list(df)
   }
-
 
   ## 2. Single Imputation
   ## Input: ls_df list of dataframes after resampling
@@ -108,26 +102,26 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     dummy <- dummyVars(" ~ .", data = dfi, sep = "_")
     tmp.disj <- data.frame(predict(dummy, newdata = dfi))
     if (imp_method == "missRanger") {
-      res <- missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree)
+      res <- missRanger(dfi, col_cat = col_cat, maxiter = maxiter_tree)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
     } else if (imp_method == "missForest") {
-      res <- missForest_mod(xmis = dfi, maxiter = maxiter_tree, col_cat = col_cat)
+      res <- missForest(xmis = dfi, maxiter = maxiter_tree, col_cat = col_cat)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
     } else if (imp_method == "kNN") {
-      res <- suppressWarnings((kNN_mod(dfi, col_cat = col_cat, weightDist = TRUE)))
+      res <- suppressWarnings((kNN(dfi, col_cat = col_cat, weightDist = TRUE)))
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
     } else if (imp_method == "EM") {
-      res <- em_mod(dfi, col_cat = col_cat) # Error: matrix not sinugular, the categorical variable with too many categories may ends in a sparse matrix
+      res <- em(dfi, col_cat = col_cat) # Error: matrix not sinugular, the categorical variable with too many categories may ends in a sparse matrix
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
     } else if (imp_method == "PCA") {
       if (learn_ncp) {
-        ncp_pca <- estim_ncpFAMD_mod(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
+        ncp_pca <- estim_ncpFAMD(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
       }
-      res <- imputeFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca)
+      res <- imputeFAMD(dfi, ncp = ncp_pca, maxiter = maxiter_pca)
       imp.onehot_i <- res$tab.disj
       imp.fact_i <- res$completeObs
     } else if (imp_method == "MI_EM") {
@@ -135,7 +129,7 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
     } else if (imp_method == "MI_PCA") {
-      res <- MIFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca, nboot = num_mi)
+      res <- MIFAMD(dfi, ncp = ncp_pca, maxiter = maxiter_pca, nboot = num_mi)
       imp.onehot_i <- res$ximp.disj
       imp.fact_i <- res$ximp
     } else if (imp_method == "MICE") {
@@ -231,7 +225,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
     res[["df_result_var"]] <- NA
   }
 
-
   # Change back the categorical variable levels
   if (exist_cat) {
     name_cat <- names(dict_lev)
@@ -241,9 +234,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
       })
     }
   }
-
-
-
 
   ## 4. Evaluation matrix
   if (!is.null(df_complete)) { # original complete dataset is provided
@@ -277,8 +267,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
   return(res)
 }
 
-
-
 # Version jackknife estimate using estimation on the full incomplete dataset
 # MissImp_bis <- function(df, imp_method = "missRanger", resample_method = "bootstrap",
 #                     n_resample = 2 * round(log(nrow(df))), col_cat = c(), col_dis = c(),
@@ -301,15 +289,11 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
 #   col_con <- c(1:num_col)
 #   col_con <- col_con[!col_con %in% c(col_cat, col_dis)]
 #
-#
-#
-#
 #   ## 0. Preparation
 #   if (exist_cat) {
 #     dict_lev <- dict_level(df, col_cat)
 #     dict_name_cat <- dict_onehot(df, col_cat)
 #   }
-#
 #
 #   ## 1. Create several datasets. (Resampling)
 #   if (resample_method == "bootstrap") {
@@ -319,7 +303,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
 #   } else { # if resample_method=='none', there will be no resampling
 #     ls_df <- list(df)
 #   }
-#
 #
 #   ## 2. Single Imputation
 #   ## Input: ls_df list of dataframes after resampling
@@ -334,26 +317,26 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
 #     dummy <- dummyVars(" ~ .", data = dfi, sep = "_")
 #     tmp.disj <- data.frame(predict(dummy, newdata = dfi))
 #     if (imp_method == "missRanger") {
-#       res <- missRanger_mod(dfi, col_cat = col_cat, maxiter = maxiter_tree)
+#       res <- missRanger(dfi, col_cat = col_cat, maxiter = maxiter_tree)
 #       imp.onehot_i <- res$ximp.disj
 #       imp.fact_i <- res$ximp
 #     } else if (imp_method == "missForest") {
-#       res <- missForest_mod(xmis = dfi, maxiter = maxiter_tree, col_cat = col_cat)
+#       res <- missForest(xmis = dfi, maxiter = maxiter_tree, col_cat = col_cat)
 #       imp.onehot_i <- res$ximp.disj
 #       imp.fact_i <- res$ximp
 #     } else if (imp_method == "kNN") {
-#       res <- suppressWarnings((kNN_mod(dfi, col_cat = col_cat, weightDist = TRUE)))
+#       res <- suppressWarnings((kNN(dfi, col_cat = col_cat, weightDist = TRUE)))
 #       imp.onehot_i <- res$ximp.disj
 #       imp.fact_i <- res$ximp
 #     } else if (imp_method == "EM") {
-#       res <- em_mod(dfi, col_cat = col_cat) # Error: matrix not sinugular, the categorical variable with too many categories may ends in a sparse matrix
+#       res <- em(dfi, col_cat = col_cat) # Error: matrix not sinugular, the categorical variable with too many categories may ends in a sparse matrix
 #       imp.onehot_i <- res$ximp.disj
 #       imp.fact_i <- res$ximp
 #     } else if (imp_method == "PCA") {
 #       if (learn_ncp) {
-#         ncp_pca <- estim_ncpFAMD_mod(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
+#         ncp_pca <- estim_ncpFAMD(dfi, method.cv = "Kfold", verbose = F, maxiter = maxiter_pca)$ncp
 #       }
-#       res <- imputeFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca)
+#       res <- imputeFAMD(dfi, ncp = ncp_pca, maxiter = maxiter_pca)
 #       imp.onehot_i <- res$tab.disj
 #       imp.fact_i <- res$completeObs
 #     } else if (imp_method == "MI_EM") {
@@ -361,7 +344,7 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
 #       imp.onehot_i <- res$ximp.disj
 #       imp.fact_i <- res$ximp
 #     } else if (imp_method == "MI_PCA") {
-#       res <- MIFAMD_mod(dfi, ncp = ncp_pca, maxiter = maxiter_pca, nboot = num_mi)
+#       res <- MIFAMD(dfi, ncp = ncp_pca, maxiter = maxiter_pca, nboot = num_mi)
 #       imp.onehot_i <- res$ximp.disj
 #       imp.fact_i <- res$ximp
 #     } else if (imp_method == "MICE") {
@@ -469,9 +452,6 @@ MissImp <- function(df, imp_method = "missRanger", resample_method = "bootstrap"
 #       })
 #     }
 #   }
-#
-#
-#
 #
 #   ## 4. Evaluation matrix
 #   if (!is.null(df_complete)) { # original complete dataset is provided

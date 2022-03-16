@@ -104,10 +104,6 @@ dummy_test_matrix <- function(df, col_cat = c()) {
   return(test_result_dummy)
 }
 
-
-
-
-
 #' dummy_test: dummy t-chi-test for MCAR
 #'
 #' @description
@@ -144,7 +140,7 @@ dummy_test_matrix <- function(df, col_cat = c()) {
 #' mu.X <- c(1, 2, 3)
 #' Sigma.X <- matrix(c(9, 3, 2, 3, 4, 0, 2, 0, 1), nrow = 3)
 #' X.complete.cont <- MASS::mvrnorm(n, mu.X, Sigma.X)
-#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MNAR2")
+#' rs <- generate_miss(X.complete.cont, 0.5, mechanism = "MAR1")
 #' dummy_test(rs$X.incomp, c())
 #'
 #' # dummy_test(airquality, col_cat = c(5:6))

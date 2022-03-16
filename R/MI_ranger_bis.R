@@ -183,7 +183,6 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
     cat("\n")
   }
 
-
   ##### Add: Get the onehot probability result for categorical columns
   if (exist_cat) {
     dummy <- dummyVars(" ~ .", data = data, sep = "_")
@@ -285,7 +284,6 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
         }
         predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
 
-
         if (is.nan(predError[[v]])) {
           predError[[v]] <- 0
         }
@@ -329,7 +327,6 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
 
   return(list(ls_ximp = ls_ximp, ls_ximp.disj = ls_ximp.disj))
 }
-
 
 #' MI_missRanger
 #'

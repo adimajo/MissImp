@@ -48,7 +48,6 @@ logit.bypatterns <- function(data, patterns, mechanism) {
   # we have to replace the missing data to prevent these cases to be deleted
   meandata <- as.data.frame(imputeMean(data))
 
-
   for (i in seq_len(nrow(patterns))) {
     newcol <- rep(0, times = nrow(data))
 
@@ -62,7 +61,6 @@ logit.bypatterns <- function(data, patterns, mechanism) {
     variablesmissing <- which(patterns[i, ] == 0)
 
     subdata <- cbind(meandata[, -variablesmissing], "newcol" = newcol)
-
 
     if (length(unique(newcol)) == 1) {
       logit.weights[i, -variablesmissing] <- 1 / ncol(logit.weights)
@@ -97,7 +95,6 @@ logit.bypatterns <- function(data, patterns, mechanism) {
       }
     }
 
-
     if (mechanism == "MNAR") {
       logit.weights[i, variablesmissing] <- mean(logit.weights[i, -variablesmissing])
     }
@@ -130,9 +127,9 @@ logit.bypatterns <- function(data, patterns, mechanism) {
 #'
 #' @export
 produce_NA <- function(data,
-                       mechanism = "MCAR", # c("MCAR", "MAR", "MNAR"),
+                       mechanism = "MCAR",  # c("MCAR", "MAR", "MNAR"),
                        perc.missing = 0.5,
-                       self.mask = NULL, # c("sym","upper","lower")
+                       self.mask = NULL,  # c("sym","upper","lower")
                        idx.incomplete = NULL,
                        idx.covariates = NULL,
                        weights.covariates = NULL,
@@ -141,7 +138,7 @@ produce_NA <- function(data,
                        freq.patterns = NULL,
                        weights.patterns = NULL,
                        use.all = FALSE,
-                       logit.model = "RIGHT", # c("RIGHT","LEFT","MID","TAIL")
+                       logit.model = "RIGHT",  # c("RIGHT","LEFT","MID","TAIL")
                        seed = NULL) {
   is_glmnet_package_installed()
   is_LiblineaR_package_installed()
@@ -179,8 +176,6 @@ produce_NA <- function(data,
     }
     data[, vars_factor] <- sapply(data[, vars_factor], as.integer)
     data <- as.data.frame(data)
-
-
     # end temporary fix
 
     # check if there are non-numeric variables
@@ -211,7 +206,6 @@ produce_NA <- function(data,
           if (sum(sapply(data, FUN = is.factor)) != 0) {
             data <- data.frame(mltools::one_hot(data.table::as.data.table(data)))
           }
-
 
           # Code taken from miss.compare package, accessed: May 10
           MD_patterns <- mice::md.pattern(data, plot = F)
@@ -312,7 +306,6 @@ produce_NA <- function(data,
             MD_patterns <- MD_patterns[, data_names]
             MD_patterns <- MD_patterns[-c(1, nrow(MD_patterns)), ]
 
-
             ## copied from stackoverflow (https://stackoverflow.com/questions/41779719/find-rows-of-matrix-which-contain-rows-of-another-matrix)
             ind <- match(MD_patterns, patterns)
             rows <- ind %% nrow(patterns)
@@ -398,8 +391,6 @@ produce_NA <- function(data,
         data.incomp[is.na(data)] <- NA # re-storing original missing data
       }
 
-
-
       return(list(
         "data.init" = data,
         "data.incomp" = data.incomp,
@@ -417,7 +408,6 @@ produce_NA <- function(data,
           stop("Weights matrix should be a matrix", call. = FALSE)
         }
         # end of code adapted from mice package, accessed: May 10
-
 
         if (!is.null(idx.covariates) & any(idx.covariates != (weights.covariates > 0))) {
           stop("Weights.covariates and idx.covariates must agree", call. = FALSE)
@@ -502,7 +492,6 @@ produce_MCAR <- function(data, perc.missing, idx.incomplete) {
 
   data.incomp <- data
   data.incomp[idx_newNA] <- NA
-
 
   return(list(
     "data.init" = data,
@@ -592,7 +581,6 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
         idx.incomplete <- matrix(rep(1, times = length(data[1, ])), nrow = 1) # all variables can be missing
       }
 
-
       # all the variables can be covariates
       if (length(idx.covariates[, 1]) != length(which(idx.incomplete == 1))) {
         if (length(idx.covariates[, 1]) == 1 & length(idx.covariates[1, ]) == length(data[1, ])) {
@@ -611,7 +599,6 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
       for (i in seq_len(nrow(idx.covariates))) {
         weights.covariates[i, idx.covariates[i, ] == 1] <- rep(1 / (sum(idx.covariates[i, ] == 1)), times = sum(idx.covariates[i, ] == 1))
       }
-
 
       # this matrix will be used to run mice
       missingness.matrix <- matrix(rep(1, times = length(which(idx.incomplete == 1)) * length(data[1, ])), nrow = length(which(idx.incomplete == 1)))
@@ -666,7 +653,6 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
           }
         }
       }
-
 
       # this matrix will be used to run mice
       missingness.matrix <- matrix(rep(1, times = length(which(idx.incomplete == 1)) * ncol(data)), nrow = length(which(idx.incomplete == 1)))
@@ -780,10 +766,8 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
     }
   }
 
-
   data.incomp <- data
   idx_newNA <- matrix(rep(FALSE, prod(dim(data))), nrow = nrow(data), ncol = ncol(data))
-
 
   not.missing <- as.matrix(not.missing)
   for (i in seq_len(length(which(idx.incomplete == 1)))) {
@@ -804,8 +788,6 @@ produce_MAR_MNAR <- function(data, mechanism, perc.missing, self.mask, idx.incom
     }
   }
   data.incomp[is.na(data)] <- NA # re-storing original missing data
-
-
 
   return(list(
     "data.init" = data,

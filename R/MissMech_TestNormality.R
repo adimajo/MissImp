@@ -1,4 +1,3 @@
-
 #' TestMCARNormality: Testing Homoscedasticity, Multivariate Normality, and Missing Completely at Random
 #'
 #' @description
@@ -66,7 +65,6 @@
 #' Jamshidian, M. and Jalal, S. (2010). ``Tests of homoscedasticity, normality, and missing at random for incomplete multivariate data,'' Psychometrika, 75, 649-674.
 #'
 #' Jamshidian, M. Jalal, S., and Jansen, C. (2014). `` MissMech: An R Package for Testing Homoscedasticity, Multivariate Normality, and Missing Completely at Random (MCAR),'' Journal of Statistical Software, 56(6), 1-31.
-
 TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, method = "Auto",
                               imputation.method = "Dist.Free", nrep = 10000, n.min = 30,
                               seed = 110, alpha = 0.05, imputed.data = NA) {
@@ -80,16 +78,13 @@ TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, me
     cat("Warning: No multiple imputation allowed when imputed data is provided.\n")
   }
   if (!is.matrix(data)) {
-    cat("Warning: Data is not a matrix or data frame.\n")
-    stop("")
+    stop("Warning: Data is not a matrix or data frame.\n")
   }
   if (length(data) == 0) {
-    cat("Warning: Data is empty.\n")
-    stop("")
+    stop("Warning: Data is empty.\n")
   }
   if (ncol(data) < 2) {
-    cat("Warning: More than 1 variable is required.\n")
-    stop("")
+    stop("Warning: More than 1 variable is required.\n")
   }
   allempty <- which(apply(!is.na(data), 1, sum) == 0)
   if (length(allempty) != 0) {
@@ -99,17 +94,14 @@ TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, me
   }
   newdata <- OrderMissing(data, del.lesscases)
   if (length(newdata$data) == 0) {
-    cat("Warning: There are no data sets after deleting insufficient cases.\n")
-    stop("")
+    stop("Warning: There are no data sets after deleting insufficient cases.\n")
   }
 
   if (newdata$g == 1) {
-    cat("Warning: More than one missing data pattern should be present.\n")
-    stop("")
+    stop("Warning: More than one missing data pattern should be present.\n")
   }
   if (sum(newdata$patcnt == 1) > 0) {
-    cat("Warning: At least 2 cases needed in each missing data patterns.\n")
-    stop("")
+    stop("Warning: At least 2 cases needed in each missing data patterns.\n")
   }
 
   y <- newdata$data
@@ -191,8 +183,7 @@ TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, me
       #--------------Anderson darling test for equality of distribution
       if (method == "Auto" || method == "Nonparametric") {
         if (length(ni) < 2) {
-          cat("Warning: Not enough groups for AndersonDarling test.")
-          stop("")
+          stop("Warning: Not enough groups for AndersonDarling test.")
         }
         templist <- AndersonDarling(fij, ni)
         p.ad <- templist$pn
@@ -400,7 +391,6 @@ TestUNey <- function(x, nrep = 10000, sim = NA, n.min = 30) {
   # P-values are computed based on a
   # resampling method from unif(0,1).
   # All values of $x$ are between 0 and 1
-
   n <- length(x)
   pi <- LegNorm(x)
   n4 <- (apply(pi$p1, 2, sum)^2 + apply(pi$p2, 2, sum)^2 +
@@ -606,8 +596,7 @@ summary.orderpattern <- function(object, ...) {
 DelLessData <- function(data, ncases = 0) {
   # This function deletes cases of a missing pattern with less than or equal to ncases
   if (length(data) == 0) {
-    cat("Warning: data is empty")
-    return
+    stop("Warning: data is empty")
   }
   if (is.matrix(data)) {
     data <- OrderMissing(data)
@@ -652,8 +641,7 @@ Mls <- function(data, mu = NA, sig = NA, tol = 1e-6, Hessian = FALSE) {
   # mu is estimate of the mean
   # sig is estimate of the covariance
   if (!is.matrix(data) && class(data) != "orderpattern") {
-    cat("Warning: data must have the classes of matrix or orderpattern.\n")
-    stop("")
+    stop("Warning: data must have the classes of matrix or orderpattern.\n")
   }
   if (is.matrix(data)) {
     allempty <- which(apply(!is.na(data), 1, sum) == 0)
@@ -675,12 +663,10 @@ Mls <- function(data, mu = NA, sig = NA, tol = 1e-6, Hessian = FALSE) {
     }
   }
   if (length(data$data) == 0) {
-    cat("Warning: Data is empty")
-    stop("")
+    stop("Warning: Data is empty")
   }
   if (ncol(data$data) < 2) {
-    cat("Warning: More than 1 variable is required.\n")
-    stop("")
+    stop("Warning: More than 1 variable is required.\n")
   }
   y <- data$data
   patused <- data$patused
@@ -764,8 +750,7 @@ Sexpect <- function(y, mu, sig, patused, spatcnt) {
 
 Impute <- function(data, mu = NA, sig = NA, imputation.method = "Normal", resid = NA) { # Check if data is not ordered change it to ordered form
   if (!is.matrix(data) && class(data) != "orderpattern") {
-    cat("Warning: data must have the classes of matrix or orderpattern.\n")
-    stop("")
+    stop("Warning: data must have the classes of matrix or orderpattern.\n")
   }
   if (is.matrix(data)) {
     allempty <- which(apply(!is.na(data), 1, sum) == 0)
@@ -787,12 +772,10 @@ Impute <- function(data, mu = NA, sig = NA, imputation.method = "Normal", resid 
     }
   }
   if (length(data$data) == 0) {
-    cat("Warning: data is empty")
-    return
+    stop("Warning: data is empty")
   }
   if (ncol(data$data) < 2) {
-    cat("More than 1 variable is required.\n")
-    stop("")
+    stop("More than 1 variable is required.\n")
   }
   y <- data$data
   patused <- data$patused
@@ -825,8 +808,7 @@ Impute <- function(data, mu = NA, sig = NA, imputation.method = "Normal", resid 
             (compy - matrix(ybar, ncomp, p, byrow = TRUE))
         }
       } else {
-        cat("Warning: There is not sufficient number of complete cases.\n  Dist.free imputation requires a least 10 complete cases\n  or 2*number of variables, whichever is bigger.\n")
-        return
+        stop("Warning: There is not sufficient number of complete cases.\n  Dist.free imputation requires a least 10 complete cases\n  or 2*number of variables, whichever is bigger.\n")
       }
     }
     if (!is.na(mu[1])) {
@@ -939,7 +921,6 @@ MimputeS <- function(data, patused, y1, s1, e) {
   data
 }
 
-
 Hawkins <- function(data, spatcnt) {
   # This function performs the Hawkin's method for testing equality of
   # covariances among groups. It is assumed that the data in y is ordered so
@@ -985,7 +966,6 @@ Hawkins <- function(data, spatcnt) {
   list(fij = f, a = a, ni = ni)
 }
 
-
 LegNorm <- function(x) {
   # This function evaluates Legendre polynomials on [0,1] (note not [-1,1] at
   # a value x, and the polynomial are such that they have norm 1. It only
@@ -1009,8 +989,6 @@ LegNorm <- function(x) {
   p4 <- 3 * p4
   list(p1 = p1, p2 = p2, p3 = p3, p4 = p4)
 }
-
-
 
 Ddf <- function(data, mu, sig) {
   y <- data

@@ -9,7 +9,6 @@ prepare_df_for_em <- function(df, col_cat) {
   return(df[, c(col_cat, col_rest)])
 }
 
-
 #' prob_vector_cat
 #' @description Extract the probability vector from a tensor of probability. For example,
 #' if there are only 2 categorical variables \code{(Y1, Y2)} with \code{nlevels(Y1)=2, nlevels(Y2)=3},
@@ -34,7 +33,8 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
       obs[[name]] <- cat
     }
   }
-  if (any(is.na(obs))) { # if there are NA(s)
+  if (any(is.na(obs))) {
+    # if there are NA(s)
     obs2 <- as.list(obs)
     obs2[is.na(obs)] <- TRUE
     prob_matrix <- do.call(`[`, c(list(tensor), obs2))
@@ -53,9 +53,9 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
   return(unlist(obs.disj))
 }
 
-#' em_mod: modified EM Imputation with probability vector
+#' em: modified EM Imputation with probability vector
 #'
-#' @description \code{em_mod} is a em imputation function that returns categorical columns results both in factor and in onehot probability vector form.
+#' @description \code{em} is a em imputation function that returns categorical columns results both in factor and in onehot probability vector form.
 #' Please find the detailed documentation of \code{em.mix} and \code{imp.mix} in the 'mix' package. Only the modifications are explained on this page.
 #' After the estimation of parameter \code{pi} in \code{em.mix}, we change it into a tensor (multidimensional array) and
 #' extract the probability vector from this tensor with the help of function \code{prob_vector_cat}.
@@ -65,7 +65,7 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
 #' @return \code{ximp} imputed data matrix.
 #' @return \code{ximp.disj} imputed data matrix of same type as 'ximp' for the numeric columns.
 #'  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
-em_mod <- function(df, col_cat) {
+em <- function(df, col_cat) {
   is_norm_package_installed()
   is_mix_package_installed()
   exist_cat <- !all(c(0, col_cat) == c(0))

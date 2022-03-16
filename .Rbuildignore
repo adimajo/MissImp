@@ -1,4 +1,5 @@
 ^renv$
+^.idea
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$

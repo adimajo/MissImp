@@ -7,12 +7,12 @@
 ##
 ## Acknowledgement: Steve Weston for input regarding parallel execution (2012)
 ##############################################################################
-#' missForest_mod: modified missForest with onehot probability
+#' missForest: modified missForest with onehot probability
 #'
-#' @description \code{missForest_mod} is a modified version of the function \code{missForest} by Daniel Stekhoven.
+#' @description \code{missForest} is a modified version of the function \code{missForest} by Daniel Stekhoven.
 #' Please find the detailed documentation of \code{missForest} in the missForest package. Only the modifications are explained on this page.
 #' The original \code{missForest} function returns the final imputation result after convergence or \code{maxiter} iterations.
-#' The results of categorical columns are returned in form of vector. In \code{missForest_mod} function, during the last iteration,
+#' The results of categorical columns are returned in form of vector. In \code{missForest} function, during the last iteration,
 #' not only the final result, but also the onehot probability for each category is returned.
 #' @param xmis data matrix with missing values.
 #' @param maxiter stop after how many iterations (default = 10).
@@ -45,13 +45,13 @@
 #' @return \code{error} true imputation error. This is only available if 'xtrue' was supplied.
 #' The error measures are the same as for 'OOBerror'.
 #'
-missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
-                           decreasing = FALSE, verbose = FALSE,
-                           mtry = floor(sqrt(ncol(xmis))), replace = TRUE,
-                           classwt = NULL, cutoff = NULL, strata = NULL,
-                           sampsize = NULL, nodesize = NULL, maxnodes = NULL,
-                           xtrue = NA, parallelize = c("no", "variables", "forests"),
-                           col_cat = c()) { ## ----------------------------------------------------------------------
+missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
+                       decreasing = FALSE, verbose = FALSE,
+                       mtry = floor(sqrt(ncol(xmis))), replace = TRUE,
+                       classwt = NULL, cutoff = NULL, strata = NULL,
+                       sampsize = NULL, nodesize = NULL, maxnodes = NULL,
+                       xtrue = NA, parallelize = c("no", "variables", "forests"),
+                       col_cat = c()) { ## ----------------------------------------------------------------------
   ## Arguments:
   ## xmis         = data matrix with missing values
   ## maxiter      = stop after how many iterations (default = 10)
@@ -507,7 +507,6 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
     }
   } # end while((convNew<convOld)&(iter<maxiter)){
 
-
   # Add: Calculate the one-hot probability from randomforest
   if (iter == maxiter) {
     ximp <- Ximp[[iter]]
@@ -791,8 +790,6 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
     cat("    time:", delta.start[3], "seconds\n\n")
   }
 
-
-
   ## Add: return the original levels
   if (exist_cat) {
     for (col in name_cat) {
@@ -826,7 +823,6 @@ missForest_mod <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE
   class(out) <- "missForest"
   return(out)
 }
-
 
 predict.randomForest <-
   function(object, newdata, type = "response", norm.votes = TRUE,

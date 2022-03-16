@@ -67,15 +67,12 @@ check_data <- function(data) {
   }
 }
 
-
-
-
-#' kNN_mod
+#' kNN
 #' @description
 #' k-Nearest Neighbour Imputation based on a variation of the Gower Distance
 #' for numerical, categorical, ordered and semi-continous variables.
 #' The original function is kNN in package VIM by Alexander Kowarik and Statistik Austria
-#' Here only the difference will be explained. In \code{kNN_mod}, not only the imputed result will be returned, but also
+#' Here only the difference will be explained. In \code{kNN}, not only the imputed result will be returned, but also
 #'  the disjunctive imputed result. For each observation of one categorical column, the value of the Nearest Neighbors will be recorded,
 #'  and with this values, the probability vector for each category is constructed.
 #'
@@ -123,11 +120,11 @@ check_data <- function(data) {
 #' Statistical Software*, 74(7), 1-16.
 #' @export
 #' @importFrom data.table `:=` .SD
-kNN_mod <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_var = colnames(data), weights = NULL,
-                    numFun = stats::median, catFun = VIM::maxCat,
-                    makeNA = NULL, NAcond = NULL, impNA = TRUE, donorcond = NULL, mixed = vector(), mixed.constant = NULL, trace = FALSE,
-                    imp_var = TRUE, imp_suffix = "imp", addRF = FALSE, onlyRF = FALSE, addRandom = FALSE, useImputedDist = TRUE, weightDist = FALSE,
-                    col_cat = c()) {
+kNN <- function(data, variable = colnames(data), metric = NULL, k = 5, dist_var = colnames(data), weights = NULL,
+                numFun = stats::median, catFun = VIM::maxCat,
+                makeNA = NULL, NAcond = NULL, impNA = TRUE, donorcond = NULL, mixed = vector(), mixed.constant = NULL, trace = FALSE,
+                imp_var = TRUE, imp_suffix = "imp", addRF = FALSE, onlyRF = FALSE, addRandom = FALSE, useImputedDist = TRUE, weightDist = FALSE,
+                col_cat = c()) {
   check_data(data)
   is_ranger_package_installed()
   is_VIM_package_installed()

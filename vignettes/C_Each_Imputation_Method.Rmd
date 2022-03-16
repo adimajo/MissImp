@@ -84,7 +84,7 @@ df <- rs$X.incomp
 df_with_mv <- df
 col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.em <- em_mod(df_with_mv, col_cat = col_cat)
+imp.em <- em(df_with_mv, col_cat = col_cat)
 head(imp.em$ximp)
 head(imp.em$ximp.disj)
 ```
@@ -95,7 +95,7 @@ head(imp.em$ximp.disj)
 df_with_mv <- df
 col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.forest <- missForest_mod(xmis = df, maxiter = 3, ntree = 100, col_cat = col_cat)
+imp.forest <- missForest(xmis = df, maxiter = 3, ntree = 100, col_cat = col_cat)
 head(imp.forest$ximp)
 head(imp.forest$ximp.disj)
 ```
@@ -106,7 +106,7 @@ head(imp.forest$ximp.disj)
 df_with_mv <- df
 col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.ranger <- missRanger_mod(df_with_mv, col_cat = c(7:8), maxiter = 3)
+imp.ranger <- missRanger(df_with_mv, col_cat = c(7:8), maxiter = 3)
 
 head(imp.ranger$ximp)
 head(imp.ranger$ximp.disj)
@@ -118,7 +118,7 @@ head(imp.ranger$ximp.disj)
 df_with_mv <- df
 col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.pca <- imputeFAMD_mod(df_with_mv, ncp = 3, maxiter = 30)
+imp.pca <- imputeFAMD(df_with_mv, ncp = 3, maxiter = 30)
 head(imp.pca$completeObs)
 head(imp.pca$tab.disj)
 ```
@@ -129,7 +129,7 @@ head(imp.pca$tab.disj)
 df_with_mv <- df
 col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.knn <- kNN_mod(df_with_mv, col_cat = c(7:8))
+imp.knn <- kNN(df_with_mv, col_cat = c(7:8))
 head(imp.knn$ximp)
 head(imp.knn$ximp.disj)
 ```
@@ -166,7 +166,7 @@ head(imp.mice$ximp.disj)
 df_with_mv <- df
 col_cat <- c(7, 8)
 df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
-imp.pca.mi <- MIFAMD_mod(df_with_mv, ncp = 3, maxiter = 50, nboot = 3)
+imp.pca.mi <- MIFAMD(df_with_mv, ncp = 3, maxiter = 50, nboot = 3)
 head(imp.pca.mi$ximp)
 head(imp.pca.mi$ximp.disj)
 ```

@@ -56,10 +56,6 @@ jacksample <- function(df, num_sample) {
   return(ls_df_new)
 }
 
-
-
-
-
 #' combine_jack: combine imputed jackknife datasets
 #'
 #' @description
@@ -82,7 +78,6 @@ jacksample <- function(df, num_sample) {
 #' @export
 #' @importFrom dplyr %>%
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
-
 combine_jack <- function(ls_df,
                          col_con,
                          col_dis = c(),
@@ -138,8 +133,6 @@ combine_jack <- function(ls_df,
     }
   }
 
-
-
   # By Jackknife combining rules for disjunctive part
   df_new <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], mean) # Here for each indice, there are n_sample-1 values
   if (exist_dis) {
@@ -148,7 +141,6 @@ combine_jack <- function(ls_df,
   df_new_var_disj <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], var)
   # df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (n_sample -
   #   1)
-
 
   # Final result according to the mean of onehot probability
   if (exist_cat) {
@@ -168,7 +160,6 @@ combine_jack <- function(ls_df,
 
     df_new_var <- merge(df_new_var_disj, df_new_cat_var, by = "index")
     df_result_var <- df_new_var[-c(1, col_cat + 1)] # remove the index and the onehot columns
-
 
     # remove index column and the combined categorical columns
     df_result_disj <- df_new[, !(names(df_new) %in% c(names_cat, "index"))]
@@ -190,8 +181,6 @@ combine_jack <- function(ls_df,
     ))
   }
 }
-
-
 
 # Version jackknife estimate using estimation on the full incomplete dataset
 # combine_jack_bis <- function(ls_df,

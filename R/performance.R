@@ -98,7 +98,6 @@ ls_MSE <- function(df_comp,
   ))
 }
 
-
 # F1
 # Input: Original dataset, list of imputed dataset, mask of missingness, column index for categorical columns
 # Output: A list of F1-scores for each imputation result, a average F1-score, variance of F1-score
@@ -228,8 +227,6 @@ ls_F1 <- function(df_comp,
     Variance_F1 = var(ls_f1_result)
   ))
 }
-
-
 
 # Version jackknife estimate using estimation on the full incomplete dataset
 # ls_MSE_bis <- function(df_comp,

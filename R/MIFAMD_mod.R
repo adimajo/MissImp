@@ -1,15 +1,15 @@
-#' MIFAMD_mod: modified multiple imputation with FAMD
+#' MIFAMD: modified multiple imputation with FAMD
 #'
-#' @description \code{MIFAMD_mod} is a modified multiple imputation function with FAMD (Factorial
+#' @description \code{MIFAMD} is a modified multiple imputation function with FAMD (Factorial
 #' Analysis of Mixed Data)
 #' that returns categorical columns results both in factor and in onehot probability vector form.
 #' Please find the detailed documentation of \code{MIFAMD} in the 'missMDA' package.
 #' Only the modifications are explained on this page.
 #'
-#' With \code{MIFAMD_mod}, not only the multiple imputation results are returned,
+#' With \code{MIFAMD}, not only the multiple imputation results are returned,
 #' but the disjunctive multiple imputation results are also returned (The categorical columns
 #'  are in form of onehot probability vector). Besides, instead of returning the final imputed dataset by
-#'  performing one time FAMD imputation, \code{MIFAMD_mod} returns the final imputed dataset by combining
+#'  performing one time FAMD imputation, \code{MIFAMD} returns the final imputed dataset by combining
 #'   the multiple imputation results with Rubin's Rule.
 #' @param X Data frame with missing values.
 #' @param ncp  Number of components used to reconstruct data with the FAMD reconstruction formular.
@@ -40,8 +40,7 @@
 #' Audigier, V., Husson, F., Josse, J. (2017). MIMCA: Multiple imputation for categorical variables with multiple correspondence analysis. <doi:10.1007/s11222-016-9635-4>
 #'
 #' Little R.J.A., Rubin D.B. (2002) Statistical Analysis with Missing Data. Wiley series in probability and statistics, New-York
-
-MIFAMD_mod <-
+MIFAMD <-
   function(X,
            ncp = 2,
            method = c("Regularized", "EM"),
@@ -131,7 +130,6 @@ MIFAMD_mod <-
         return(list(zzhat = zzhat, moyeig = moyeigret, res.svd = res.svd, M = M))
       }
 
-
       nb.obs <- sum(WW[, -cumsum(sapply(Xquali, nlevels))])
       nb.obs.quanti <- sum(WW[, seq(ncol(Xquanti))])
       Zhat2 <- reconst.FAMD(Zhat[, seq(ncol(Xquanti))], Zhat[, -seq(ncol(Xquanti))], ncp = ncp, D = D, M = M)
@@ -142,7 +140,6 @@ MIFAMD_mod <-
       sigma2 <- sum(WW[, seq(ncol(Xquanti))] * ((Residu[, seq(ncol(Xquanti))])^2)) / (nb.obs.quanti - (ncol(Xquanti) + ncp * (sum(D) - 1) + ncol(Xquanti) - ncp))
       return(sigma2)
     }
-
 
     imputeFAMD.stoch <- function(don,
                                  ncp = 4,
@@ -220,7 +217,7 @@ MIFAMD_mod <-
       }
 
 
-      res.imp <- imputeFAMD_mod(
+      res.imp <- imputeFAMD(
         X = don, ncp = ncp, method = method, row.w = D,
         coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter
       )
@@ -236,8 +233,6 @@ MIFAMD_mod <-
       sigma2 <- var_homo / (1 / apply(res.imp$tab.disj, 2, var)[quanti])
       res.imp$fittedX <- res.imp$tab.disj
       res.imp$quanti.act <- which(sapply(don, is.numeric))
-
-
 
       classvar <- unlist(lapply(lapply(don, class), "[", 1)) # quand le type est "ordered" il y a 2 classes pour la variable
       if ("integer" %in% classvar) {
@@ -297,7 +292,6 @@ MIFAMD_mod <-
       rs <- list(res = res$res.MI[[1]], res.disj = res$res.MI.disj[[1]])
       return(rs)
     }
-
 
     if (sum(sapply(X, is.numeric)) == ncol(X)) {
       rs <- missMDA::MIPCA(
@@ -364,8 +358,6 @@ MIFAMD_mod <-
         dict_disj[[col_names.disj.after[i]]] <- col_names.disj[i]
       }
     }
-
-
 
     # variables are ordered
     don <- X[, c(which(sapply(X, is.numeric)), which(!sapply(X, is.numeric)))]
@@ -455,7 +447,7 @@ MIFAMD_mod <-
       res.MI.disj = res.MI.disj,
       ximp.disj = ximp.disj,
       ximp = ximp,
-      res.imputeFAMD = imputeFAMD_mod(X, ncp = ncp, coeff.ridge = coeff.ridge, method = method, threshold = threshold, maxiter = maxiter, seed = seed),
+      res.imputeFAMD = imputeFAMD(X, ncp = ncp, coeff.ridge = coeff.ridge, method = method, threshold = threshold, maxiter = maxiter, seed = seed),
       call = list(X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
     )
     class(res) <- c("MIFAMD", "list")
