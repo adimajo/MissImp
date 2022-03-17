@@ -75,7 +75,7 @@ TestMCARNormality <- function(data, del.lesscases = 6, imputation.number = 1, me
     data <- as.matrix(data)
   }
   if (!is.na(imputed.data[1]) && imputation.number != 1) {
-    cat("Warning: No multiple imputation allowed when imputed data is provided.\n")
+    stop("Warning: No multiple imputation allowed when imputed data is provided.\n")
   }
   if (!is.matrix(data)) {
     stop("Warning: Data is not a matrix or data frame.\n")
@@ -494,12 +494,10 @@ OrderMissing <- function(data, del.lesscases = 0) {
     y <- as.matrix(y)
   }
   if (!is.matrix(y)) {
-    cat("Warning data is not a matrix or data frame")
-    stop("")
+    stop("Warning data is not a matrix or data frame")
   }
   if (length(y) == 0) {
-    cat("Warning: data is empty")
-    return
+    stop("Warning: data is empty")
   }
   names <- colnames(y)
   n <- nrow(y)
@@ -580,8 +578,8 @@ OrderMissing <- function(data, del.lesscases = 0) {
 print.orderpattern <- function(x, ...) {
   cat("Call:\n")
   print(x$call)
-  cat("\nNumber of Ptterns: ", x$g, "\n")
-  cat("\nPttern used:\n")
+  cat("\nNumber of Patterns: ", x$g, "\n")
+  cat("\nPattern used:\n")
   ni <- x$patcnt
   disp.patt <- cbind(x$patused, ni)
   colnames(disp.patt)[ncol(disp.patt)] <- "Number of cases"

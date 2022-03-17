@@ -278,6 +278,7 @@ check_mswin:
   <<: *common_tag
   script:
     - r -e 'devtools::install()'
+    - r -e 'install.packages("rhub")'
     - r -e 'library(MissImp)'
     - Rscript inst/pipeline/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
   allow_failure: true
@@ -289,6 +290,7 @@ check_macos:
   stage: checkrhub
   script:
     - r -e 'devtools::install()'
+    - r -e 'install.packages("rhub")'
     - r -e 'library(MissImp)'
     - Rscript inst/pipeline/rhubcheck.R "macos-highsierra-release-cran" "$RHUB_TOKEN"
   allow_failure: true
