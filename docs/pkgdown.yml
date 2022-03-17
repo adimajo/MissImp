@@ -1,0 +1,10 @@
+pandoc: 2.14.0.3
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  A_Generate_Missingness_and_Tests_MCAR: A_Generate_Missingness_and_Tests_MCAR.html
+  B_MissImp_Test: B_MissImp_Test.html
+  C_Each_Imputation_Method: C_Each_Imputation_Method.html
+  D_oracle_simple_test: D_oracle_simple_test.html
+last_built: 2022-03-17T08:54Z
+
