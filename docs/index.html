@@ -21,6 +21,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -33,23 +35,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">MissImp</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -83,61 +79,61 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div id="section" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#section" class="anchor"></a><img src="reference/figures/logo_gro.png" align="right">
+<div class="section level1">
+<div class="page-header"><h1 id="section">
+<img src="reference/figures/logo_gro.png" align="right"><a class="anchor" aria-label="anchor" href="#section"></a>
 </h1></div>
 
 </div>
-<div id="missing-data-imputation" class="section level1">
-<h1 class="hasAnchor">
-<a href="#missing-data-imputation" class="anchor"></a>Missing Data Imputation</h1>
-<div id="table-of-contents" class="section level2">
-<h2 class="hasAnchor">
-<a href="#table-of-contents" class="anchor"></a>Table of Contents</h2>
+<div class="section level1">
+<h1 id="missing-data-imputation">Missing Data Imputation<a class="anchor" aria-label="anchor" href="#missing-data-imputation"></a>
+</h1>
+<div class="section level2">
+<h2 id="table-of-contents">Table of Contents<a class="anchor" aria-label="anchor" href="#table-of-contents"></a>
+</h2>
 <ul>
-<li><a href="https://adimajo.github.io/missimp">Documentation</a></li>
+<li><a href="https://adimajo.github.io/missimp" class="external-link">Documentation</a></li>
 <li><a href="#-installation">Installation instructions</a></li>
-<li><a href="https://github.com/adimajo/missimp/issues/new/choose">Open an issue</a></li>
+<li><a href="https://github.com/adimajo/missimp/issues/new/choose" class="external-link">Open an issue</a></li>
 </ul>
 </div>
 </div>
-<div id="missimp" class="section level1">
-<h1 class="hasAnchor">
-<a href="#missimp" class="anchor"></a>MissImp</h1>
+<div class="section level1">
+<h1 id="missimp">MissImp<a class="anchor" aria-label="anchor" href="#missimp"></a>
+</h1>
 <p>The goal of MissImp is to provide a framework to test missing data imputation techniques.</p>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <p>You can install the development version of <code>MissImp</code> from Github with:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"adimajo/missimp"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"adimajo/missimp"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>Or alternatively directly from CRAN:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"MissImp"</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"MissImp"</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="documentation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#documentation" class="anchor"></a>Documentation</h2>
-<div id="through-rstudio" class="section level3">
-<h3 class="hasAnchor">
-<a href="#through-rstudio" class="anchor"></a>Through R(Studio)</h3>
-<div id="getting-help" class="section level4">
-<h4 class="hasAnchor">
-<a href="#getting-help" class="anchor"></a>Getting help</h4>
-<p>The help pages of this package can be reached by typing <code>help(MissImp)</code> (or <code>?MissImp</code>) once the package is installed and loaded.</p>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<div class="section level3">
+<h3 id="through-rstudio">Through R(Studio)<a class="anchor" aria-label="anchor" href="#through-rstudio"></a>
+</h3>
+<div class="section level4">
+<h4 id="getting-help">Getting help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
+</h4>
+<p>The help pages of this package can be reached by typing <code><a href="reference/MissImp.html">help(MissImp)</a></code> (or <code><a href="reference/MissImp.html">?MissImp</a></code>) once the package is installed and loaded.</p>
 </div>
-<div id="vignette" class="section level4">
-<h4 class="hasAnchor">
-<a href="#vignette" class="anchor"></a>Vignette</h4>
+<div class="section level4">
+<h4 id="vignette">Vignette<a class="anchor" aria-label="anchor" href="#vignette"></a>
+</h4>
 <p>For further instructions, go to <code>vignettes</code> &gt; <code>*.Rmd</code> or go through the vignettes directly in RStudio by typing <code>vignette('MissImp')</code> once the package is installed and loaded.</p>
 </div>
 </div>
-<div id="online" class="section level3">
-<h3 class="hasAnchor">
-<a href="#online" class="anchor"></a>Online</h3>
-<p>Both the help pages and the vignettes are available online as <a href="http://adimajo.github.io/MissImp">a Github page built with <code>pkgdown</code></a>.</p>
+<div class="section level3">
+<h3 id="online">Online<a class="anchor" aria-label="anchor" href="#online"></a>
+</h3>
+<p>Both the help pages and the vignettes are available online as <a href="http://adimajo.github.io/MissImp" class="external-link">a Github page built with <code>pkgdown</code></a>.</p>
 </div>
 </div>
 </div>
@@ -146,35 +142,47 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>GPL (&gt;= 2)</li>
 </ul>
 </div>
+
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing MissImp</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Adrien Ehrhardt <br><small class="roles"> Maintainer </small>  </li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://travis-ci.org/adimajo/missimp"><img src="https://travis-ci.org/adimajo/missimp.svg?branch=master" alt="Travis build status"></a></li>
-<li><a href="https://codecov.io/github/adimajo/missimp?branch=master"><img src="https://codecov.io/gh/adimajo/missimp/branch/master/graph/badge.svg" alt="Coverage status"></a></li>
+<li><a href="https://travis-ci.org/adimajo/missimp" class="external-link"><img src="https://travis-ci.org/adimajo/missimp.svg?branch=master" alt="Travis build status"></a></li>
+<li><a href="https://codecov.io/github/adimajo/missimp?branch=master" class="external-link"><img src="https://codecov.io/gh/adimajo/missimp/branch/master/graph/badge.svg" alt="Coverage status"></a></li>
 </ul>
 </div>
-</div>
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Adrien Ehrhardt.</p>
+  <p></p>
+<p>Developed by Adrien Ehrhardt.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
@@ -182,6 +190,8 @@
 
   
 
+
+  
 
   </body>
 </html>

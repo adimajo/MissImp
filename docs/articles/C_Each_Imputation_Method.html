@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,23 +33,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">MissImp</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -78,13 +74,13 @@
 
       
 
-      </header><script src="C_Each_Imputation_Method_files/header-attrs-2.10/header-attrs.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Imputation for each method</h1>
-                        <h4 class="author">Xuwen Liu</h4>
+                        <h4 data-toc-skip class="author">Xuwen Liu</h4>
             
-            <h4 class="date">2022-03-17</h4>
+            <h4 data-toc-skip class="date">2022-03-17</h4>
       
       
       <div class="hidden name"><code>C_Each_Imputation_Method.Rmd</code></div>
@@ -93,169 +89,169 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">knitr</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/knitr/man/opts_chunk.html">opts_chunk</a></span><span class="op">$</span><span class="fu">set</span><span class="op">(</span>eval <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">MissImp</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">knitr</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/knitr/man/opts_chunk.html" class="external-link">opts_chunk</a></span><span class="op">$</span><span class="fu">set</span><span class="op">(</span>eval <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">MissImp</span><span class="op">)</span></code></pre></div>
 <p>In the <a href="#generate">first section</a>, a complete mix-type dataset is first generated with 5 continuous variables, 1 integer variable and 2 categorical variables. Then given the desired missing data proportion and the missing data mechanism, based on the complete dataset, an incomplete dataset with missing values is created.</p>
 <p>Then in the <a href="#imputation">second section</a>, several imputation methods are shown separately to replace the missing part with predictions in the generated incomplete dataset. For the categorical variable, both the final result and the predicted probability of each category are presented.</p>
-<div id="generate" class="section level1">
-<h1 class="hasAnchor">
-<a href="#generate" class="anchor"></a>Generate data</h1>
+<div class="section level2">
+<h2 id="generate">Generate data<a class="anchor" aria-label="anchor" href="#generate"></a>
+</h2>
 <p>We generate a complete data set <span class="math inline">\((Y_j)_{1 \leq j \leq 8}\)</span> with <span class="math inline">\((Y_1, Y_2, Y_3) \sim \mathcal{N}(\mu_u1, \Sigma_1)\)</span>, <span class="math inline">\((Y_4, Y_5) \sim \mathcal{N}(\mu_2, \Sigma_2)\)</span>, <span class="math inline">\(Y_6 \sim P(\lambda)\)</span> and <span class="math inline">\(Y_7, Y_8 \sim \text{Bin}(\gamma)\)</span>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">10000</span>
 <span class="va">complete_df_generator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">mu.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>
-  <span class="va">Sigma.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+  <span class="va">mu.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>
+  <span class="va">Sigma.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>
     <span class="fl">9</span>, <span class="fl">3</span>, <span class="fl">2</span>,
     <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">0</span>,
     <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">1</span>
   <span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-  <span class="va">X.complete.cont</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html">mvrnorm</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">mu.X</span>, <span class="va">Sigma.X</span><span class="op">)</span> <span class="co"># multivariate normal distribution</span>
+  <span class="va">X.complete.cont</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">mu.X</span>, <span class="va">Sigma.X</span><span class="op">)</span> <span class="co"># multivariate normal distribution</span>
 
-  <span class="va">mu1.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">9</span>, <span class="fl">8</span><span class="op">)</span>
-  <span class="va">Sigma1.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+  <span class="va">mu1.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">9</span>, <span class="fl">8</span><span class="op">)</span>
+  <span class="va">Sigma1.X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>
     <span class="fl">16</span>, <span class="fl">14</span>,
     <span class="fl">14</span>, <span class="fl">25</span>
   <span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
 
-  <span class="va">X.complete.cont1</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html">mvrnorm</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">mu1.X</span>, <span class="va">Sigma1.X</span><span class="op">)</span> <span class="co"># multivariate normal distribution</span>
+  <span class="va">X.complete.cont1</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">mu1.X</span>, <span class="va">Sigma1.X</span><span class="op">)</span> <span class="co"># multivariate normal distribution</span>
 
   <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fl">4.3</span>
-  <span class="va">X.complete.discr</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">lambda</span><span class="op">)</span> <span class="co"># poisson distribution</span>
+  <span class="va">X.complete.discr</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">lambda</span><span class="op">)</span> <span class="co"># poisson distribution</span>
 
-  <span class="va">X.complete.cat</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n</span>, size <span class="op">=</span> <span class="fl">5</span>, prob <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="co"># binomial</span>
+  <span class="va">X.complete.cat</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, size <span class="op">=</span> <span class="fl">5</span>, prob <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="co"># binomial</span>
 
-  <span class="va">X.complete.cat2</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n</span>, size <span class="op">=</span> <span class="fl">7</span>, prob <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="co"># binomial</span>
+  <span class="va">X.complete.cat2</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, size <span class="op">=</span> <span class="fl">7</span>, prob <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="co"># binomial</span>
 
-  <span class="va">X.complete</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">X.complete.cont</span>, <span class="va">X.complete.cont1</span>,
+  <span class="va">X.complete</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">X.complete.cont</span>, <span class="va">X.complete.cont1</span>,
     <span class="va">X.complete.discr</span>,
     ... <span class="op">=</span> <span class="va">X.complete.cat</span>, <span class="va">X.complete.cat2</span>
   <span class="op">)</span><span class="op">)</span>
-  <span class="va">X.complete</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"E"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"B"</span>, <span class="st">"A"</span><span class="op">)</span>
-  <span class="va">X.complete</span><span class="op">[</span>, <span class="fl">8</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">[</span>, <span class="fl">8</span><span class="op">]</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Y1"</span>, <span class="st">"Y2"</span>, <span class="st">"Y3"</span>, <span class="st">"Y4"</span>, <span class="st">"Y5"</span>, <span class="st">"Y6"</span>, <span class="st">"Y7"</span>, <span class="st">"Y8"</span><span class="op">)</span>
-  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">)</span>
+  <span class="va">X.complete</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"E"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"B"</span>, <span class="st">"A"</span><span class="op">)</span>
+  <span class="va">X.complete</span><span class="op">[</span>, <span class="fl">8</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">[</span>, <span class="fl">8</span><span class="op">]</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Y1"</span>, <span class="st">"Y2"</span>, <span class="st">"Y3"</span>, <span class="st">"Y4"</span>, <span class="st">"Y5"</span>, <span class="st">"Y6"</span>, <span class="st">"Y7"</span>, <span class="st">"Y8"</span><span class="op">)</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">X.complete</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>We can generate incomplete dataframe from the complete dataframe, with a chosen percentage of missing data and a chosen missing mechanism. The difference between mechanisms is explained in the documentation of <code>generate_miss</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1000</span>
 <span class="va">mech</span> <span class="op">&lt;-</span> <span class="st">"MAR1"</span>
 <span class="va">miss_prop</span> <span class="op">&lt;-</span> <span class="fl">0.4</span>
 <span class="va">X.complete</span> <span class="op">&lt;-</span> <span class="fu">complete_df_generator</span><span class="op">(</span><span class="va">n</span><span class="op">)</span>
-<span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu">generate_miss</span><span class="op">(</span><span class="va">X.complete</span>, <span class="va">miss_prop</span>, mechanism <span class="op">=</span> <span class="va">mech</span><span class="op">)</span>
+<span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_miss.html">generate_miss</a></span><span class="op">(</span><span class="va">X.complete</span>, <span class="va">miss_prop</span>, mechanism <span class="op">=</span> <span class="va">mech</span><span class="op">)</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="va">rs</span><span class="op">$</span><span class="va">X.incomp</span></code></pre></div>
 </div>
-<div id="imputation" class="section level1">
-<h1 class="hasAnchor">
-<a href="#imputation" class="anchor"></a>Single Imputation</h1>
-<div id="em" class="section level2">
-<h2 class="hasAnchor">
-<a href="#em" class="anchor"></a>EM</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="imputation">Single Imputation<a class="anchor" aria-label="anchor" href="#imputation"></a>
+</h2>
+<div class="section level3">
+<h3 id="em">EM<a class="anchor" aria-label="anchor" href="#em"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.em</span> <span class="op">&lt;-</span> <span class="fu">em</span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="va">col_cat</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.em</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.em</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.em</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/em.html">em</a></span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="va">col_cat</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.em</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.em</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="missforest" class="section level2">
-<h2 class="hasAnchor">
-<a href="#missforest" class="anchor"></a>Missforest</h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="missforest">Missforest<a class="anchor" aria-label="anchor" href="#missforest"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.forest</span> <span class="op">&lt;-</span> <span class="fu">missForest</span><span class="op">(</span>xmis <span class="op">=</span> <span class="va">df</span>, maxiter <span class="op">=</span> <span class="fl">3</span>, ntree <span class="op">=</span> <span class="fl">100</span>, col_cat <span class="op">=</span> <span class="va">col_cat</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.forest</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.forest</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/missForest.html">missForest</a></span><span class="op">(</span>xmis <span class="op">=</span> <span class="va">df</span>, maxiter <span class="op">=</span> <span class="fl">3</span>, ntree <span class="op">=</span> <span class="fl">100</span>, col_cat <span class="op">=</span> <span class="va">col_cat</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.forest</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.forest</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="missranger" class="section level2">
-<h2 class="hasAnchor">
-<a href="#missranger" class="anchor"></a>MissRanger</h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="missranger">MissRanger<a class="anchor" aria-label="anchor" href="#missranger"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.ranger</span> <span class="op">&lt;-</span> <span class="fu">missRanger</span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span>, maxiter <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.ranger</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/missRanger.html">missRanger</a></span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span>, maxiter <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.ranger</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.ranger</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.ranger</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.ranger</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="missmda" class="section level2">
-<h2 class="hasAnchor">
-<a href="#missmda" class="anchor"></a>MissMDA</h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="missmda">MissMDA<a class="anchor" aria-label="anchor" href="#missmda"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.pca</span> <span class="op">&lt;-</span> <span class="fu">imputeFAMD</span><span class="op">(</span><span class="va">df_with_mv</span>, ncp <span class="op">=</span> <span class="fl">3</span>, maxiter <span class="op">=</span> <span class="fl">30</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.pca</span><span class="op">$</span><span class="va">completeObs</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.pca</span><span class="op">$</span><span class="va">tab.disj</span><span class="op">)</span></code></pre></div>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/imputeFAMD.html">imputeFAMD</a></span><span class="op">(</span><span class="va">df_with_mv</span>, ncp <span class="op">=</span> <span class="fl">3</span>, maxiter <span class="op">=</span> <span class="fl">30</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.pca</span><span class="op">$</span><span class="va">completeObs</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.pca</span><span class="op">$</span><span class="va">tab.disj</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="knn" class="section level2">
-<h2 class="hasAnchor">
-<a href="#knn" class="anchor"></a>KNN</h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="knn">KNN<a class="anchor" aria-label="anchor" href="#knn"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.knn</span> <span class="op">&lt;-</span> <span class="fu">kNN</span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.knn</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.knn</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.knn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kNN.html">kNN</a></span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.knn</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.knn</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
-<div id="multiple-imputation" class="section level1">
-<h1 class="hasAnchor">
-<a href="#multiple-imputation" class="anchor"></a>Multiple Imputation</h1>
-<div id="mi-em-amelia" class="section level2">
-<h2 class="hasAnchor">
-<a href="#mi-em-amelia" class="anchor"></a>MI EM Amelia</h2>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="multiple-imputation">Multiple Imputation<a class="anchor" aria-label="anchor" href="#multiple-imputation"></a>
+</h2>
+<div class="section level3">
+<h3 id="mi-em-amelia">MI EM Amelia<a class="anchor" aria-label="anchor" href="#mi-em-amelia"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.em.mi</span> <span class="op">&lt;-</span> <span class="fu">MI_EM_amelia</span><span class="op">(</span><span class="va">df_with_mv</span>, col_num <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>, col_cat <span class="op">=</span> <span class="va">col_cat</span>, num_imp <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.em.mi</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.em.mi</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.em.mi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MI_EM_amelia.html">MI_EM_amelia</a></span><span class="op">(</span><span class="va">df_with_mv</span>, col_num <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>, col_cat <span class="op">=</span> <span class="va">col_cat</span>, num_imp <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.em.mi</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.em.mi</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="mi-mice" class="section level2">
-<h2 class="hasAnchor">
-<a href="#mi-mice" class="anchor"></a>MI mice</h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="mi-mice">MI mice<a class="anchor" aria-label="anchor" href="#mi-mice"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://amices.org/mice/reference/mice.html">mice</a></span><span class="op">(</span><span class="va">df_with_mv</span>, m <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="va">imp.mice</span> <span class="op">&lt;-</span> <span class="fu">result_mice</span><span class="op">(</span><span class="va">res</span>, <span class="fl">3</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice</a></span><span class="op">(</span><span class="va">df_with_mv</span>, m <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="va">imp.mice</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/result_mice.html">result_mice</a></span><span class="op">(</span><span class="va">res</span>, <span class="fl">3</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.mice</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.mice</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.mice</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.mice</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="mi-pca" class="section level2">
-<h2 class="hasAnchor">
-<a href="#mi-pca" class="anchor"></a>MI PCA</h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="mi-pca">MI PCA<a class="anchor" aria-label="anchor" href="#mi-pca"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.pca.mi</span> <span class="op">&lt;-</span> <span class="fu">MIFAMD</span><span class="op">(</span><span class="va">df_with_mv</span>, ncp <span class="op">=</span> <span class="fl">3</span>, maxiter <span class="op">=</span> <span class="fl">50</span>, nboot <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.pca.mi</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.pca.mi</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.pca.mi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MIFAMD.html">MIFAMD</a></span><span class="op">(</span><span class="va">df_with_mv</span>, ncp <span class="op">=</span> <span class="fl">3</span>, maxiter <span class="op">=</span> <span class="fl">50</span>, nboot <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.pca.mi</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.pca.mi</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="mi-missranger" class="section level2">
-<h2 class="hasAnchor">
-<a href="#mi-missranger" class="anchor"></a>MI MissRanger</h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="mi-missranger">MI MissRanger<a class="anchor" aria-label="anchor" href="#mi-missranger"></a>
+</h3>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="va">df</span>
-<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu">factor_ordinal_encode</span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
-<span class="va">imp.ranger.mi</span> <span class="op">&lt;-</span> <span class="fu">MI_missRanger</span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>, num_mi <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="va">col_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">df_with_mv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/factor_ordinal_encode.html">factor_ordinal_encode</a></span><span class="op">(</span><span class="va">df_with_mv</span>, <span class="va">col_cat</span><span class="op">)</span>
+<span class="va">imp.ranger.mi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MI_missRanger.html">MI_missRanger</a></span><span class="op">(</span><span class="va">df_with_mv</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">8</span><span class="op">)</span>, num_mi <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.ranger.mi</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">imp.ranger.mi</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.ranger.mi</span><span class="op">$</span><span class="va">ximp</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imp.ranger.mi</span><span class="op">$</span><span class="va">ximp.disj</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
   </div>
@@ -271,11 +267,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Adrien Ehrhardt.</p>
+  <p></p>
+<p>Developed by Adrien Ehrhardt.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
@@ -283,6 +281,8 @@
 
   
 
+
+  
 
   </body>
 </html>
