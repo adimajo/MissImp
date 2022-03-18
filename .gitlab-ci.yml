@@ -280,7 +280,7 @@ check_mswin:
     - r -v -e 'install.packages("rhub")'
     - r -v -e 'devtools::install()'
     - r -v -e 'library(MissImp)'
-    - Rscript -v inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
+    - Rscript --vanilla inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
   allow_failure: true
 
 check_macos:
@@ -292,7 +292,7 @@ check_macos:
     - r -v -e 'install.packages("rhub")'
     - r -v -e 'devtools::install()'
     - r -v -e 'library(MissImp)'
-    - Rscript -v inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
+    - Rscript --vanilla inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
   allow_failure: true
 
 deploy:
