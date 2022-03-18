@@ -49,8 +49,8 @@ variables:
   before_script:
   - apt-get update
   - apt-get -y install cmake libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
-  - r -v -e "install.packages('devtools')"
-  - r -v -e 'devtools::install_deps(dependencies = TRUE)'
+  - r -v -e "install.packages('devtools', repos='https://cloud.r-project.org/')"
+  - r -v -e 'devtools::install_deps(dependencies = TRUE, repos="https://cloud.r-project.org/")'
 
 lint:
   artifacts:
@@ -61,8 +61,8 @@ lint:
   <<: *common_r
   <<: *common_tag
   script:
-    - r -v -e "install.packages('styler')"
-    - r -v -e "install.packages('lintr')"
+    - r -v -e "install.packages('styler', repos='https://cloud.r-project.org/')"
+    - r -v -e "install.packages('lintr', repos='https://cloud.r-project.org/')"
     - r -v inst/pipeline/lint.R
   only:
     refs:
@@ -108,7 +108,7 @@ documentation:
     - . ./build.env
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
     - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
-    - r -v -e "install.packages('pkgdown')"
+    - r -v -e "install.packages('pkgdown', repos='https://cloud.r-project.org/')"
     - r inst/pipeline/document.R
     - git config --global http.sslverify false
     - git config --global user.name "$GITLAB_USER_NAME"
@@ -227,12 +227,8 @@ coverage:
   extends: .before_script_template
   stage: coverage
   script:
-    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
-    - r -v -e "install.packages('renv')"
-    - r -v -e 'renv::load()'
-    - r -v -e 'renv::restore()'
-    - r -v -e 'renv::install("covr")'
-    - r -v -e 'renv::install("DT")'
+    - r -v -e 'renv::install("covr", repos="https://cloud.r-project.org/")'
+    - r -v -e 'renv::install("DT", repos="https://cloud.r-project.org/")'
     - r inst/pipeline/sonarqube.R
   only:
     refs:
@@ -277,7 +273,7 @@ check_mswin:
   <<: *common_r
   <<: *common_tag
   script:
-    - r -v -e 'install.packages("rhub")'
+    - r -v -e 'install.packages("rhub", repos="https://cloud.r-project.org/")'
     - r -v -e 'devtools::install()'
     - r -v -e 'library(MissImp)'
     - Rscript --vanilla inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
@@ -289,7 +285,7 @@ check_macos:
   <<: *common_tag
   stage: checkrhub
   script:
-    - r -v -e 'install.packages("rhub")'
+    - r -v -e 'install.packages("rhub", repos="https://cloud.r-project.org/")'
     - r -v -e 'devtools::install()'
     - r -v -e 'library(MissImp)'
     - Rscript --vanilla inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
