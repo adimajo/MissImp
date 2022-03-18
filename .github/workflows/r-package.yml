@@ -64,6 +64,7 @@ jobs:
       - name: Coverage
         run: |
           install.packages("covr", repos="https://cloud.r-project.org/")
+          install.packages("rhub", repos="https://cloud.r-project.org/")
           print(devtools::test_coverage())
         shell: Rscript --vanilla {0}
       - name: Check on Mac OS
