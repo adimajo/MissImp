@@ -148,25 +148,25 @@
 <code class="sourceCode R"><span class="va">miss_perc</span> <span class="op">&lt;-</span> <span class="fl">0.4</span>
 <span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_miss.html">generate_miss</a></span><span class="op">(</span><span class="va">X.complete</span>, <span class="va">miss_perc</span>, mechanism <span class="op">=</span> <span class="st">"MNAR1"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">rs</span><span class="op">$</span><span class="va">X.incomp</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##           Y1         Y2       Y3       Y4       Y5 Y6   Y7   Y8</span>
-<span class="co">## 1  2.2447356         NA 3.102174 7.496622 4.560795  5 &lt;NA&gt; &lt;NA&gt;</span>
-<span class="co">## 2  0.5157439  1.4095939 4.133822       NA       NA NA &lt;NA&gt; &lt;NA&gt;</span>
-<span class="co">## 3 -1.6339506  2.7472716 1.288154 6.715702 9.301912  3    E    4</span>
-<span class="co">## 4 -0.4978270  1.8946451 2.426454 4.744682 1.201210  4 &lt;NA&gt;    4</span>
-<span class="co">## 5         NA  0.6862603       NA       NA       NA NA &lt;NA&gt; &lt;NA&gt;</span>
-<span class="co">## 6 -3.0568200 -1.3139233       NA 9.618304 4.374451  6    D    4</span></code></pre>
+<pre><code><span class="co">##          Y1        Y2       Y3        Y4        Y5 Y6   Y7   Y8</span>
+<span class="co">## 1  2.223816 2.5709955       NA        NA        NA NA &lt;NA&gt;    4</span>
+<span class="co">## 2  3.266694 3.3959727       NA        NA        NA  3    D    5</span>
+<span class="co">## 3 -5.334933 0.5873721 1.460344        NA  9.089841  8    D &lt;NA&gt;</span>
+<span class="co">## 4        NA 2.2973389 2.118471 14.133937 15.630389  4    D    2</span>
+<span class="co">## 5  1.195428 4.6277882 2.880522  4.136858        NA NA    E    4</span>
+<span class="co">## 6        NA        NA       NA        NA        NA  6 &lt;NA&gt;    4</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">rs</span><span class="op">$</span><span class="va">R.mask</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##      Y1    Y2    Y3    Y4    Y5    Y6    Y7    Y8</span>
-<span class="co">## 1 FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE  TRUE</span>
-<span class="co">## 2 FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE</span>
-<span class="co">## 3 FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE</span>
-<span class="co">## 4 FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE</span>
-<span class="co">## 5  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE</span>
-<span class="co">## 6 FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE</span></code></pre>
+<span class="co">## 1 FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE</span>
+<span class="co">## 2 FALSE FALSE  TRUE  TRUE  TRUE FALSE FALSE FALSE</span>
+<span class="co">## 3 FALSE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE</span>
+<span class="co">## 4  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE</span>
+<span class="co">## 5 FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE</span>
+<span class="co">## 6  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE FALSE</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">rs</span><span class="op">$</span><span class="va">real_miss_perc</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] 0.3982375</span></code></pre>
+<pre><code><span class="co">## [1] 0.3984625</span></code></pre>
 <p>Next, a list of incomplete dataframes is generated with every mechanism that is implemented in <code>generate_miss</code>. First a list of incomplete dataframes is generated on the continuous variables <span class="math inline">\((Y_1, \dots, Y_5)\)</span>, with the result in <code>rs.con</code>; then on the continous + discrete variables <span class="math inline">\((Y_1, \dots, Y_6)\)</span>, with the result in <code>rs.con_dis</code>; and at last on continuous + discrete + categorical variables, with the result in <code>rs.mix</code>.</p>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">miss_perc</span> <span class="op">&lt;-</span> <span class="fl">0.3</span>
@@ -190,7 +190,7 @@
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcar_test_combined.html">mcar_test_combined</a></span><span class="op">(</span><span class="va">list_df.mix</span><span class="op">[[</span><span class="fl">5</span><span class="op">]</span><span class="op">]</span>, col_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>, p_val <span class="op">=</span> <span class="va">p_val</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
-<span class="co">## Warning: 97 Cases with all variables missing have been removed </span>
+<span class="co">## Warning: 94 Cases with all variables missing have been removed </span>
 <span class="co">## </span>
 <span class="co">##         from the data.</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
@@ -219,28 +219,28 @@
   <span class="op">}</span>
   <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">i</span> <span class="op">+</span> <span class="fl">1</span>
 <span class="op">}</span></code></pre></div>
-<pre><code><span class="co">## Warning: 145 Cases with all variables missing have been removed </span>
+<pre><code><span class="co">## Warning: 140 Cases with all variables missing have been removed </span>
 <span class="co">## </span>
 <span class="co">##         from the data.</span>
-<span class="co">## Warning: 46 Cases with all variables missing have been removed </span>
-<span class="co">## </span>
-<span class="co">##         from the data.</span>
-<span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
-<span class="co">## Warning: 6 Cases with all variables missing have been removed </span>
+<span class="co">## Warning: 39 Cases with all variables missing have been removed </span>
 <span class="co">## </span>
 <span class="co">##         from the data.</span>
 <span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
-<span class="co">## Warning: 73 Cases with all variables missing have been removed </span>
+<span class="co">## Warning: 8 Cases with all variables missing have been removed </span>
+<span class="co">## </span>
+<span class="co">##         from the data.</span>
+<span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
+<span class="co">## Warning: 62 Cases with all variables missing have been removed </span>
 <span class="co">## </span>
 <span class="co">##         from the data.</span>
 <span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
 <span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
 <span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
-<span class="co">## Warning: 97 Cases with all variables missing have been removed </span>
+<span class="co">## Warning: 94 Cases with all variables missing have been removed </span>
 <span class="co">## </span>
 <span class="co">##         from the data.</span>
 <span class="co">## [1] "The normality test is written for numerical dataframes.\n          Here the test is performed on only the numerical part of the input dataframe.\n"</span>
-<span class="co">## Warning: 46 Cases with all variables missing have been removed </span>
+<span class="co">## Warning: 39 Cases with all variables missing have been removed </span>
 <span class="co">## </span>
 <span class="co">##         from the data.</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
@@ -252,43 +252,43 @@
 
 <span class="va">test_p_vals</span></code></pre></div>
 <pre><code><span class="co">##                   type mechanism Dummy.variable.test Little.s.MCAR.test</span>
-<span class="co">## 1           continuous      MCAR           0.8022653          0.2867569</span>
+<span class="co">## 1           continuous      MCAR           0.3744883          0.4156759</span>
 <span class="co">## 2           continuous      MAR1           0.0000000          0.0000000</span>
 <span class="co">## 3           continuous      MAR2           0.0000000          0.0000000</span>
 <span class="co">## 4           continuous      MAR3           0.0000000          0.0000000</span>
 <span class="co">## 5           continuous     MNAR1           0.0000000          0.0000000</span>
 <span class="co">## 6           continuous     MNAR2           0.0000000          0.0000000</span>
-<span class="co">## 7  continuous+discrete      MCAR           0.8630300          0.9155411</span>
+<span class="co">## 7  continuous+discrete      MCAR           0.1045250          0.5790657</span>
 <span class="co">## 8  continuous+discrete      MAR1           0.0000000          0.0000000</span>
 <span class="co">## 9  continuous+discrete      MAR2           0.0000000          0.0000000</span>
 <span class="co">## 10 continuous+discrete      MAR3           0.0000000          0.0000000</span>
 <span class="co">## 11 continuous+discrete     MNAR1           0.0000000          0.0000000</span>
 <span class="co">## 12 continuous+discrete     MNAR2           0.0000000          0.0000000</span>
-<span class="co">## 13                 mix      MCAR           0.1839006          0.2211703</span>
+<span class="co">## 13                 mix      MCAR           0.1740233          0.3053817</span>
 <span class="co">## 14                 mix      MAR1           0.0000000          0.0000000</span>
 <span class="co">## 15                 mix      MAR2           0.0000000          0.0000000</span>
 <span class="co">## 16                 mix      MAR3           0.0000000          0.0000000</span>
 <span class="co">## 17                 mix     MNAR1           0.0000000          0.0000000</span>
 <span class="co">## 18                 mix     MNAR2           0.0000000          0.0000000</span>
 <span class="co">##    Hawkin.s.test Non.parametric.test</span>
-<span class="co">## 1   1.246159e-01        3.854682e-02</span>
-<span class="co">## 2   5.532859e-01        3.755208e-01</span>
-<span class="co">## 3   2.352077e-16        0.000000e+00</span>
-<span class="co">## 4   6.250644e-67        0.000000e+00</span>
-<span class="co">## 5   9.541060e-01        7.478461e-01</span>
-<span class="co">## 6   7.587517e-48        0.000000e+00</span>
-<span class="co">## 7   4.936373e-02        6.307522e-02</span>
-<span class="co">## 8   4.018490e-01        5.259675e-02</span>
-<span class="co">## 9   4.104946e-12        0.000000e+00</span>
-<span class="co">## 10  6.127255e-57        0.000000e+00</span>
-<span class="co">## 11  8.714119e-01        7.229085e-01</span>
-<span class="co">## 12  3.192550e-29        1.004514e-71</span>
-<span class="co">## 13  8.474875e-01        8.838676e-01</span>
-<span class="co">## 14  7.990005e-01        3.127064e-01</span>
-<span class="co">## 15  4.104946e-12        0.000000e+00</span>
-<span class="co">## 16  7.237032e-58        0.000000e+00</span>
-<span class="co">## 17  3.391317e-01        1.549010e-01</span>
-<span class="co">## 18  3.192550e-29        1.004514e-71</span></code></pre>
+<span class="co">## 1   8.139940e-01        8.186683e-01</span>
+<span class="co">## 2   7.057809e-01        7.752508e-01</span>
+<span class="co">## 3   7.224208e-11        0.000000e+00</span>
+<span class="co">## 4   9.413021e-61        0.000000e+00</span>
+<span class="co">## 5   6.482886e-01        3.628776e-01</span>
+<span class="co">## 6   8.106827e-64        0.000000e+00</span>
+<span class="co">## 7   3.798334e-01        5.337508e-01</span>
+<span class="co">## 8   6.374877e-01        5.545986e-01</span>
+<span class="co">## 9   2.833223e-09       9.267878e-105</span>
+<span class="co">## 10  3.843615e-56        0.000000e+00</span>
+<span class="co">## 11  3.426813e-01        4.869818e-01</span>
+<span class="co">## 12  7.608842e-43        1.127892e-52</span>
+<span class="co">## 13  5.655821e-01        6.641521e-01</span>
+<span class="co">## 14  2.837002e-01        3.916327e-01</span>
+<span class="co">## 15  2.833223e-09       9.267878e-105</span>
+<span class="co">## 16  3.163703e-56        0.000000e+00</span>
+<span class="co">## 17  8.492416e-01        5.728676e-01</span>
+<span class="co">## 18  7.608842e-43        1.127892e-52</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">test_results</span> </code></pre></div>
 <pre><code><span class="co">##    Dummy.variable.test Little.s.MCAR.test Miss_Mech_test</span>
