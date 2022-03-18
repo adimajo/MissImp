@@ -50,7 +50,8 @@ Suggests:
     itertools,
     ranger,
     ggplot2,
-    gdata
+    gdata,
+    argparse
 RdMacros: mathjaxr
 VignetteBuilder: knitr
 Config/testthat/edition: 3

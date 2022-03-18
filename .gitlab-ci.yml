@@ -1,6 +1,6 @@
 .common_r: &common_r
   image:
-    name: ${DOCKER_REGISTRY}r-base:4.0.5
+    name: ${DOCKER_REGISTRY}r-base:4.1.0
 
 .ci_tools: &ci_tools
   image:
@@ -48,9 +48,9 @@ variables:
 .before_script_template:
   before_script:
   - apt-get update
-  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
-  - r -e "install.packages('devtools')"
-  - r -e 'devtools::install_deps(dependencies = TRUE)'
+  - apt-get -y install cmake libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
+  - r -v -e "install.packages('devtools')"
+  - r -v -e 'devtools::install_deps(dependencies = TRUE)'
 
 lint:
   artifacts:
@@ -61,9 +61,9 @@ lint:
   <<: *common_r
   <<: *common_tag
   script:
-    - r -e "install.packages('styler')"
-    - r -e "install.packages('lintr')"
-    - r inst/pipeline/lint.R
+    - r -v -e "install.packages('styler')"
+    - r -v -e "install.packages('lintr')"
+    - r -v inst/pipeline/lint.R
   only:
     refs:
       - branches
@@ -82,8 +82,8 @@ buildbinary:
   <<: *common_r
   <<: *common_tag
   script:
-    - r -e 'devtools::build(binary = TRUE)'
-    - r -e 'devtools::install()'
+    - r -v -e 'devtools::build(binary = TRUE)'
+    - r -v -e 'devtools::install()'
     - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
   only:
     refs:
@@ -108,7 +108,7 @@ documentation:
     - . ./build.env
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
     - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
-    - r -e "install.packages('pkgdown')"
+    - r -v -e "install.packages('pkgdown')"
     - r inst/pipeline/document.R
     - git config --global http.sslverify false
     - git config --global user.name "$GITLAB_USER_NAME"
@@ -141,7 +141,7 @@ checkerrors:
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
+    - r -v -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
   only:
     refs:
       - branches
@@ -157,7 +157,7 @@ checkwarnings:
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
+    - r -v -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
   allow_failure: true
   only:
     refs:
@@ -174,7 +174,7 @@ checknotes:
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
+    - r -v -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
   allow_failure: true
   only:
     refs:
@@ -191,7 +191,7 @@ unittestserrors:
   extends: .before_script_template
   stage: test
   script:
-    - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
+    - r -v -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
   only:
     refs:
       - branches
@@ -207,7 +207,7 @@ unittestswarnings:
   extends: .before_script_template
   stage: test
   script:
-    - r -e 'if (sum(as.data.frame(devtools::test())[["warning"]]) > 0) stop("Some tests yielded a warning.")'
+    - r -v -e 'if (sum(as.data.frame(devtools::test())[["warning"]]) > 0) stop("Some tests yielded a warning.")'
   allow_failure: true
   only:
     refs:
@@ -228,11 +228,11 @@ coverage:
   stage: coverage
   script:
     - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
-    - r -e "install.packages('renv')"
-    - r -e 'renv::load()'
-    - r -e 'renv::restore()'
-    - r -e 'renv::install("covr")'
-    - r -e 'renv::install("DT")'
+    - r -v -e "install.packages('renv')"
+    - r -v -e 'renv::load()'
+    - r -v -e 'renv::restore()'
+    - r -v -e 'renv::install("covr")'
+    - r -v -e 'renv::install("DT")'
     - r inst/pipeline/sonarqube.R
   only:
     refs:
@@ -277,10 +277,10 @@ check_mswin:
   <<: *common_r
   <<: *common_tag
   script:
-    - r -e 'devtools::install()'
-    - r -e 'install.packages("rhub")'
-    - r -e 'library(MissImp)'
-    - Rscript inst/pipeline/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
+    - r -v -e 'install.packages("rhub")'
+    - r -v -e 'devtools::install()'
+    - r -v -e 'library(MissImp)'
+    - Rscript -v inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
   allow_failure: true
 
 check_macos:
@@ -289,10 +289,10 @@ check_macos:
   <<: *common_tag
   stage: checkrhub
   script:
-    - r -e 'devtools::install()'
-    - r -e 'install.packages("rhub")'
-    - r -e 'library(MissImp)'
-    - Rscript inst/pipeline/rhubcheck.R "macos-highsierra-release-cran" "$RHUB_TOKEN"
+    - r -v -e 'install.packages("rhub")'
+    - r -v -e 'devtools::install()'
+    - r -v -e 'library(MissImp)'
+    - Rscript -v inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
   allow_failure: true
 
 deploy:

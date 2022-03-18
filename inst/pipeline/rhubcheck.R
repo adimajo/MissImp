@@ -1,20 +1,28 @@
-if (!require(rhub, quietly = TRUE)) {
-  install.packages("rhub")
+library(MissImp)
+if (!exists("arguments")) {
+  suppressPackageStartupMessages(library("argparse"))
+  parser <- ArgumentParser()
+  parser$add_argument("-p", "--platform", type="character",
+                      help="platform")
+  parser$add_argument("-t", "--token", type="character",
+                      help="token")
+  arguments <- parser$parse_args()
 }
 
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) != 2L) {
+if (length(arguments) < 2L) {
   stop("Incorrect number of args, needs 2: platform (string), token (string)")
 }
 
-platform <- args[[1L]]
-token <- args[[2L]]
+platform <- arguments$platform
+token <- arguments$token
 if (!is.element(platform, rhub::platforms()[[1L]])) {
   stop(paste(platform, "not in rhub::platforms()[[1L]]"))
 }
 
 rhub::validate_email(
-  email = substr(utils::maintainer(pkg = "MissImp"), regexec("<", utils::maintainer(pkg = "MissImp"))[[1]][1] + 1, nchar(utils::maintainer(pkg = "MissImp")) - 1),
+  email = substr(utils::maintainer(pkg = "MissImp"),
+                 regexec("<", utils::maintainer(pkg = "MissImp"))[[1]][1] + 1,
+                 nchar(utils::maintainer(pkg = "MissImp")) - 1),
   token = token
 )
 cr <- rhub::check(platform = platform, show_status = TRUE)
@@ -31,6 +39,9 @@ res <- do.call(rbind, lapply(statuses, function(thisStatus) {
 }))
 print(res)
 
-if (any(colSums(res[2L:4L]) > 0)) {
-  stop("Some checks with errors, warnings or notes.")
+if (any(colSums(res[2L:3L]) > 0)) {
+  stop("Some checks with errors, or warnings.")
+}
+if (colSums(res[4L]) > 0) {
+  print("Some checks with notes")
 }

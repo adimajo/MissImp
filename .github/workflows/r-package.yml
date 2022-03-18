@@ -18,21 +18,21 @@ jobs:
       - name: Install dependencies for devtools
         run: |
           sudo apt-get update -y
-          sudo apt-get install libgit2-dev libssh2-1-dev libcurl4-openssl-dev pandoc libharfbuzz-dev libfribidi-dev -y
+          sudo apt-get install cmake libgit2-dev libssh2-1-dev libcurl4-openssl-dev pandoc libharfbuzz-dev libfribidi-dev -y
       - name: Install devtools
         run: install.packages("devtools")
-        shell: Rscript {0}
+        shell: Rscript -v {0}
       - name: Check code style
         run: |
-          Rscript -e 'install.packages(c("styler", "lintr"))'
-          Rscript inst/pipeline/lint.R
+          Rscript -v -e 'install.packages(c("styler", "lintr"))'
+          Rscript -v inst/pipeline/lint.R
       - name: Install dependencies
         run: devtools::install_deps(dependencies = TRUE)
-        shell: Rscript {0}
+        shell: Rscript -v {0}
       - name: Check documentation
         run: |
-          Rscript -e 'install.packages("pkgdown")'
-          Rscript inst/pipeline/document.R
+          Rscript -v -e 'install.packages("pkgdown")'
+          Rscript -v inst/pipeline/document.R
       - name: Upload documentation
         run: |
           export LATEST_COMMITER_EMAIL=`git --no-pager log -1 -s --format="%ae"`
@@ -50,30 +50,30 @@ jobs:
           git checkout master
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
-        shell: Rscript {0}
+        shell: Rscript -v {0}
       - name: Install package
         run: devtools::install()
-        shell: Rscript {0}
+        shell: Rscript -v {0}
       - name: Save package version
         run: |
           export APPLICATION_TAG_VERSION=`Rscript -e 'library(MissImp); paste(utils::packageVersion("MissImp"))'`
           echo "APPLICATION_TAG_VERSION=$APPLICATION_TAG_VERSION" >> $GITHUB_ENV
       - name: Testthat
         run: devtools::test(quiet = FALSE, clean = FALSE)
-        shell: Rscript {0}
+        shell: Rscript -v {0}
       - name: Coverage
         run: |
           install.packages("covr")
           print(devtools::test_coverage())
-        shell: Rscript {0}
+        shell: Rscript -v {0}
       - name: Check on Mac OS
         env:
           RHUB_TOKEN: ${{ secrets.RHUB_TOKEN }}
-        run: Rscript inst/pipeline/rhubcheck.R "macos-highsierra-release-cran" "$RHUB_TOKEN"
+        run: Rscript -v inst/pipeline/rhubcheck.R -p "macos-highsierra-release-cran" -t "$RHUB_TOKEN"
       - name: Check on Windows
         env:
           RHUB_TOKEN: ${{ secrets.RHUB_TOKEN }}
-        run: Rscript inst/pipeline/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
+        run: Rscript -v inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
