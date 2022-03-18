@@ -20,18 +20,18 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install cmake libgit2-dev libssh2-1-dev libcurl4-openssl-dev pandoc libharfbuzz-dev libfribidi-dev -y
       - name: Install devtools
-        run: install.packages("devtools")
+        run: install.packages("devtools", repos="https://cloud.r-project.org/")
         shell: Rscript --vanilla {0}
       - name: Check code style
         run: |
-          Rscript --vanilla -e 'install.packages(c("styler", "lintr"))'
+          Rscript --vanilla -e 'install.packages(c("styler", "lintr"), repos="https://cloud.r-project.org/")'
           Rscript --vanilla inst/pipeline/lint.R
       - name: Install dependencies
         run: devtools::install_deps(dependencies = TRUE)
         shell: Rscript --vanilla {0}
       - name: Check documentation
         run: |
-          Rscript --vanilla -e 'install.packages("pkgdown")'
+          Rscript --vanilla -e 'install.packages("pkgdown", repos="https://cloud.r-project.org/")'
           Rscript --vanilla inst/pipeline/document.R
       - name: Upload documentation
         run: |
@@ -63,7 +63,7 @@ jobs:
         shell: Rscript --vanilla {0}
       - name: Coverage
         run: |
-          install.packages("covr")
+          install.packages("covr", repos="https://cloud.r-project.org/")
           print(devtools::test_coverage())
         shell: Rscript --vanilla {0}
       - name: Check on Mac OS
