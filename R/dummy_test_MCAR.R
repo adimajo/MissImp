@@ -128,7 +128,11 @@ dummy_test_matrix <- function(df, col_cat = c()) {
 #' Missing value analysis & Data imputation, G. David Garson, 2015
 dummy_test <- function(df, col_cat = c()) {
   p_matrix <- dummy_test_matrix(df, col_cat)
-  p_vector <- as.vector(p_matrix, mode = "numeric")
+  p_vector <- tryCatch(as.vector(as.matrix(p_matrix), mode = "numeric"),
+    error = function(e) {
+      return(as.vector(unlist(p_matrix), mode = "numeric"))
+    }
+  )
   p_vector <- p_vector[!is.na(p_vector)]
   dof <- 2 * length(p_vector)
   res <- -2 * sum(log(p_vector))
