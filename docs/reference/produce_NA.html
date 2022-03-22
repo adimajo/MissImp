@@ -91,31 +91,52 @@ according to different missingness mechanisms and patterns</p>
     <dl><dt>data</dt>
 <dd><p>[data.frame, matrix] (mixed) data table (n x p)</p></dd>
 <dt>mechanism</dt>
-<dd><p>[string] either one of "MCAR", "MAR", "MNAR"; default is "MCAR"</p></dd>
+<dd><p>[string] either one of "MCAR", "MAR", "MNAR";
+default is "MCAR"</p></dd>
 <dt>perc.missing</dt>
-<dd><p>[positive double] proportion of missing values, between 0 and 1; default is 0.5</p></dd>
+<dd><p>[positive double] proportion of missing values,
+between 0 and 1; default is 0.5</p></dd>
 <dt>self.mask</dt>
-<dd><p>[string] either NULL or one of "sym", "upper", "lower"; default is NULL</p></dd>
+<dd><p>[string] either NULL or one of "sym", "upper", "lower";
+default is NULL</p></dd>
 <dt>idx.incomplete</dt>
-<dd><p>[array] indices of variables to generate missing values for; if NULL then missing values in all variables are possible; default is NULL</p></dd>
+<dd><p>[array] indices of variables to generate missing
+values for; if NULL then missing values in all variables are possible;
+default is NULL</p></dd>
 <dt>idx.covariates</dt>
-<dd><p>[matrix] binary matrix such that entries in row i that are equal to 1 indicate covariates that incluence missingness of variable i (sum(idx.incomplete) x p); if NULL then all covariates contribute; default is NULL</p></dd>
+<dd><p>[matrix] binary matrix such that entries in row i that
+are equal to 1 indicate covariates that incluence missingness of variable i
+(sum(idx.incomplete) x p); if NULL then all covariates contribute;
+default is NULL</p></dd>
 <dt>weights.covariates</dt>
-<dd><p>[matrix] matrix of same size as idx.covariates with weights in row i for contribution of each covariate to missingness model of variable i; if NULL then a (regularized) logistic model is fitted; default is NULL</p></dd>
+<dd><p>[matrix] matrix of same size as idx.covariates
+with weights in row i for contribution of each covariate to missingness
+model of variable i; if NULL then a (regularized) logistic model is fitted;
+default is NULL</p></dd>
 <dt>by.patterns</dt>
-<dd><p>[boolean] generate missing values according to (pre-specified) patterns; default is FALSE</p></dd>
+<dd><p>[boolean] generate missing values according to
+(pre-specified) patterns; default is FALSE</p></dd>
 <dt>patterns</dt>
-<dd><p>[matrix] binary matrix with 1=observed, 0=missing (n_pattern x p); default is NULL</p></dd>
+<dd><p>[matrix] binary matrix with 1=observed, 0=missing
+(n_pattern x p); default is NULL</p></dd>
 <dt>freq.patterns</dt>
-<dd><p>[array] array of size n_pattern containing desired proportion of each pattern; if NULL then mice::ampute.default.freq will be called ; default is NULL</p></dd>
+<dd><p>[array] array of size n_pattern containing desired
+proportion of each pattern; if NULL then mice::ampute.default.freq will
+be called ; default is NULL</p></dd>
 <dt>weights.patterns</dt>
-<dd><p>[matrix] weights used to calculate weighted sum scores (n_pattern x p); if NULL then mice::ampute.default.weights will be called; default is NULL</p></dd>
+<dd><p>[matrix] weights used to calculate weighted sum
+scores (n_pattern x p); if NULL then mice::ampute.default.weights will be
+called; default is NULL</p></dd>
 <dt>use.all</dt>
-<dd><p>[boolean] use all observations, including incomplete observations, for amputation when amputing by patterns (only relevant if initial data is incomplete and by.pattern=T); default is FALSE</p></dd>
+<dd><p>[boolean] use all observations, including incomplete
+observations, for amputation when amputing by patterns (only relevant if
+initial data is incomplete and by.pattern=T); default is FALSE</p></dd>
 <dt>logit.model</dt>
-<dd><p>[string] either one of "RIGHT","LEFT","MID","TAIL"; default is "RIGHT"</p></dd>
+<dd><p>[string] either one of "RIGHT","LEFT","MID","TAIL";
+default is "RIGHT"</p></dd>
 <dt>seed</dt>
-<dd><p>[natural integer] seed for random numbers generator; default is NULL</p></dd>
+<dd><p>[natural integer] seed for random numbers generator;
+default is NULL</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -123,9 +144,11 @@ according to different missingness mechanisms and patterns</p>
 <dl><dt>data.init</dt>
 <dd><p>original data.frame</p></dd>
 <dt>data.incomp</dt>
-<dd><p>data.frame with the newly generated missing values, observed values correspond to the values from the initial data.frame</p></dd>
+<dd><p>data.frame with the newly generated missing values,
+observed values correspond to the values from the initial data.frame</p></dd>
 <dt>idx_newNA</dt>
-<dd><p>a boolean data.frame indicating the indices of the newly generated missing values</p></dd>
+<dd><p>a boolean data.frame indicating the indices of the newly
+generated missing values</p></dd>
 </dl></div>
 
   </div>
