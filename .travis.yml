@@ -1,3 +1,4 @@
+dist: bionic
 before_install:
   - sudo apt-get -y install libgsl-dev r-cran-glmnet build-essential
   - Rscript -e "install.packages('devtools')"
