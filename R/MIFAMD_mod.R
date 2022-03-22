@@ -1,45 +1,59 @@
 #' MIFAMD: modified multiple imputation with FAMD
 #'
-#' @description \code{MIFAMD} is a modified multiple imputation function with FAMD (Factorial
-#' Analysis of Mixed Data)
-#' that returns categorical columns results both in factor and in onehot probability vector form.
-#' Please find the detailed documentation of \code{MIFAMD} in the 'missMDA' package.
-#' Only the modifications are explained on this page.
+#' @description \code{MIFAMD} is a modified multiple imputation function with
+#' FAMD (Factorial Analysis of Mixed Data) that returns categorical columns
+#' results both in factor and in onehot probability vector form.
+#' Please find the detailed documentation of \code{MIFAMD} in the 'missMDA'
+#' package. Only the modifications are explained on this page.
 #'
 #' With \code{MIFAMD}, not only the multiple imputation results are returned,
-#' but the disjunctive multiple imputation results are also returned (The categorical columns
-#'  are in form of onehot probability vector). Besides, instead of returning the final imputed dataset by
-#'  performing one time FAMD imputation, \code{MIFAMD} returns the final imputed dataset by combining
-#'   the multiple imputation results with Rubin's Rule.
+#' but the disjunctive multiple imputation results are also returned (The
+#' categorical columns are in form of onehot probability vector). Besides,
+#' instead of returning the final imputed dataset by performing one time FAMD
+#' imputation, \code{MIFAMD} returns the final imputed dataset by combining
+#' the multiple imputation results with Rubin's Rule.
 #' @param X Data frame with missing values.
-#' @param ncp  Number of components used to reconstruct data with the FAMD reconstruction formular.
+#' @param ncp  Number of components used to reconstruct data with the FAMD
+#' reconstruction formula.
 #' @param method "Regularized" by default or "EM"
-#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD algorithm.
-#' Other regularization terms can be implemented by setting the value to less than 1
-#' in order to regularized less (to get closer to the results of an EM method) or
-#' more than 1 to regularized more (to get closer to the results of the proportion imputation).
+#' @param coeff.ridge 1 by default to perform the regularized imputeFAMD
+#' algorithm. Other regularization terms can be implemented by setting the
+#' value to less than 1 in order to regularized less (to get closer to the
+#' results of an EM method) or more than 1 to regularized more (to get closer
+#' to the results of the proportion imputation).
 #' @param threshold Threshold for the criterion convergence.
-#' @param seed integer, by default seed = NULL implies that missing values are initially imputed by
-#' the mean of each variable for the continuous variables and by the proportion of the category
-#' for the categorical variables coded with indicator matrices of dummy variables.
+#' @param seed integer, by default seed = NULL implies that missing values are
+#' initially imputed by the mean of each variable for the continuous variables
+#' and by the proportion of the category for the categorical variables coded
+#' with indicator matrices of dummy variables.
 #' Other values leads to a random initialization.
 #' @param maxiter Maximum number of iterations for the algorithm.
 #' @param nboot Number of multiple imputations.
 #' @param verbose verbose=TRUE for screen printing of iteration numbers.
 #' @export
 #' @return \code{res.MI} A list of imputed dataset after mutiple imputation.
-#' @return \code{res.MI.disj} A list of disjunctive imputed dataset after mutiple imputation.
-#' @return \code{ximp} Final imputed dataset by combining \code{res.MI.disj} with Rubin's Rule.
-#' @return \code{ximp.disj} Disjunctive imputed data matrix of same type as 'ximp' for the numeric columns.
-#'  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
-#' @return \code{res.imputeFAMD} Output obtained with the function imputeFAMD (single imputation).
+#' @return \code{res.MI.disj} A list of disjunctive imputed dataset after
+#' mutiple imputation.
+#' @return \code{ximp} Final imputed dataset by combining \code{res.MI.disj}
+#' with Rubin's Rule.
+#' @return \code{ximp.disj} Disjunctive imputed data matrix of same type as
+#' 'ximp' for the numeric columns. For the categorical columns, the prediction
+#' of probability for each category is shown in form of onehot probability
+#' vector.
+#' @return \code{res.imputeFAMD} Output obtained with the function imputeFAMD
+#' (single imputation).
 #' @return \code{call} The matched call.
 #' @references
-#' Audigier, V., Husson, F. & Josse, J. (2015). A principal components method to impute mixed data. Advances in Data Analysis and Classification, 10(1), 5-26. <doi:10.1007/s11634-014-0195-1>
+#' Audigier, V., Husson, F. & Josse, J. (2015). A principal components method
+#' to impute mixed data. Advances in Data Analysis and Classification, 10(1),
+#' 5-26. <doi:10.1007/s11634-014-0195-1>
 #'
-#' Audigier, V., Husson, F., Josse, J. (2017). MIMCA: Multiple imputation for categorical variables with multiple correspondence analysis. <doi:10.1007/s11222-016-9635-4>
+#' Audigier, V., Husson, F., Josse, J. (2017). MIMCA: Multiple imputation for
+#' categorical variables with multiple correspondence analysis.
+#' <doi:10.1007/s11222-016-9635-4>
 #'
-#' Little R.J.A., Rubin D.B. (2002) Statistical Analysis with Missing Data. Wiley series in probability and statistics, New-York
+#' Little R.J.A., Rubin D.B. (2002) Statistical Analysis with Missing Data.
+#' Wiley series in probability and statistics, New-York
 MIFAMD <-
   function(X,
            ncp = 2,
@@ -98,17 +112,24 @@ MIFAMD <-
         return(res)
       }
 
-      reconst.FAMD <- function(xxquanti, xxquali, M = NULL, D = NULL, ncp, coeff.ridge = 1, method = "em") {
+      reconst.FAMD <- function(xxquanti, xxquali, M = NULL, D = NULL, ncp,
+                               coeff.ridge = 1, method = "em") {
         zz <- cbind.data.frame(xxquanti, xxquali)
         if (is.null(M)) {
-          M <- c(1 / apply(xxquanti, 2, var), colMeans(zz)[-c(1:ncol(xxquanti))])
+          M <- c(
+            1 / apply(xxquanti, 2, var),
+            colMeans(zz)[-c(1:ncol(xxquanti))]
+          )
         }
         if (is.null(D)) {
           D <- rep(1 / nrow(zz), nrow(zz))
         }
         moy <- colMeans(zz)
         zzimp <- sweep(zz, MARGIN = 2, FUN = "-", STATS = moy)
-        res.svd <- FactoMineR::svd.triplet(zzimp, col.w = M, row.w = D, ncp = ncp)
+        res.svd <- FactoMineR::svd.triplet(zzimp,
+          col.w = M, row.w = D,
+          ncp = ncp
+        )
         tmp <- seq(ncol(zz) - ncol(xxquali))
         if (nrow(zz) > length(tmp)) {
           moyeig <- mean(res.svd$vs[tmp[-seq(ncp)]]^2)
@@ -123,21 +144,39 @@ MIFAMD <-
         if (ncp > 1) {
           eig.shrunk <- (res.svd$vs[1:ncp]^2 - moyeig) / res.svd$vs[1:ncp]
         } else if (ncp == 1) {
-          eig.shrunk <- matrix((res.svd$vs[1:ncp]^2 - moyeig) / res.svd$vs[1:ncp], 1, 1)
+          eig.shrunk <- matrix(
+            (res.svd$vs[1:ncp]^2 - moyeig) / res.svd$vs[1:ncp], 1, 1
+          )
         }
-        zzhat <- tcrossprod(res.svd$U %*% diag(eig.shrunk), res.svd$V[which(apply(is.finite(res.svd$V), 1, any)), , drop = FALSE])
+        zzhat <- tcrossprod(
+          res.svd$U %*% diag(eig.shrunk),
+          res.svd$V[which(apply(
+            is.finite(res.svd$V),
+            1, any
+          )), , drop = FALSE]
+        )
         zzhat <- sweep(zzhat, MARGIN = 2, FUN = "+", STATS = moy)
-        return(list(zzhat = zzhat, moyeig = moyeigret, res.svd = res.svd, M = M))
+        return(list(
+          zzhat = zzhat, moyeig = moyeigret, res.svd = res.svd,
+          M = M
+        ))
       }
 
       nb.obs <- sum(WW[, -cumsum(sapply(Xquali, nlevels))])
       nb.obs.quanti <- sum(WW[, seq(ncol(Xquanti))])
-      Zhat2 <- reconst.FAMD(Zhat[, seq(ncol(Xquanti))], Zhat[, -seq(ncol(Xquanti))], ncp = ncp, D = D, M = M)
+      Zhat2 <- reconst.FAMD(Zhat[, seq(ncol(Xquanti))],
+        Zhat[, -seq(ncol(Xquanti))],
+        ncp = ncp,
+        D = D, M = M
+      )
       Residu <- as.matrix(Zhat - Zhat2$zzhat) %*% diag(M)^{
         1 / 2
       }
       Residu[is.na(cbind.data.frame(Xquanti, tab.disjonctif.NA(Xquali)))] <- 0
-      sigma2 <- sum(WW[, seq(ncol(Xquanti))] * ((Residu[, seq(ncol(Xquanti))])^2)) / (nb.obs.quanti - (ncol(Xquanti) + ncp * (sum(D) - 1) + ncol(Xquanti) - ncp))
+      sigma2 <- sum(WW[, seq(ncol(Xquanti))] * (
+        (Residu[, seq(ncol(Xquanti))])^2)) / (
+        nb.obs.quanti - (
+          ncol(Xquanti) + ncp * (sum(D) - 1) + ncol(Xquanti) - ncp))
       return(sigma2)
     }
 
@@ -188,10 +227,10 @@ MIFAMD <-
           ], 1, function(x) {
             sample(1:length(x), size = 1, prob = x)
           })])
-          Donres[, i] <- factor(Donres[, i], levels(Don[, is.quali, drop = FALSE][
-            ,
-            i
-          ]))
+          Donres[, i] <- factor(
+            Donres[, i],
+            levels(Don[, is.quali, drop = FALSE][, i])
+          )
         }
         return(don.imp = Donres)
       }
@@ -213,13 +252,17 @@ MIFAMD <-
         D[which(Row.w == 0)] <- 1 / (1000 * nrow(don)) # D without 0
         WW <- diag(Row.w) %*% W
       } else {
-        stop(paste0("row.w of class ", class(Row.w), ", it needs to be an integer"))
+        stop(paste0(
+          "row.w of class ", class(Row.w),
+          ", it needs to be an integer"
+        ))
       }
 
 
       res.imp <- imputeFAMD(
         X = don, ncp = ncp, method = method, row.w = D,
-        coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter
+        coeff.ridge = coeff.ridge, threshold = threshold, seed = seed,
+        maxiter = maxiter
       )
 
       var_homo <- estim.sigma2(
@@ -233,8 +276,8 @@ MIFAMD <-
       sigma2 <- var_homo / (1 / apply(res.imp$tab.disj, 2, var)[quanti])
       res.imp$fittedX <- res.imp$tab.disj
       res.imp$quanti.act <- which(sapply(don, is.numeric))
-
-      classvar <- unlist(lapply(lapply(don, class), "[", 1)) # quand le type est "ordered" il y a 2 classes pour la variable
+      # quand le type est "ordered" il y a 2 classes pour la variable
+      classvar <- unlist(lapply(lapply(don, class), "[", 1))
       if ("integer" %in% classvar) {
         classvar[classvar == "integer"] <- "numeric"
       }
@@ -242,8 +285,10 @@ MIFAMD <-
         classvar[classvar == "ordered"] <- "factor"
       }
 
+      # les quanti active sont les premi?res variables du tdc
       donimp <- don
-      donimp[, which(classvar == "numeric")] <- res.imp$tab.disj[, seq(length(res.imp$quanti.act))] # les quanti active sont les premi?res variables du tdc
+      donimp[, which(classvar == "numeric")] <-
+        res.imp$tab.disj[, seq(length(res.imp$quanti.act))]
       missing.quanti <- is.na(don[, res.imp$quanti.act])
       res.MI <- vector("list", length = nboot)
       names(res.MI) <- paste("nboot=", 1:nboot, sep = "")
@@ -255,12 +300,29 @@ MIFAMD <-
         }
         donimp.tmp <- donimp
         if (any("factor" %in% classvar)) {
-          tdc.imp <- res.imp$tab.disj[, (length(c(res.imp$quanti.act, res.imp$quanti.sup)) + 1):(ncol(res.imp$tab.disj) - length(res.imp$quali.sup)), drop = FALSE]
-          tdc.norm <- normtdc(tab.disj = tdc.imp, data.na = don[, which(classvar == "factor"), drop = FALSE])
-          donimp.quali <- draw(tdc.norm, don[, which(classvar == "factor"), drop = FALSE])
-          donimp.tmp[, which(classvar == "factor")] <- donimp.quali[, names(which(classvar == "factor"))]
+          tdc.imp <-
+            res.imp$tab.disj[, (length(c(
+              res.imp$quanti.act,
+              res.imp$quanti.sup
+            )) + 1):
+            (ncol(res.imp$tab.disj) - length(
+              res.imp$quali.sup
+            )), drop = FALSE]
+          tdc.norm <- normtdc(
+            tab.disj = tdc.imp,
+            data.na = don[, which(classvar == "factor"),
+              drop = FALSE
+            ]
+          )
+          donimp.quali <- draw(tdc.norm, don[, which(classvar == "factor"),
+            drop = FALSE
+          ])
+          donimp.tmp[, which(classvar == "factor")] <-
+            donimp.quali[, names(which(classvar == "factor"))]
         }
-        donimp.tmp[, res.imp$quanti.act][missing.quanti] <- res.imp$fittedX[, res.imp$quanti.act][missing.quanti] + mvtnorm::rmvnorm(nrow(don), sigma = diag(sigma2))[missing.quanti]
+        donimp.tmp[, res.imp$quanti.act][missing.quanti] <-
+          res.imp$fittedX[, res.imp$quanti.act][missing.quanti] +
+          mvtnorm::rmvnorm(nrow(don), sigma = diag(sigma2))[missing.quanti]
         res.MI[[paste("nboot=", i, sep = "")]] <- donimp.tmp
         ## change##
         donimp.disj <- donimp.tmp[, res.imp$quanti.act]
@@ -271,7 +333,10 @@ MIFAMD <-
       if (verbose) {
         cat("\ndone!\n")
       }
-      res.MI <- list(res.MI = res.MI, sigma2 = sigma2, res.MI.disj = res.MI.disj)
+      res.MI <- list(
+        res.MI = res.MI, sigma2 = sigma2,
+        res.MI.disj = res.MI.disj
+      )
       class(res.MI) <- "MIFAMD"
       return(res.MI)
     }
@@ -279,8 +344,10 @@ MIFAMD <-
     imputeFAMD.stoch.print <- function(don, ncp, method = c(
                                          "Regularized",
                                          "EM"
-                                       ), row.w = NULL, coeff.ridge = 1, threshold = 1e-06,
-                                       seed = NULL, maxiter = 1000, verbose, printm) {
+                                       ), row.w = NULL, coeff.ridge = 1,
+                                       threshold = 1e-06,
+                                       seed = NULL, maxiter = 1000,
+                                       verbose, printm) {
       if (verbose) {
         cat(paste(printm, "...", sep = ""))
       }
@@ -311,11 +378,14 @@ MIFAMD <-
         ximp.disj = ximp,
         ximp = ximp,
         res.imputeFAMD = rs$res.imputePCA,
-        call = list(X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
+        call = list(
+          X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge,
+          threshold = threshold, seed = seed, maxiter = maxiter
+        )
       )
       return(res)
     }
-    # }else if(sum(sapply(X,is.numeric))==0){
+    # } else if(sum(sapply(X,is.numeric))==0) {
     #   rs <- missMDA::imputeMCA(don = X,
     #             ncp = ncp,
     #             method = method,
@@ -328,8 +398,11 @@ MIFAMD <-
     #     res.MI.disj = rs$res.MI,
     #     ximp.disj = rs$res.imputePCA,
     #     ximp = rs$res.imputePCA,
-    #     res.imputeFAMD = imputePCA(X, ncp = ncp, coeff.ridge = coeff.ridge, method = method, threshold = threshold, maxiter = maxiter, seed = seed),
-    #     call = list(X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
+    #     res.imputeFAMD = imputePCA(X, ncp = ncp, coeff.ridge = coeff.ridge,
+    # method = method, threshold = threshold, maxiter = maxiter, seed = seed),
+    #     call = list(X = X, nboot = nboot, ncp = ncp,
+    # coeff.ridge = coeff.ridge, threshold = threshold, seed = seed,
+    # maxiter = maxiter)
     #   )}
 
     ## Add:
@@ -337,7 +410,8 @@ MIFAMD <-
     exist_cat <- !all(c(0, col_cat) == c(0))
     if (exist_cat) {
       name_cat <- colnames(X)[col_cat]
-      # Deal with the problem that nlevels(df[[col]]) > length(unique(df[[col]]))
+      # Deal with the problem that
+      # nlevels(df[[col]]) > length(unique(df[[col]]))
       for (col in name_cat) {
         X[[col]] <- factor(as.character(X[[col]]))
       }
@@ -382,10 +456,14 @@ MIFAMD <-
     Boot <- matrix(sample(1:n, size = nboot * n, replace = T), n, nboot)
     Boot <- lapply(as.data.frame(Boot), FUN = function(xx) {
       yy <- as.factor(xx)
-      levels(yy) <- c(levels(yy), xx[which(!xx %in% as.numeric(as.character(levels(yy))))])
+      levels(yy) <- c(levels(yy), xx[which(!xx %in% as.numeric(
+        as.character(levels(yy))
+      ))])
       return(yy)
     })
-    Weight <- as.data.frame(matrix(0, n, nboot, dimnames = list(1:n, paste("nboot=", 1:nboot, sep = ""))))
+    Weight <- as.data.frame(matrix(0, n, nboot, dimnames = list(
+      1:n, paste("nboot=", 1:nboot, sep = "")
+    )))
     Boot.table <- lapply(Boot, table)
     for (i in 1:nboot) {
       Weight[names(Boot.table[[i]]), i] <- Boot.table[[i]]
@@ -419,7 +497,10 @@ MIFAMD <-
     if (any(!sapply(don, is.numeric))) {
       names_cat <- names(dict_cat)
       for (name in names_cat) {
-        ximp.all[[name]] <- apply(ximp.all[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+        ximp.all[[name]] <- apply(
+          ximp.all[dict_cat[[name]]], 1,
+          which_max_cat, name, dict_cat
+        )
         ximp.all[[name]] <- unlist(ximp.all[[name]])
         ximp.all[[name]] <- factor(ximp.all[[name]])
       }
@@ -447,8 +528,15 @@ MIFAMD <-
       res.MI.disj = res.MI.disj,
       ximp.disj = ximp.disj,
       ximp = ximp,
-      res.imputeFAMD = imputeFAMD(X, ncp = ncp, coeff.ridge = coeff.ridge, method = method, threshold = threshold, maxiter = maxiter, seed = seed),
-      call = list(X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
+      res.imputeFAMD = imputeFAMD(X,
+        ncp = ncp, coeff.ridge = coeff.ridge,
+        method = method, threshold = threshold,
+        maxiter = maxiter, seed = seed
+      ),
+      call = list(
+        X = X, nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge,
+        threshold = threshold, seed = seed, maxiter = maxiter
+      )
     )
     class(res) <- c("MIFAMD", "list")
     if (verbose) {

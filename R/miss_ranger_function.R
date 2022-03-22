@@ -1,44 +1,86 @@
 #' Fast Imputation of Missing Values by Chained Random Forests
 #'
-#' @description \code{missRanger} is a modified imputation function of \code{missRanger} in 'missRanger' package.
-#' The only difference is that the disjunctive imputed dataset is also returned (with categorical columns in form of onehot probability vector).
+#' @description \code{missRanger} is a modified imputation function of
+#' \code{missRanger} in 'missRanger' package. The only difference is that the
+#' disjunctive imputed dataset is also returned (with categorical columns in
+#' form of one-hot probability vector).
 #'
-#' Uses the "ranger" package (Wright & Ziegler) to do fast missing value imputation by chained random forests, see Stekhoven & Buehlmann and Van Buuren & Groothuis-Oudshoorn.
-#' Between the iterative model fitting, it offers the option of predictive mean matching. This firstly avoids imputation with values not present in the original data (like a value 0.3334 in a 0-1 coded variable). Secondly, predictive mean matching tries to raise the variance in the resulting conditional distributions to a realistic level. This allows to do multiple imputation when repeating the call to missRanger().
-#' The iterative chaining stops as soon as \code{maxiter} is reached or if the average out-of-bag estimate of performance stops improving. In the latter case, except for the first iteration, the second last (i.e. best) imputed data is returned.
+#' Uses the "ranger" package (Wright & Ziegler) to do fast missing value
+#' imputation by chained random forests, see Stekhoven & Buehlmann and Van
+#' Buuren & Groothuis-Oudshoorn. Between the iterative model fitting, it offers
+#' the option of predictive mean matching. This firstly avoids imputation with
+#' values not present in the original data (like a value 0.3334 in a 0-1 coded
+#' variable). Secondly, predictive mean matching tries to raise the variance in
+#' the resulting conditional distributions to a realistic level. This allows to
+#' do multiple imputation when repeating the call to missRanger().
+#' The iterative chaining stops as soon as \code{maxiter} is reached or if the
+#' average out-of-bag estimate of performance stops improving. In the latter
+#' case, except for the first iteration, the second last (i.e. best) imputed
+#' data is returned.
 #'
-#' A note on `mtry`: Be careful when passing a non-default `mtry` to `ranger()` because the number of available covariables might be growing during the first iteration, depending on the missing pattern. Values \code{NULL} (default) and 1 are safe choices. Additionally, recent versions of `ranger()` allow `mtry` to be a single-argument function of the number of available covariables, e.g. `mtry = function(m) max(1, m %/% 3)`.
+#' A note on `mtry`: Be careful when passing a non-default `mtry` to `ranger()`
+#' because the number of available covariables might be growing during the first
+#' iteration, depending on the missing pattern. Values \code{NULL} (default) and
+#' 1 are safe choices. Additionally, recent versions of `ranger()` allow `mtry`
+#' to be a single-argument function of the number of available covariables, e.g.
+#' `mtry = function(m) max(1, m %/% 3)`.
 #'
 #' @importFrom stats var reformulate terms.formula predict setNames
 #'
-#' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
-#' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
-#' If e.g. all variables (with missings) should be imputed by all variables except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately for each side of the formula. Further note that variables
-#' with missings must appear in the left hand side if they should be used on the right hand side.
-#' @param pmm.k Number of candidate non-missing values to sample from in the predictive mean matching steps. 0 to avoid this step.
+#' @param data A \code{data.frame} or \code{tibble} with missing values to
+#' impute.
+#' @param formula A two-sided formula specifying variables to be imputed (left
+#' hand side) and variables used to impute (right hand side). Defaults to . ~ .,
+#' i.e. use all variables to impute all variables.
+#' If e.g. all variables (with missings) should be imputed by all variables
+#' except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately
+#' for each side of the formula. Further note that variables
+#' with missings must appear in the left hand side if they should be used on the
+#' right hand side.
+#' @param pmm.k Number of candidate non-missing values to sample from in the
+#' predictive mean matching steps. 0 to avoid this step.
 #' @param maxiter Maximum number of chaining iterations.
 #' @param seed Integer seed to initialize the random generator.
-#' @param verbose Controls how much info is printed to screen. 0 to print nothing. 1 (default) to print a "." per iteration and variable, 2 to print the OOB prediction error per iteration and variable (1 minus R-squared for regression).
-#' Furthermore, if \code{verbose} is positive, the variables used for imputation are listed as well as the variables to be imputed (in the imputation order). This will be useful to detect if some variables are unexpectedly skipped.
-#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag prediction error is added to the output as attribute "oob". This does not work in the special case when the variables are imputed univariately.
+#' @param verbose Controls how much info is printed to screen. 0 to print
+#' nothing. 1 (default) to print a "." per iteration and variable, 2 to print
+#' the OOB prediction error per iteration and variable (1 minus R-squared for
+#' regression).
+#' Furthermore, if \code{verbose} is positive, the variables used for imputation
+#' are listed as well as the variables to be imputed (in the imputation order).
+#' This will be useful to detect if some variables are unexpectedly skipped.
+#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag
+#' prediction error is added to the output as attribute "oob". This does not
+#' work in the special case when the variables are imputed univariately.
 #' @param case.weights Vector with non-negative case weights.
 #' @param col_cat Column index of categorical variables.
-#' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
-#' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
+#' @param ... Arguments passed to \code{ranger()}. If the data set is large,
+#' better use less trees (e.g. \code{num.trees = 20}) and/or a low value of
+#' \code{sample.fraction}.
+#' The following arguments are e.g. incompatible with \code{ranger}:
+#' \code{write.forest}, \code{probability}, \code{split.select.weights},
+#' \code{dependent.variable.name}, and \code{classification}.
 #'
 #' @return \code{ximp} An imputed \code{data.frame}.
 #' @return \code{ximp.disj} A disjunctive imputed \code{data.frame}.
-#' For example if Y7 has levels a and b, then in \code{ximp.disj} the column Y7_1 corresponds to the probability of Y7=a.
+#' For example if Y7 has levels a and b, then in \code{ximp.disj} the column
+#' Y7_1 corresponds to the probability of Y7=a.
 #' @references
 #' \enumerate{
-#'   \item Wright, M. N. & Ziegler, A. (2016). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. Journal of Statistical Software, in press. <arxiv.org/abs/1508.04409>.
-#'   \item Stekhoven, D.J. and Buehlmann, P. (2012). 'MissForest - nonparametric missing value imputation for mixed-type data', Bioinformatics, 28(1) 2012, 112-118. https://doi.org/10.1093/bioinformatics/btr597.
-#'   \item Van Buuren, S., Groothuis-Oudshoorn, K. (2011). mice: Multivariate Imputation by Chained Equations in R. Journal of Statistical Software, 45(3), 1-67. http://www.jstatsoft.org/v45/i03/
+#'   \item Wright, M. N. & Ziegler, A. (2016). ranger: A Fast Implementation of
+#'   Random Forests for High Dimensional Data in C++ and R. Journal of
+#'   Statistical Software, in press. <arxiv.org/abs/1508.04409>.
+#'   \item Stekhoven, D.J. and Buehlmann, P. (2012). 'MissForest - nonparametric
+#'   missing value imputation for mixed-type data', Bioinformatics, 28(1) 2012,
+#'   112-118. https://doi.org/10.1093/bioinformatics/btr597.
+#'   \item Van Buuren, S., Groothuis-Oudshoorn, K. (2011). mice: Multivariate
+#'   Imputation by Chained Equations in R. Journal of Statistical Software,
+#'   45(3), 1-67. http://www.jstatsoft.org/v45/i03/
 #' }
 #' @export
 #'
-missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                       verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), ...) {
+missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L,
+                       seed = NULL, verbose = 1, returnOOB = FALSE,
+                       case.weights = NULL, col_cat = c(), ...) {
   is_ranger_package_installed()
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
@@ -62,7 +104,8 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
     # Create dict_cat with categroical columns
     dict_cat <- dict_onehot(data, col_cat)
   }
-  ## Add: Last iteration will be used to predict the onehot probability for the categorical columns
+  ## Add: Last iteration will be used to predict the onehot probability for the
+  ## categorical columns
   maxiter <- maxiter - 1
 
   # 1) INITIAL CHECKS
@@ -102,7 +145,8 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
     FUN.VALUE = TRUE, function(z) anyNA(z) && !all(is.na(z))
   )]
 
-  # Try to convert special variables to numeric/factor in order to be safely predicted by ranger
+  # Try to convert special variables to numeric/factor in order to be
+  # safely predicted by ranger
   converted <- convert(data[, toImpute, drop = FALSE], check = TRUE)
   data[, toImpute] <- converted$X
 
@@ -127,7 +171,8 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
 
   # 3) SELECT VARIABLES USED TO IMPUTE
 
-  # Variables on the rhs should either appear in "visitSeq" or do not contain any missings
+  # Variables on the rhs should either appear in "visitSeq" or do not
+  # contain any missings
   imputeBy <- relevantVars[[2]][relevantVars[[2]] %in% visitSeq |
     !vapply(data[, relevantVars[[2]], drop = FALSE], anyNA, TRUE)]
   completed <- setdiff(imputeBy, visitSeq)
@@ -181,7 +226,8 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
         } else {
           pred
         }
-        predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
+        predError[[v]] <- fit$prediction.error / (
+          if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
 
         if (is.nan(predError[[v]])) {
           predError[[v]] <- 0
@@ -195,7 +241,9 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
       if (verbose == 1) {
         cat(".")
       } else if (verbose >= 2) {
-        cat(format(round(predError[[v]], verboseDigits), nsmall = verboseDigits), "\t")
+        cat(format(round(predError[[v]], verboseDigits),
+          nsmall = verboseDigits
+        ), "\t")
       }
     }
 
@@ -246,7 +294,10 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
             data = data[!v.na, union(v, completed), drop = FALSE],
             case.weights = case.weights[!v.na], probability = TRUE
           )
-          pred.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE])$predictions
+          pred.disj <- predict(
+            fit.disj,
+            data[v.na, completed, drop = FALSE]
+          )$predictions
           if (pmm.k) {
             data.disj[v.na, dict_cat[[v]]] <- pmm(
               xtrain = fit.disj$predictions,
@@ -283,7 +334,8 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
       } else {
         pred
       }
-      predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
+      predError[[v]] <- fit$prediction.error / (
+        if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
 
 
       if (is.nan(predError[[v]])) {
@@ -298,7 +350,9 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
     if (verbose == 1) {
       cat(".")
     } else if (verbose >= 2) {
-      cat(format(round(predError[[v]], verboseDigits), nsmall = verboseDigits), "\t")
+      cat(format(round(predError[[v]], verboseDigits),
+        nsmall = verboseDigits
+      ), "\t")
     }
   }
 
@@ -337,8 +391,11 @@ missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = 
 
 #' A version of \code{typeof} internally used by \code{missRanger}.
 #'
-#' @description Returns either "numeric" (double or integer), "factor", "character", "logical", "special" (mode numeric, but neither double nor integer) or "" (otherwise).
-#' \code{missRanger} requires this information to deal with response types not natively supported by \code{ranger}.
+#' @description Returns either "numeric" (double or integer), "factor",
+#' "character", "logical", "special" (mode numeric, but neither double nor
+#' integer) or "" (otherwise).
+#' \code{missRanger} requires this information to deal with response types
+#' not natively supported by \code{ranger}.
 #'
 #' @author Michael Mayer
 #'
@@ -363,14 +420,19 @@ typeof2 <- function(object) {
 
 #' Conversion of non-factor/non-numeric variables.
 #'
-#' @description Converts non-factor/non-numeric variables in a data frame to factor/numeric. Stores information to revert back.
+#' @description Converts non-factor/non-numeric variables in a data frame to
+#' factor/numeric. Stores information to revert back.
 #'
 #' @author Michael Mayer
 #'
 #' @param X A data frame.
-#' @param check If \code{TRUE}, the function checks if the converted columns can be reverted without changes.
+#' @param check If \code{TRUE}, the function checks if the converted columns
+#' can be reverted without changes.
 #'
-#' @return A list with the following elements: \code{X} is the converted data frame, \code{vars}, \code{types}, \code{classes} are the names, types and classes of the converted variables. Finally, \code{bad} names variables in \code{X} that should have been converted but could not.
+#' @return A list with the following elements: \code{X} is the converted
+#' dataframe, \code{vars}, \code{types}, \code{classes} are the names, types
+#' and classes of the converted variables. Finally, \code{bad} names variables
+#' in \code{X} that should have been converted but could not.
 convert <- function(X, check = FALSE) {
   stopifnot(is.data.frame(X))
 
@@ -407,7 +469,8 @@ convert <- function(X, check = FALSE) {
 #' @author Michael Mayer
 #'
 #' @param con A list returned by \code{convert}.
-#' @param X A data frame with some columns to be converted back according to the information stored in \code{converted}.
+#' @param X A data frame with some columns to be converted back according to the
+#' information stored in \code{converted}.
 #'
 #' @return A data frame.
 revert <- function(con, X = con$X) {
@@ -434,10 +497,13 @@ revert <- function(con, X = con$X) {
 
 #' Univariate Imputation
 #'
-#' Fills missing values of a vector, matrix or data frame by sampling with replacement from the non-missing values. For data frames, this sampling is done within column.
+#' Fills missing values of a vector, matrix or data frame by sampling with
+#' replacement from the non-missing values. For data frames, this sampling is
+#' done within column.
 #'
 #' @param x A vector, matrix or data frame.
-#' @param v A character vector of column names to impute (only relevant if \code{x} is a data frame). The default \code{NULL} imputes all columns.
+#' @param v A character vector of column names to impute (only relevant if
+#' \code{x} is a data frame). The default \code{NULL} imputes all columns.
 #' @param seed An integer seed.
 #'
 #' @return \code{x} with imputed values.
@@ -475,17 +541,24 @@ imputeUnivariate <- function(x, v = NULL, seed = NULL) {
 
 #' Predictive Mean Matching
 #'
-#' For each value in the prediction vector \code{xtest}, one of the closest \code{k} values in the prediction vector \code{xtrain} is randomly chosen and its observed value in \code{ytrain} is returned.
+#' For each value in the prediction vector \code{xtest}, one of the closest
+#' \code{k} values in the prediction vector \code{xtrain} is randomly chosen and
+#' its observed value in \code{ytrain} is returned.
 #'
 #' @importFrom stats rmultinom
 #'
-#' @param xtrain Vector with predicted values in the training data. Can be of type logical, numeric, character, or factor.
-#' @param xtest Vector as \code{xtrain} with predicted values in the test data. Missing values are not allowed.
-#' @param ytrain Vector of the observed values in the training data. Must be of same length as \code{xtrain}. Missing values in either of \code{xtrain} or \code{ytrain} will be dropped in a pairwise manner.
+#' @param xtrain Vector with predicted values in the training data. Can be of
+#' type logical, numeric, character, or factor.
+#' @param xtest Vector as \code{xtrain} with predicted values in the test data
+#' Missing values are not allowed.
+#' @param ytrain Vector of the observed values in the training data. Must be of
+#' same length as \code{xtrain}. Missing values in either of \code{xtrain} or
+#' \code{ytrain} will be dropped in a pairwise manner.
 #' @param k Number of nearest neighbours to sample from.
 #' @param seed Integer random seed.
 #'
-#' @return Vector of the same length as \code{xtest} with values from \code{xtrain}.
+#' @return Vector of the same length as \code{xtest} with values from
+#' \code{xtrain}.
 #' @export
 #'
 #' @examples

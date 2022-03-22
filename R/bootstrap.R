@@ -1,15 +1,18 @@
 #' bootsample: create several dataframes by bootstrap resampling
 #'
 #' @description
-#' \code{bootsample} function generates several dataframes by drawing samples of size n by simple random sampling with replacement.
+#' \code{bootsample} function generates several dataframes by drawing samples of
+#' size n by simple random sampling with replacement.
 #'
 #' In average, if we want to cover all the n rows in the original dataframe,
 #' the number of samples should be greater than log(n).
 #'
-#' In this function, to avoid that some rows are uncovered during resampling process (even if the number of samples is smaller than log(n)),
+#' In this function, to avoid that some rows are uncovered during resampling
+#' process (even if the number of samples is smaller than log(n)),
 #' the last bootstrap sample will make sure to cover all those uncovered rows.
 #' @param df A complete or incomplete dataframe
-#' @param num_sample Number of bootstrapped samples. We suggest that num_sample > Log(n), where n is the number of rows.
+#' @param num_sample Number of bootstrapped samples. We suggest that num_sample
+#' > Log(n), where n is the number of rows.
 #' @return A list of bootstrapped dataframes.
 #' @export
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
@@ -26,7 +29,8 @@ bootsample <- function(df, num_sample) {
   num_row <- nrow(df)
   # if (num_sample < log(num_row)) {
   #   warning(
-  #     "Warning: We suggest that the bootstrap number > log(number of rows), if not, all the rows may not be covered in the bootstrap samples.\n"
+  #     "Warning: We suggest that the bootstrap number > log(number of rows),
+  # if not, all the rows may not be covered in the bootstrap samples.\n"
   #   )
   # }
   ls_df_new <- list()
@@ -41,7 +45,9 @@ bootsample <- function(df, num_sample) {
   # last sample
   ls_idx_miss <- c(1:num_row)
   ls_idx_miss <- ls_idx_miss[!ls_idx_miss %in% unique(ls_idx)]
-  chosen_idx <- gdata::resample(c(1:num_row), num_row - length(ls_idx_miss), replace = TRUE)
+  chosen_idx <- gdata::resample(c(1:num_row), num_row - length(ls_idx_miss),
+    replace = TRUE
+  )
   chosen_idx <- c(chosen_idx, ls_idx_miss)
   ls_df_new[[i]] <- df[chosen_idx, ]
 
@@ -52,26 +58,39 @@ bootsample <- function(df, num_sample) {
 #'
 #' @description
 #' \code{combine_boot} function combines several imputed bootstrapped dataframes
-#' into the final imputed dataframe and provide the variance for each imputed value.
+#' into the final imputed dataframe and provide the variance for each imputed
+#' value.
 #' @param ls_df A list of imputed bootstrapped dataframes.
 #' @param col_con Continous columns index.
 #' @param col_dis Discret columns index.
 #' @param col_cat Categorical columns index.
-#' @param num_row_origin Number of rows in the original incomplete dataframe before bootstrapping.
-#' @param method The encoded method of categorical columns in the imputed dataframes.
+#' @param num_row_origin Number of rows in the original incomplete dataframe
+#' before bootstrapping.
+#' @param method The encoded method of categorical columns in the imputed
+#' dataframes.
 #' This function is coded for both "onehot" and "factor" encoded situations.
-#' When \code{method} = 'onehot', \code{combine_boot} averages the probability vectors over the $B$ imputed datasets for the same observation,
-#' then choose the position of maximum probability as the predicted category in the final result.
+#' When \code{method} = 'onehot', \code{combine_boot} averages the probability
+#' vectors over the $B$ imputed datasets for the same observation,
+#' then choose the position of maximum probability as the predicted category in
+#' the final result.
 #'  When \code{method} = 'factor', for each observation, \code{combine_boot}
 #' choose the mode value over the imputed dataframes as the predicted category.
-#' @param dict_cat The dictionary of categorical columns names if "onehot" method is applied.
-#' For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3")).
-#' @param var_cat The method of variance calculation for the categorical columns.
-#' "unalike" will lead to the calculation of unalikeability, while "wilcox_va" will lead to the calculation of Wilcox index: VarNC.
-#' @return \code{df_result_disj} The final imputed dataframe with the categorical columns in onehot form.
-#' @return \code{df_result_var_disj} The variance matrix for the final imputation dataframe with the categorical columns in onehot form.
-#' @return \code{df_result} The final imputed dataframe with the categorical columns in factor form.
-#' @return \code{df_result_var} The variance matrix for the final imputation dataframe with the categorical columns in factor form.
+#' @param dict_cat The dictionary of categorical columns names if "onehot"
+#' method is applied.
+#' For example, it could be list("Y7"=c("Y7_1","Y7_2"),
+#' "Y8"=c("Y8_1","Y8_2","Y8_3")).
+#' @param var_cat The method of variance calculation for the categorical
+#' columns.
+#' "unalike" will lead to the calculation of unalikeability, while "wilcox_va"
+#' will lead to the calculation of Wilcox index: VarNC.
+#' @return \code{df_result_disj} The final imputed dataframe with the
+#' categorical columns in onehot form.
+#' @return \code{df_result_var_disj} The variance matrix for the final
+#' imputation dataframe with the categorical columns in onehot form.
+#' @return \code{df_result} The final imputed dataframe with the categorical
+#' columns in factor form.
+#' @return \code{df_result_var} The variance matrix for the final imputation
+#' dataframe with the categorical columns in factor form.
 #' @export
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
@@ -105,7 +124,8 @@ combine_boot <- function(ls_df,
     col_name_cat <- ls_col_name[col_cat]
     if (is_onehot) {
       col_name_cat <- ls_col_name[col_cat]
-      # We treat everything as numeric if the categorical variables are encoded by onehot probability
+      # We treat everything as numeric if the categorical variables are encoded
+      # by onehot probability
       col_num <- c(col_num, col_cat)
     }
     if (is_unalike) {
@@ -121,7 +141,9 @@ combine_boot <- function(ls_df,
   for (df in ls_df) {
     df[["index"]] <- as.numeric(row.names(df))
     df[["index"]] <- floor(df[["index"]])
-    df_num <- stats::aggregate(. ~ df[c("index", col_name_num)]$index, data = df[c("index", col_name_num)], mean)
+    df_num <- stats::aggregate(. ~ df[c("index", col_name_num)]$index,
+      data = df[c("index", col_name_num)], mean
+    )
     df_num <- df_num[-c(1)]
     if (exist_cat && !is_onehot) {
       df_cat <- df[c("index", col_name_cat)] %>%
@@ -144,34 +166,61 @@ combine_boot <- function(ls_df,
   df_new_merge <- Reduce(function(dtf1, dtf2) {
     rbind(dtf1, dtf2)
   }, ls_df_new)
-  # Add the combined result for categorical variables deducted from the onehot result
+  # Add the combined result for categorical variables deducted from the onehot
+  # result
   if (exist_cat && is_onehot) {
     names_cat <- names(dict_cat)
     for (name in names_cat) {
-      df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+      df_new_merge[[name]] <- apply(
+        df_new_merge[dict_cat[[name]]], 1,
+        which_max_cat, name, dict_cat
+      )
       df_new_merge[[name]] <- unlist(df_new_merge[[name]])
       df_new_merge[[name]] <- factor(df_new_merge[[name]])
     }
   }
 
   # By Bootstrap combining rules
-  df_new_mean_num <- stats::aggregate(. ~ df_new_merge[c("index", col_name_num)]$index, data = df_new_merge[c("index", col_name_num)], mean)
+  df_new_mean_num <- stats::aggregate(. ~ df_new_merge[c(
+    "index",
+    col_name_num
+  )]$index,
+  data = df_new_merge[c(
+    "index",
+    col_name_num
+  )],
+  mean
+  )
   df_new_mean_num <- df_new_mean_num[-c(1)]
-  df_new_num_var <- stats::aggregate(. ~ df_new_merge[c("index", col_name_num)]$index, data = df_new_merge[c(col_name_num)], var)
+  df_new_num_var <- stats::aggregate(. ~ df_new_merge[
+    c("index", col_name_num)
+  ]$index, data = df_new_merge[c(col_name_num)], var)
   colnames(df_new_num_var)[1] <- "index"
   if (exist_dis) {
-    df_new_mean_num[col_name_dis] <- round(df_new_mean_num[col_name_dis]) # for the discret variables
+    # for the discret variables
+    df_new_mean_num[col_name_dis] <- round(df_new_mean_num[col_name_dis])
   }
 
   if (exist_cat && !is_onehot) {
-    df_new_merge <- factor_encode(df_new_merge, which(colnames(df_new_merge) %in% col_name_cat))
+    df_new_merge <- factor_encode(
+      df_new_merge,
+      which(colnames(
+        df_new_merge
+      ) %in% col_name_cat)
+    )
     df_new_mode_cat <- df_new_merge[c("index", col_name_cat)] %>%
       dplyr::group_by(.data$index) %>%
       dplyr::summarise(dplyr::across(dplyr::all_of(col_name_cat), Mode_cat))
     df_new <- merge(df_new_mean_num, df_new_mode_cat, by = "index")
-    df_new <- factor_encode(df_new, which(colnames(df_new_merge) %in% col_name_cat))
+    df_new <- factor_encode(df_new, which(
+      colnames(df_new_merge) %in% col_name_cat
+    ))
     if (is_unalike) {
-      df_new_cat_var <- stats::aggregate(. ~ df_new_merge[c("index", col_name_cat)]$index, data = df_new_merge[c("index", col_name_cat)], uwo4419::unalike)
+      df_new_cat_var <- stats::aggregate(. ~ df_new_merge[
+        c("index", col_name_cat)
+      ]$index,
+      data = df_new_merge[c("index", col_name_cat)], uwo4419::unalike
+      )
       df_new_cat_var <- df_new_cat_var[-c(1)]
     } else {
       df_new_cat_var <- df_new_merge[c("index", col_name_cat)] %>%
@@ -179,25 +228,35 @@ combine_boot <- function(ls_df,
         dplyr::summarise(dplyr::across(dplyr::all_of(col_name_cat), VA_fact))
     }
     df_new_var <- merge(df_new_num_var, df_new_cat_var, by = "index")
-    # We need to use unalikeability to mesure the uncertainty of the categorical variables
+    # We need to use unalikeability to mesure the uncertainty of the
+    # categorical variables
   } else {
     df_new <- df_new_mean_num
     df_new_var <- df_new_num_var
   }
-  # Add the combined result for categorical variables deducted from the onehot result to df_new
+  # Add the combined result for categorical variables deducted from the
+  # one-hot result to df_new
   if (is_onehot && exist_cat) {
     for (name in names_cat) {
-      df_new[[name]] <- apply(df_new[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+      df_new[[name]] <- apply(
+        df_new[dict_cat[[name]]], 1,
+        which_max_cat, name, dict_cat
+      )
       df_new[[name]] <- unlist(df_new[[name]])
     }
     if (is_unalike) {
-      df_new_cat_var <- stats::aggregate(. ~ df_new_merge[c("index", names_cat)]$index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
+      df_new_cat_var <- stats::aggregate(. ~ df_new_merge[
+        c("index", names_cat)
+      ]$index,
+      data = df_new_merge[c("index", names_cat)], uwo4419::unalike
+      )
       df_new_cat_var <- df_new_cat_var[-c(1)]
     } else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         dplyr::group_by(.data$index) %>%
         dplyr::summarise(dplyr::across(dplyr::all_of(names_cat), VA_fact))
-      # df_new_cat_var = aggregate(.~index , simplify=FALSE, data =df_new_merge[c("index",names_cat)], VA_fact)
+      # df_new_cat_var = aggregate(.~index , simplify=FALSE,
+      # data = df_new_merge[c("index",names_cat)], VA_fact)
     }
     df_new_var <- merge(df_new_num_var, df_new_cat_var, by = "index")
   }
@@ -208,7 +267,9 @@ combine_boot <- function(ls_df,
     print(paste0("Covered number of rows: ", num_row_new))
     print(paste0("Original number of rows: ", num_row_origin))
     warning(
-      "Warning: All the rows in the original dataset is not selected in the bootstrap samples. An increase on the number of bootstrap samples is suggested.\n"
+      "Warning: All the rows in the original dataset is not selected in the
+      bootstrap samples. An increase on the number of bootstrap samples is
+      suggested.\n"
     )
   }
   df_idx <- data.frame("index" = c(1:num_row_origin))
@@ -227,8 +288,14 @@ combine_boot <- function(ls_df,
 
   # remove index column and the combined categorical columns
   if (is_onehot && exist_cat) {
-    df_result_disj <- df_result_with_idx[, !(names(df_result_with_idx) %in% c(names_cat, "index"))]
-    df_result_var_disj <- df_result_var_with_idx[, !(names(df_result_with_idx) %in% c(names_cat, "index"))]
+    df_result_disj <-
+      df_result_with_idx[, !(names(df_result_with_idx) %in% c(
+        names_cat, "index"
+      ))]
+    df_result_var_disj <-
+      df_result_var_with_idx[, !(names(df_result_with_idx) %in% c(
+        names_cat, "index"
+      ))]
   } else {
     df_result_disj <- df_result_with_idx[-c(1)]
     df_result_var_disj <- df_result_var_with_idx[-c(1)]
@@ -237,8 +304,11 @@ combine_boot <- function(ls_df,
   # Final result for the categorical variables
   if (is_onehot) {
     names_num <- colnames(ls_df[[1]])[c(col_con, col_dis)]
-    df_result <- df_result_with_idx[, (names(df_result_with_idx) %in% c(names_cat, names_num))] # remove index and onehot columns, +1 is for the adjustment
-    df_result_var <- df_result_var_with_idx[, (names(df_result_var_with_idx) %in% c(names_cat, names_num))]
+    # remove index and onehot columns, +1 is for the adjustment
+    df_result <- df_result_with_idx[, (
+      names(df_result_with_idx) %in% c(names_cat, names_num))]
+    df_result_var <- df_result_var_with_idx[, (
+      names(df_result_var_with_idx) %in% c(names_cat, names_num))]
   } else {
     df_result <- df_result_disj
     df_result_var <- df_result_var_disj

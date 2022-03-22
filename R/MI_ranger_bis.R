@@ -1,33 +1,59 @@
 #' missRanger_mod_draw
 #'
-#' @description \code{missRanger_mod_draw} create one imputation result for multiple imputation with \code{missRanger} method.
-#' Please find the detailed explanation of \code{missRanger} single imputation method in  the documentation of \code{missRanger} in 'missRanger' package.
+#' @description \code{missRanger_mod_draw} create one imputation result for
+#' multiple imputation with \code{missRanger} method.
+#' Please find the detailed explanation of \code{missRanger} single imputation
+#' method in  the documentation of \code{missRanger} in 'missRanger' package.
 #' In this document, only the differences will be explained.
 #'
-#' \code{missRanger} is an imputation method based on random forest. In \code{missRanger_mod_draw}, during the last iteration, for a certain prediction,
-#'  instead of taking average of the prediction result from each tree of the random forest, we draw one result from the empirical
-#'  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger}.
+#' \code{missRanger} is an imputation method based on random forest. In
+#' \code{missRanger_mod_draw}, during the last iteration, for a certain
+#' prediction, instead of taking average of the prediction result from each tree
+#' of the random forest, we draw one result from the empirical distribution
+#' constructed by predictions of trees. The other steps of the imputation are
+#' identical as those of \code{missRanger}.
 #'
-#' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
-#' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
-#' If e.g. all variables (with missings) should be imputed by all variables except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately for each side of the formula. Further note that variables
-#' with missings must appear in the left hand side if they should be used on the right hand side.
-#' @param pmm.k Number of candidate non-missing values to sample from in the predictive mean matching steps. 0 to avoid this step.
+#' @param data A \code{data.frame} or \code{tibble} with missing values to
+#' impute.
+#' @param formula A two-sided formula specifying variables to be imputed (left
+#' hand side) and variables used to impute (right hand side). Defaults to . ~ .,
+#' i.e. use all variables to impute all variables.
+#' If e.g. all variables (with missings) should be imputed by all variables
+#' except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately
+#' for each side of the formula. Further note that variables with missings must
+#' appear in the left hand side if they should be used on the right hand side.
+#' @param pmm.k Number of candidate non-missing values to sample from in the
+#' predictive mean matching steps. 0 to avoid this step.
 #' @param maxiter Maximum number of chaining iterations.
 #' @param seed Integer seed to initialize the random generator.
-#' @param verbose Controls how much info is printed to screen. 0 to print nothing. 1 (default) to print a "." per iteration and variable, 2 to print the OOB prediction error per iteration and variable (1 minus R-squared for regression).
-#' Furthermore, if \code{verbose} is positive, the variables used for imputation are listed as well as the variables to be imputed (in the imputation order). This will be useful to detect if some variables are unexpectedly skipped.
-#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag prediction error is added to the output as attribute "oob". This does not work in the special case when the variables are imputed univariately.
+#' @param verbose Controls how much info is printed to screen. 0 to print
+#' nothing. 1 (default) to print a "." per iteration and variable, 2 to print
+#' the OOB prediction error per iteration and variable (1 minus R-squared for
+#' regression).
+#' Furthermore, if \code{verbose} is positive, the variables used for imputation
+#' are listed as well as the variables to be imputed (in the imputation order).
+#' This will be useful to detect if some variables are unexpectedly skipped.
+#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag
+#' prediction error is added to the output as attribute "oob". This does not
+#' work in the special case when the variables are imputed univariately.
 #' @param case.weights Vector with non-negative case weights.
-#' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
-#' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
+#' @param ... Arguments passed to \code{ranger()}. If the data set is large,
+#' better use less trees (e.g. \code{num.trees = 20}) and/or a low value of
+#' \code{sample.fraction}. The following arguments are e.g. incompatible with
+#' \code{ranger}: \code{write.forest}, \code{probability},
+#' \code{split.select.weights}, \code{dependent.variable.name}, and
+#' \code{classification}.
 #' @param col_cat Indices of categorical columns.
 #' @param num_mi Number of multiple imputations.
 #' @export
-#' @return \code{ls_ximp} List of imputed datasets for multiple imputation in \code{MI_missRanger}.
-#' @return \code{ls_ximp.disj} List of disjunctive imputed datasets for multiple imputation in \code{MI_missRanger}.
-missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                                verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
+#' @return \code{ls_ximp} List of imputed datasets for multiple imputation in
+#' \code{MI_missRanger}.
+#' @return \code{ls_ximp.disj} List of disjunctive imputed datasets for multiple
+#' imputation in \code{MI_missRanger}.
+missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L,
+                                maxiter = 10L, seed = NULL, verbose = 1,
+                                returnOOB = FALSE, case.weights = NULL,
+                                col_cat = c(), num_mi = 5, ...) {
   if (verbose) {
     cat("\nMissing value imputation by random forests\n")
   }
@@ -38,7 +64,8 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
     dict_cat <- dict_onehot(data, col_cat)
     name_cat <- colnames(data)[col_cat]
   }
-  ## Add: Last iteration will be used to predict the onehot probability for the categorical columns
+  ## Add: Last iteration will be used to predict the one-hot probability for
+  ## the categorical columns
   maxiter <- maxiter - 1
 
   # 1) INITIAL CHECKS
@@ -78,7 +105,8 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
     FUN.VALUE = TRUE, function(z) anyNA(z) && !all(is.na(z))
   )]
 
-  # Try to convert special variables to numeric/factor in order to be safely predicted by ranger
+  # Try to convert special variables to numeric/factor in order to be safely
+  # predicted by ranger
   converted <- convert(data[, toImpute, drop = FALSE], check = TRUE)
   data[, toImpute] <- converted$X
 
@@ -103,7 +131,8 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
 
   # 3) SELECT VARIABLES USED TO IMPUTE
 
-  # Variables on the rhs should either appear in "visitSeq" or do not contain any missings
+  # Variables on the rhs should either appear in "visitSeq" or do not contain
+  # any missings
   imputeBy <- relevantVars[[2]][relevantVars[[2]] %in% visitSeq |
     !vapply(data[, relevantVars[[2]], drop = FALSE], anyNA, TRUE)]
   completed <- setdiff(imputeBy, visitSeq)
@@ -157,7 +186,8 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
         } else {
           pred
         }
-        predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
+        predError[[v]] <- fit$prediction.error / (
+          if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
 
         if (is.nan(predError[[v]])) {
           predError[[v]] <- 0
@@ -171,7 +201,10 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
       if (verbose == 1) {
         cat(".")
       } else if (verbose >= 2) {
-        cat(format(round(predError[[v]], verboseDigits), nsmall = verboseDigits), "\t")
+        cat(format(round(
+          predError[[v]],
+          verboseDigits
+        ), nsmall = verboseDigits), "\t")
       }
     }
 
@@ -222,7 +255,9 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
         )
         # pred <- predict(fit, data[v.na, completed, drop = FALSE])$predictions
         ### MI###
-        pred1 <- predict(fit, data[v.na, completed, drop = FALSE], predict.all = TRUE)$predictions
+        pred1 <- predict(fit, data[v.na, completed, drop = FALSE],
+          predict.all = TRUE
+        )$predictions
         pred_draw <- apply(pred1, 1, sample, 1)
         #######
         if (exist_cat) {
@@ -232,17 +267,26 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
               data = data[!v.na, union(v, completed), drop = FALSE],
               case.weights = case.weights[!v.na], probability = TRUE
             )
-            # pred.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE])$predictions
+            # pred.disj <- predict(fit.disj,
+            # data[v.na, completed, drop = FALSE])$predictions
             ### MI###
-            pred1.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE], predict.all = TRUE)$predictions
-            tree_chosen <- sample(c(1:fit.disj$num.trees), dim(pred1.disj)[1], replace = TRUE) # choose tree result for each ligne
+            pred1.disj <- predict(fit.disj, data[v.na, completed, drop = FALSE],
+              predict.all = TRUE
+            )$predictions
+            # choose tree result for each ligne
+            tree_chosen <- sample(c(1:fit.disj$num.trees), dim(pred1.disj)[1],
+              replace = TRUE
+            )
             # Draw from tress results
             df_tmp <- data.frame(tree_chosen)
             df_tmp$tree_chosen <- factor(df_tmp$tree_chosen)
             levels(df_tmp$tree_chosen) <- c(1:fit.disj$num.trees)
             dummy <- dummyVars(" ~ .", data = df_tmp, sep = "_")
             df.disj <- data.frame(predict(dummy, newdata = df_tmp))
-            mask.disj <- array(as.matrix(df.disj), c(dim(df.disj), dim(pred1.disj)[2]))
+            mask.disj <- array(as.matrix(df.disj), c(
+              dim(df.disj),
+              dim(pred1.disj)[2]
+            ))
             mask.disj <- aperm(mask.disj, c(1, 3, 2))
             pred_draw.disj <- apply(mask.disj * pred1.disj, c(1, 2), sum)
             #######
@@ -253,10 +297,16 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
                 ytrain = data.disj[[v]][!v.na],
                 k = pmm.k
               )
-            } else if (ncol(data.disj[v.na, dict_cat[[v]]]) == ncol(pred_draw.disj)) {
+            } else if (ncol(data.disj[
+              v.na,
+              dict_cat[[v]]
+            ]) == ncol(pred_draw.disj)) {
               data.disj[v.na, dict_cat[[v]]] <- pred_draw.disj
             } else { # When there are dropped unused levels
-              colnames(pred_draw.disj) <- paste0(v, "_", colnames(pred_draw.disj))
+              colnames(pred_draw.disj) <- paste0(
+                v, "_",
+                colnames(pred_draw.disj)
+              )
               data.disj[v.na, colnames(pred_draw.disj)] <- pred_draw.disj
             }
           } else {
@@ -282,7 +332,8 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
         } else {
           pred_draw
         }
-        predError[[v]] <- fit$prediction.error / (if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
+        predError[[v]] <- fit$prediction.error / (
+          if (fit$treetype == "Regression") var(data[[v]][!v.na]) else 1)
 
         if (is.nan(predError[[v]])) {
           predError[[v]] <- 0
@@ -296,7 +347,9 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
       if (verbose == 1) {
         cat(".")
       } else if (verbose >= 2) {
-        cat(format(round(predError[[v]], verboseDigits), nsmall = verboseDigits), "\t")
+        cat(format(round(predError[[v]], verboseDigits),
+          nsmall = verboseDigits
+        ), "\t")
       }
     }
 
@@ -330,38 +383,61 @@ missRanger_mod_draw <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L
 
 #' MI_missRanger
 #'
-#' @description \code{MI_missRanger} is a function of multiple imputation with \code{missRanger} method.
+#' @description \code{MI_missRanger} is a function of multiple imputation with
+#' \code{missRanger} method.
 #'
-#'  In \code{missRanger_mod_draw}, for a certain prediction,
-#'  instead of taking average of the prediction result from each tree of the random forest, during the last iteration, we draw one result from the empirical
-#'  distribution constructed by predictions of trees. The other steps of the imputation are identical as those of \code{missRanger}
-#'  from 'missRanger' package.
+#' In \code{missRanger_mod_draw}, for a certain prediction, instead of taking
+#' average of the prediction result from each tree of the random forest, during
+#' the last iteration, we draw one result from the empirical distribution
+#' constructed by predictions of trees. The other steps of the imputation are
+#' identical as those of \code{missRanger} from 'missRanger' package.
 #'
-#'  \code{MI_missRanger} takes all the imputation results from \code{missRanger_mod_draw} and combine them with Rubin's Rule
-#'  to generate the final imputed data set.
-#' @param data A \code{data.frame} or \code{tibble} with missing values to impute.
-#' @param formula A two-sided formula specifying variables to be imputed (left hand side) and variables used to impute (right hand side). Defaults to . ~ ., i.e. use all variables to impute all variables.
-#' If e.g. all variables (with missings) should be imputed by all variables except variable "ID", use . ~ . - ID. Note that a "." is evaluated separately for each side of the formula. Further note that variables
-#' with missings must appear in the left hand side if they should be used on the right hand side.
-#' @param pmm.k Number of candidate non-missing values to sample from in the predictive mean matching steps. 0 to avoid this step.
+#' \code{MI_missRanger} takes all the imputation results from
+#' \code{missRanger_mod_draw} and combine them with Rubin's Rule to generate
+#' the final imputed data set.
+#' @param data A \code{data.frame} or \code{tibble} with missing values to
+#' impute.
+#' @param formula A two-sided formula specifying variables to be imputed (lef
+#' hand side) and variables used to impute (right hand side). Defaults to . ~ .,
+#' i.e. use all variables to impute all variables. If e.g. all variables (with
+#' missings) should be imputed by all variables except variable "ID", use . ~ .
+#' - ID. Note that a "." is evaluated separately for each side of the formula.
+#' Further note that variables with missings must appear in the left hand side
+#' if they should be used on the right hand side.
+#' @param pmm.k Number of candidate non-missing values to sample from in the
+#' predictive mean matching steps. 0 to avoid this step.
 #' @param maxiter Maximum number of chaining iterations.
 #' @param seed Integer seed to initialize the random generator.
-#' @param verbose Controls how much info is printed to screen. 0 to print nothing. 1 (default) to print a "." per iteration and variable, 2 to print the OOB prediction error per iteration and variable (1 minus R-squared for regression).
-#' Furthermore, if \code{verbose} is positive, the variables used for imputation are listed as well as the variables to be imputed (in the imputation order). This will be useful to detect if some variables are unexpectedly skipped.
-#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag prediction error is added to the output as attribute "oob". This does not work in the special case when the variables are imputed univariately.
+#' @param verbose Controls how much info is printed to screen. 0 to print
+#' nothing. 1 (default) to print a "." per iteration and variable, 2 to print
+#' the OOB prediction error per iteration and variable (1 minus R-squared for
+#' regression). Furthermore, if \code{verbose} is positive, the variables used
+#' for imputation are listed as well as the variables to be imputed (in the
+#' imputation order). This will be useful to detect if some variables are
+#' unexpectedly skipped.
+#' @param returnOOB Logical flag. If TRUE, the final average out-of-bag
+#' prediction error is added to the output as attribute "oob". This does not
+#' work in the special case when the variables are imputed univariately.
 #' @param case.weights Vector with non-negative case weights.
-#' @param ... Arguments passed to \code{ranger()}. If the data set is large, better use less trees (e.g. \code{num.trees = 20}) and/or a low value of \code{sample.fraction}.
-#' The following arguments are e.g. incompatible with \code{ranger}: \code{write.forest}, \code{probability}, \code{split.select.weights}, \code{dependent.variable.name}, and \code{classification}.
+#' @param ... Arguments passed to \code{ranger()}. If the data set is large,
+#' better use less trees (e.g. \code{num.trees = 20}) and/or a low value of
+#' \code{sample.fraction}.
+#' The following arguments are e.g. incompatible with \code{ranger}:
+#' \code{write.forest}, \code{probability}, \code{split.select.weights},
+#' \code{dependent.variable.name}, and \code{classification}.
 #' @param col_cat Indices of categorical columns
 #' @param num_mi Number of multiple imputation
 #'
 #' @export
 #' @return \code{ximp} Final imputed dataset.
 #' @return \code{ximp.disj} Final disjunctive imputed dataset.
-#' @return \code{ls_imputations} List of imputed dataset from multiple imputation.
-#' @return \code{ls_imputations.disj} List of disjunctive imputed dataset from multiple imputation.
-MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed = NULL,
-                          verbose = 1, returnOOB = FALSE, case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
+#' @return \code{ls_imputations} List of imputed dataset from multiple
+#' imputation.
+#' @return \code{ls_imputations.disj} List of disjunctive imputed dataset from
+#' multiple imputation.
+MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L,
+                          seed = NULL, verbose = 1, returnOOB = FALSE,
+                          case.weights = NULL, col_cat = c(), num_mi = 5, ...) {
   is_ranger_package_installed()
   is_abind_package_installed()
   ## Add:
@@ -391,7 +467,10 @@ MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed
   }
   imputations <- list()
   imputations.disj <- list()
-  res <- missRanger_mod_draw(data, formula, pmm.k, maxiter, seed, verbose, returnOOB, case.weights, col_cat, num_mi)
+  res <- missRanger_mod_draw(
+    data, formula, pmm.k, maxiter, seed, verbose,
+    returnOOB, case.weights, col_cat, num_mi
+  )
   imputations <- res$ls_ximp
   imputations.disj <- res$ls_ximp.disj
   exist_cat <- !all(c(0, col_cat) == c(0))
@@ -404,7 +483,10 @@ MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed
     dict_cat <- dict_onehot(data, col_cat)
     names_cat <- names(dict_cat)
     for (name in names_cat) {
-      final.imp[[name]] <- apply(final.imp.disj[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+      final.imp[[name]] <- apply(
+        final.imp.disj[dict_cat[[name]]], 1,
+        which_max_cat, name, dict_cat
+      )
       final.imp[[name]] <- unlist(final.imp[[name]])
       final.imp[[name]] <- factor(final.imp[[name]])
       final.imp <- final.imp[, !names(final.imp) %in% dict_cat[[name]]]
@@ -417,10 +499,16 @@ MI_missRanger <- function(data, formula = . ~ ., pmm.k = 0L, maxiter = 10L, seed
       for (col in name_cat) {
         levels(imputations[[i]][[col]]) <- dict_lev[[col]]
       }
-      colnames(imputations.disj[[i]]) <- dict_name_disj[colnames(imputations.disj[[i]])]
+      colnames(imputations.disj[[i]]) <- dict_name_disj[
+        colnames(imputations.disj[[i]])
+      ]
     }
   } else {
     final.imp <- final.imp.disj
   }
-  return(list(ls_imputations = imputations, ls_imputations.disj = imputations.disj, ximp = final.imp, ximp.disj = final.imp.disj))
+  return(list(
+    ls_imputations = imputations,
+    ls_imputations.disj = imputations.disj, ximp = final.imp,
+    ximp.disj = final.imp.disj
+  ))
 }

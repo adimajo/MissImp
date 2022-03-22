@@ -9,20 +9,27 @@
 ##############################################################################
 #' missForest: modified missForest with onehot probability
 #'
-#' @description \code{missForest} is a modified version of the function \code{missForest} by Daniel Stekhoven.
-#' Please find the detailed documentation of \code{missForest} in the missForest package. Only the modifications are explained on this page.
-#' The original \code{missForest} function returns the final imputation result after convergence or \code{maxiter} iterations.
-#' The results of categorical columns are returned in form of vector. In \code{missForest} function, during the last iteration,
-#' not only the final result, but also the onehot probability for each category is returned.
+#' @description \code{missForest} is a modified version of the function
+#' \code{missForest} by Daniel Stekhoven.
+#' Please find the detailed documentation of \code{missForest} in the missForest
+#' package. Only the modifications are explained on this page. The original
+#' \code{missForest} function returns the final imputation result after
+#' convergence or \code{maxiter} iterations.
+#' The results of categorical columns are returned in form of vector. In
+#' \code{missForest} function, during the last iteration, not only the final
+#' result, but also the onehot probability for each category is returned.
 #' @param xmis data matrix with missing values.
 #' @param maxiter stop after how many iterations (default = 10).
 #' @param ntree how many trees are grown in the forest (default = 100).
 #' @param col_cat index of categorical columns.
 #' @param variablewise (boolean) return OOB errors for each variable separately.
-#' @param decreasing (boolean) if TRUE the columns are sorted with decreasing amount of missing values.
-#' @param verbose (boolean) if TRUE then missForest returns error estimates, runtime and if available true error during iterations.
+#' @param decreasing (boolean) if TRUE the columns are sorted with decreasing
+#' amount of missing values.
+#' @param verbose (boolean) if TRUE then missForest returns error estimates,
+#' runtime and if available true error during iterations.
 #' @param mtry how many variables should be tried randomly at each node.
-#' @param replace (boolean) if TRUE bootstrap sampling (with replacements) is performed, else subsampling (without replacements).
+#' @param replace (boolean) if TRUE bootstrap sampling (with replacements) is
+#' performed, else subsampling (without replacements).
 #' @param classwt list of priors of the classes in the categorical variables.
 #' @param cutoff list of class cutoffs for each categorical variable.
 #' @param strata list of (factor) variables used for stratified sampling.
@@ -36,22 +43,27 @@
 #' @export
 #' @importFrom foreach %dopar%
 #' @return \code{ximp} imputed data matrix of same type as 'xmis'.
-#' @return \code{ximp.disj} imputed data matrix of same type as 'xmis' for the numeric columns.
-#'  For the categorical columns, the prediction of probability for each category is shown in form of onehot vector.
-#' @return \code{OOBerror} estimated OOB imputation error. For the set of continuous variables in 'xmis' the NRMSE and
-#' for the set of categorical variables the proportion of falsely classified entries is returned.
+#' @return \code{ximp.disj} imputed data matrix of same type as 'xmis' for the
+#' numeric columns. For the categorical columns, the prediction of probability
+#' for each category is shown in form of onehot vector.
+#' @return \code{OOBerror} estimated OOB imputation error. For the set of
+#' continuous variables in 'xmis' the NRMSE and for the set of categorical
+#' variables the proportion of falsely classified entries is returned.
 #' See Details for the exact definition of these error measures.
-#' If 'variablewise' is set to 'TRUE' then this will be a vector of length 'p' where 'p' is the number of variables and the entries will be the OOB error for each variable separately.
-#' @return \code{error} true imputation error. This is only available if 'xtrue' was supplied.
-#' The error measures are the same as for 'OOBerror'.
-#'
+#' If 'variablewise' is set to 'TRUE' then this will be a vector of length 'p'
+#' where 'p' is the number of variables and the entries will be the OOB error
+#' for each variable separately.
+#' @return \code{error} true imputation error. This is only available if 'xtrue'
+#' was supplied. The error measures are the same as for 'OOBerror'.
 missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
                        decreasing = FALSE, verbose = FALSE,
                        mtry = floor(sqrt(ncol(xmis))), replace = TRUE,
                        classwt = NULL, cutoff = NULL, strata = NULL,
                        sampsize = NULL, nodesize = NULL, maxnodes = NULL,
-                       xtrue = NA, parallelize = c("no", "variables", "forests"),
-                       col_cat = c()) { ## ----------------------------------------------------------------------
+                       xtrue = NA,
+                       parallelize = c("no", "variables", "forests"),
+                       col_cat = c()) {
+  ## ----------------------------------------------------------------------
   ## Arguments:
   ## xmis         = data matrix with missing values
   ## maxiter      = stop after how many iterations (default = 10)
@@ -75,7 +87,6 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
   ## xtrue        = complete data matrix
   ## [add]col_cat      = index of categorical columns
   ## ----------------------------------------------------------------------
-  ##
   is_foreach_package_installed()
   is_randomForest_package_installed()
   is_missForest_package_installed()
@@ -100,7 +111,8 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
     dict_cat <- dict_onehot(xmis, col_cat)
   }
 
-  ## Add: Last iteration will be used to predict the onehot probability for the categorical columns
+  ## Add: Last iteration will be used to predict the onehot probability for the
+  # categorical columns
   maxiter <- maxiter - 1
 
   ## stop in case of wrong inputs passed to randomForest
@@ -136,16 +148,19 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
   parallelize <- match.arg(parallelize)
   if (parallelize %in% c("variables", "forests")) {
     if (foreach::getDoParWorkers() == 1) {
-      stop("You must register a 'foreach' parallel backend to run 'missForest' in parallel. Set 'parallelize' to 'no' to compute serially.")
+      stop("You must register a 'foreach' parallel backend to run 'missForest'
+           in parallel. Set 'parallelize' to 'no' to compute serially.")
     } else if (verbose) {
       if (parallelize == "variables") {
-        cat("  parallelizing over the variables of the input data matrix 'xmis'\n")
+        cat("  parallelizing over the variables of the input data matrix
+            'xmis'\n")
       } else {
         cat("  parallelizing computation of the random forest model objects\n")
       }
     }
     if (foreach::getDoParWorkers() > p) {
-      stop("The number of parallel cores should not exceed the number of variables (p=", p, ")")
+      stop("The number of parallel cores should not exceed the number of
+           variables (p=", p, ")")
     }
   }
 
@@ -162,7 +177,9 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
       ## take the level which is more 'likely' (majority vote)
       max.level <- max(table(ximp[, t.co]))
       ## if there are several classes which are major, sample one at random
-      class.assign <- sample(names(which(max.level == summary(ximp[, t.co]))), 1)
+      class.assign <- sample(names(which(max.level == summary(
+        ximp[, t.co]
+      ))), 1)
       ## it shouldn't be the NA class
       if (class.assign != "NA's") {
         ximp[is.na(xmis[, t.co]), t.co] <- class.assign
@@ -189,7 +206,10 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
   nzsort.j <- sort.j[sort.noNAvar > 0]
   if (parallelize == "variables") {
     "%cols%" <- get("%dopar%")
-    idxList <- as.list(itertools::isplitVector(nzsort.j, chunkSize = foreach::getDoParWorkers()))
+    idxList <- as.list(itertools::isplitVector(
+      nzsort.j,
+      chunkSize = foreach::getDoParWorkers()
+    ))
   }
   #   else {
   #     ## force column loop to be sequential
@@ -245,7 +265,10 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
 
     if (parallelize == "variables") {
       for (idx in idxList) {
-        results <- foreach::foreach(varInd = idx, .packages = "randomForest") %cols% {
+        results <- foreach::foreach(
+          varInd = idx,
+          .packages = "randomForest"
+        ) %cols% {
           obsi <- !NAloc[, varInd] # which i's are observed
           misi <- NAloc[, varInd] # which i's are missing
           obsY <- ximp[obsi, varInd] # training response
@@ -332,7 +355,9 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
             if (parallelize == "forests") {
               xntree <- NULL
               RF <- foreach::foreach(
-                xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
+                xntree = iterators::idiv(ntree,
+                  chunks = foreach::getDoParWorkers()
+                ),
                 .combine = "combine", .multicombine = TRUE,
                 .packages = "randomForest"
               ) %dopar% {
@@ -379,7 +404,9 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
             } else {
               if (parallelize == "forests") {
                 RF <- foreach::foreach(
-                  xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
+                  xntree = iterators::idiv(ntree,
+                    chunks = foreach::getDoParWorkers()
+                  ),
                   .combine = "combine", .multicombine = TRUE,
                   .packages = "randomForest"
                 ) %dopar% {
@@ -458,9 +485,14 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
     for (t.type in names(convNew)) {
       t.ind <- which(varType == t.type)
       if (t.type == "numeric") {
-        convNew[t.co2] <- sum((ximp[, t.ind] - ximp.old[, t.ind])^2) / sum(ximp[, t.ind]^2)
+        convNew[t.co2] <- sum((
+          ximp[, t.ind] - ximp.old[, t.ind])^2) / sum(ximp[, t.ind]^2)
       } else {
-        dist <- sum(as.character(as.matrix(ximp[, t.ind])) != as.character(as.matrix(ximp.old[, t.ind])))
+        dist <- sum(
+          as.character(as.matrix(ximp[, t.ind])) != as.character(
+            as.matrix(ximp.old[, t.ind])
+          )
+        )
         convNew[t.co2] <- dist / (n * sum(varType == "factor"))
       }
       t.co2 <- t.co2 + 1
@@ -527,7 +559,10 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
 
   if (parallelize == "variables") {
     for (idx in idxList) {
-      results <- foreach::foreach(varInd = idx, .packages = "randomForest") %cols% {
+      results <- foreach::foreach(
+        varInd = idx,
+        .packages = "randomForest"
+      ) %cols% {
         obsi <- !NAloc[, varInd] # which i's are observed
         misi <- NAloc[, varInd] # which i's are missing
         obsY <- ximp[obsi, varInd] # training response
@@ -618,7 +653,9 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
           if (parallelize == "forests") {
             xntree <- NULL
             RF <- foreach::foreach(
-              xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
+              xntree = iterators::idiv(ntree,
+                chunks = foreach::getDoParWorkers()
+              ),
               .combine = "combine", .multicombine = TRUE,
               .packages = "randomForest"
             ) %dopar% {
@@ -665,7 +702,9 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
           } else {
             if (parallelize == "forests") {
               RF <- foreach::foreach(
-                xntree = iterators::idiv(ntree, chunks = foreach::getDoParWorkers()),
+                xntree = iterators::idiv(ntree,
+                  chunks = foreach::getDoParWorkers()
+                ),
                 .combine = "combine", .multicombine = TRUE,
                 .packages = "randomForest"
               ) %dopar% {
@@ -730,7 +769,9 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
             misY <- stats::predict(RF, misX)
             if (exist_cat) {
               misY.disj <- predict.randomForest(RF, misX, type = "prob")
-              if (ncol(ximp.disj[misi, dict_cat[[ls_colname[varInd]]]]) == ncol(misY.disj)) {
+              if (ncol(ximp.disj[
+                misi, dict_cat[[ls_colname[varInd]]]
+              ]) == ncol(misY.disj)) {
                 ximp.disj[misi, dict_cat[[ls_colname[varInd]]]] <- misY.disj
               } else { # When there are dropped unused levels
                 colnames(misY.disj) <- paste0("v", "_", colnames(misY.disj))
@@ -806,17 +847,29 @@ missForest <- function(xmis, maxiter = 10, ntree = 100, variablewise = FALSE,
   ## produce output w.r.t. stopping rule
   if (iter == maxiter + 1) {
     if (any(is.na(xtrue))) {
-      out <- list(ximp = Ximp_final, OOBerror = OOBerr, ximp.disj = ximp.disj)
+      out <- list(
+        ximp = Ximp_final, OOBerror = OOBerr,
+        ximp.disj = ximp.disj
+      )
     } else {
-      out <- list(ximp = Ximp_final, OOBerror = OOBerr, ximp.disj = ximp.disj, error = err)
+      out <- list(
+        ximp = Ximp_final, OOBerror = OOBerr,
+        ximp.disj = ximp.disj, error = err
+      )
     }
   } else {
     if (any(is.na(xtrue))) {
-      out <- list(ximp = Ximp_final, ximp.disj = ximp.disj, OOBerror = OOBerrOld)
+      out <- list(
+        ximp = Ximp_final,
+        ximp.disj = ximp.disj, OOBerror = OOBerrOld
+      )
     } else {
       out <- list(
         ximp = Ximp_final, ximp.disj = ximp.disj, OOBerror = OOBerrOld,
-        error = suppressWarnings(missForest::mixError(Ximp_final, xmis, xtrue))
+        error = suppressWarnings(missForest::mixError(
+          Ximp_final,
+          xmis, xtrue
+        ))
       )
     }
   }
@@ -855,7 +908,8 @@ predict.randomForest <-
         return(p)
       }
       if (proximity & is.null(object$proximity)) {
-        warning("cannot return proximity without new data if random forest object does not already have proximity")
+        warning("cannot return proximity without new data if random forest
+                object does not already have proximity")
       }
       if (out.type == 1) {
         if (proximity) {
@@ -934,7 +988,8 @@ predict.randomForest <-
     }
     if (is.null(colnames(x))) {
       if (ncol(x) != length(vname)) {
-        stop("number of variables in newdata does not match that in the training data")
+        stop("number of variables in newdata does not match that in the
+             training data")
       }
     } else {
       if (any(!vname %in% colnames(x))) {
@@ -952,7 +1007,10 @@ predict.randomForest <-
           }
           x[[i]] <-
             factor(x[[i]],
-              levels = levels(x[[i]])[match(levels(x[[i]]), object$forest$xlevels[[i]])]
+              levels = levels(x[[i]])[match(
+                levels(x[[i]]),
+                object$forest$xlevels[[i]]
+              )]
             )
         }
       }
@@ -964,7 +1022,8 @@ predict.randomForest <-
         }
       })
       if (!all(object$forest$ncat == cat.new)) {
-        stop("Type of predictors in new data do not match that of the training data.")
+        stop("Type of predictors in new data do not match that of the
+             training data.")
       }
     }
     mdim <- ncol(x)

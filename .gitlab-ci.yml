@@ -48,7 +48,7 @@ variables:
 .before_script_template:
   before_script:
   - apt-get update
-  - apt-get -y install cmake libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
+  - apt-get -y install cmake libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf python3.8
   - r -v -e "install.packages('devtools', repos='https://cloud.r-project.org/')"
   - r -v -e 'devtools::install_deps(dependencies = TRUE, repos="https://cloud.r-project.org/")'
 

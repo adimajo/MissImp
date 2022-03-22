@@ -4,36 +4,53 @@
 #' \code{generate_miss} function generates missing values in a complete
 #' dataframe with the chosen mechanism and the chosen proportion of missingness.
 #' @param df Complete dataframe.
-#' @param miss_perc Desired percentage of missing values. Note that all the mechanisms could only
-#' approach this proportion. The real proportion of missingness will be returned with the incomplete dataframe.
-#' When the number of columns is small, some mechanisms could be incompatible with large missing percentage.
+#' @param miss_perc Desired percentage of missing values. Note that all the
+#' mechanisms could only
+#' approach this proportion. The real proportion of missingness will be returned
+#' with the incomplete dataframe. When the number of columns is small, some
+#' mechanisms could be incompatible with large missing percentage.
 #' @param mechanism Desired missing mechanism.
 #' \itemize{
-#'  \item \strong{MCAR} generates missing values by missing completely at random mechanism with Bernouilli distribution.
-#'  \item \strong{MAR1} generates missing values by missing at random mechanism with logistic regression on the observed data.
-#'  \item \strong{MAR2} generates missing values by missing at random mechanism with censoring algorithm.
-#' The missingness in every other column depends on the quantile of one specified complete column \code{mar2.col.ctrl}.
+#' \item \strong{MCAR} generates missing values by missing completely at random
+#' mechanism with Bernouilli distribution.
+#' \item \strong{MAR1} generates missing values by missing at random mechanism
+#' with logistic regression on the observed data.
+#' \item \strong{MAR2} generates missing values by missing at random mechanism
+#' with censoring algorithm.
+#' The missingness in every other column depends on the quantile of one
+#' specified complete column \code{mar2.col.ctrl}.
 #' For example, on row i, Y2[i] will be removed if Y1[i]<q(30\%) of Y1.
-#'  \item \strong{MAR3} generates missing values by missing at random mechanism with monotone censoring mechanism.
-#' The missingness in every column depends on the quantile of the observed data of the column before.
-#' For example, on row i, Y2[i],Y3[i],...,Yn[i] will be removed if Y1[i]<q(30\%) of Y1.
-#' And then on row s, Y3[s],...,Yn[s] will be removed if Y2[s]<q(30\%) of observed Y2 (Those who are not removed in step 1).
-#' If \strong{MAR3} is chosen, it is better to rearrange \code{df} so the numerical columns are placed before the categorical ones.
-#'  \item \strong{MNAR1} generates missing values by missing not at random mechanism with logistic regression on the observed and missing part of data.
-#'  \item \strong{MNAR2} generates missing values by missing not at random mechanism with censoring mechanism.
-#'  For example, for each column j, on row i, Yj[i] will be removed if Yj[i]<q(30\%) of Yj.
+#' \item \strong{MAR3} generates missing values by missing at random mechanism
+#' with monotone censoring mechanism.
+#' The missingness in every column depends on the quantile of the observed data
+#' of the column before.
+#' For example, on row i, Y2[i],Y3[i],...,Yn[i] will be removed if Y1[i]<q(30\%)
+#' of Y1.
+#' And then on row s, Y3[s],...,Yn[s] will be removed if Y2[s]<q(30\%) of
+#' observed Y2 (Those who are not removed in step 1).
+#' If \strong{MAR3} is chosen, it is better to rearrange \code{df} so the
+#' numerical columns are placed before the categorical ones.
+#'  \item \strong{MNAR1} generates missing values by missing not at random
+#'  mechanism with logistic regression on the observed and missing part of data.
+#'  \item \strong{MNAR2} generates missing values by missing not at random
+#'  mechanism with censoring mechanism.
+#'  For example, for each column j, on row i, Yj[i] will be removed if
+#'  Yj[i]<q(30\%) of Yj.
 #' }
 #' @param mar2.col.ctrl Control column in mechanism MAR2
 #'
 #' @return \code{X.incomp} Generated incomplete dataframe.
-#' @return \code{R.mask} Mask of missingness. R[2,3]=1 means that df[2,3] is missing.
+#' @return \code{R.mask} Mask of missingness. R[2,3]=1 means that df[2,3]
+#' is missing.
 #' @return \code{real_miss_perc} Real proportion of missingness.
 #' @export
 #' @references
 #' \itemize{
 #' \item \url{https://rmisstastic.netlify.app/how-to/generate/misssimul}
 #' \item \url{https://cran.r-project.org/package=missMethods/vignettes/Generating-missing-values.html}
-#' \item Santos, M. S., R. C. Pereira, A. F. Costa, J. P. Soares, J. Santos, and P. H. Abreu. 2019. Generating Synthetic Missing Data: A Review by Missing Mechanism. IEEE Access 7: 11651–67. \doi{10.1109/ACCESS.2019.2891360}.
+#' \item Santos, M. S., R. C. Pereira, A. F. Costa, J. P. Soares, J. Santos, and
+#' P. H. Abreu. 2019. Generating Synthetic Missing Data: A Review by Missin
+#'  Mechanism. IEEE Access 7: 11651–67. \doi{10.1109/ACCESS.2019.2891360}.
 #' }
 #' @examples
 #' n <- 10000
@@ -46,7 +63,8 @@ generate_miss <- function(df,
                           miss_perc,
                           mechanism = "MCAR",
                           # c("MCAR", "MAR1", "MAR2","MAR3","MNAR1","MNAR2")
-                          # We could add here the parameters for produce_NA function in MAR1 and MNAR1
+                          # We could add here the parameters for produce_NA
+                          # function in MAR1 and MNAR1
                           mar2.col.ctrl = 1) {
   is_missMethods_package_installed()
   is_pracma_package_installed()
@@ -68,7 +86,8 @@ generate_miss <- function(df,
     ))
   } else if (mechanism == "MAR1") {
     # Logistic regression to determinate the missingness
-    # The options in this produce_NA function could be added to the main function
+    # The options in this produce_NA function could be added to the main
+    # function
     mar1 <- produce_NA(
       df,
       mechanism = "MAR",
@@ -86,7 +105,8 @@ generate_miss <- function(df,
       "real_miss_perc" = real_miss_perc
     ))
   } else if (mechanism == "MAR2") {
-    # Censoring algorithm. Everything depends on the quantile of one specified complete column.
+    # Censoring algorithm. Everything depends on the quantile of one specified
+    # complete column.
     # For example, the Y2[i] will be removed if Y1[i]<q(30%) of Y1)
     # For the categorical variable cat, the quantile is taken on the levels(cat)
     idx_ctrl <- mar2.col.ctrl
@@ -109,7 +129,8 @@ generate_miss <- function(df,
       "real_miss_perc" = real_miss_perc
     ))
   } else if (mechanism == "MAR3") {
-    # Monotone with censoring mechanism, each column depends on the quantile of the observed data of the column before
+    # Monotone with censoring mechanism, each column depends on the quantile of
+    # the observed data of the column before
     X.mar3 <- df
     if (miss_perc * num_col >= (num_col - 1)) {
       stop("Error: MAR3 mechanism cannot work with this miss_perc")
@@ -120,16 +141,19 @@ generate_miss <- function(df,
       ls_row <- which(!is.na(X.mar3[, ls_col_name[i]]))
       # if(i != num_col-1){
       for (coll in ls_col_name[(i + 1):num_col]) {
-        X.mar3[ls_row, coll] <- missMethods::delete_MAR_censoring(X.mar3[ls_row, ], perc, coll,
+        X.mar3[ls_row, coll] <- missMethods::delete_MAR_censoring(
+          X.mar3[ls_row, ], perc, coll,
           cols_ctrl = ls_col_name[i]
         )[[coll]]
       }
       # }
-      # else{ # the last column adjust the missing percentage to approach the target missing percentage
+      # else{ # the last column adjust the missing percentage to approach the
+      # target missing percentage
       #   R = data.frame(is.na(X.mar3))
       #   p_adjust = (prod(dim(R*1)) * miss_perc - sum(R*1))/length(ls_row)
-      #   X.mar3[ls_row,ls_col_name[num_col]] = delete_MAR_censoring(X.mar3[ls_row,], p_adjust, ls_col_name[num_col],
-      #                                              cols_ctrl = ls_col_name[i])[ls_row,ls_col_name[num_col]]
+      #   X.mar3[ls_row,ls_col_name[num_col]] = delete_MAR_censoring(
+      # X.mar3[ls_row,], p_adjust, ls_col_name[num_col],
+      # cols_ctrl = ls_col_name[i])[ls_row,ls_col_name[num_col]]
       # }
 
       i <- i + 1
@@ -143,7 +167,8 @@ generate_miss <- function(df,
       "real_miss_perc" = real_miss_perc
     ))
   } else if (mechanism == "MNAR1") {
-    # logistic regression to determinate the missingness, with num_patt_mnar random patterns
+    # logistic regression to determinate the missingness, with num_patt_mnar
+    # random patterns
     mnar1 <- produce_NA(
       df,
       mechanism = "MNAR",
@@ -161,10 +186,13 @@ generate_miss <- function(df,
       "real_miss_perc" = real_miss_perc
     ))
   } else if (mechanism == "MNAR2") {
-    # A missing value in "X", if the x-value is below the miss_perc % quantile of "the first column "X"
+    # A missing value in "X", if the x-value is below the miss_perc % quantile
+    # of "the first column "X"
     X.mnar2 <- df
     for (coll in ls_col_name) {
-      X.mnar2[, coll] <- missMethods::delete_MNAR_censoring(X.mnar2, miss_perc, coll)[, coll]
+      X.mnar2[, coll] <- missMethods::delete_MNAR_censoring(
+        X.mnar2, miss_perc, coll
+      )[, coll]
     }
     R.mnar2 <- data.frame(is.na(X.mnar2))
     real_miss_perc <- sum(R.mnar2 * 1) / prod(dim(R.mnar2 * 1))
@@ -177,18 +205,24 @@ generate_miss <- function(df,
   }
 }
 
-#' generate_miss_ls: Generate a list of incomplete dataframes with different missing mechanisms
+#' generate_miss_ls: Generate a list of incomplete dataframes with different
+#' missing mechanisms
 #'
 #' @description
-#' \code{generate_miss_ls} function generates a list of incomplete dataframes. Missing values are generated in the given complete
-#' dataframe with the all mechanisms in \code{generate_miss} function and the chosen proportion of missingness.
+#' \code{generate_miss_ls} function generates a list of incomplete dataframes.
+#' Missing values are generated in the given complete dataframe with the all
+#' mechanisms in \code{generate_miss} function and the chosen proportion of
+#' missingness.
 #' @param df Complete dataframe.
-#' @param miss_perc Desired percentage of missing values. Note that all the mechanisms could only
-#' approach this proportion. The real proportion of missingness will be returned with the incomplete dataframe.
-#' When the number of columns is small, some mechanisms could be incompatible with large missing percentage.
+#' @param miss_perc Desired percentage of missing values. Note that all the
+#' mechanisms could only approach this proportion. The real proportion of
+#' missingness will be returned with the incomplete dataframe.
+#' When the number of columns is small, some mechanisms could be incompatible
+#' with large missing percentage.
 #'
-#' @return \code{mcar} Incomplete dataframe object with MCAR mechanism. The detailed description could be
-#' found in \code{generate_miss} documentation. Each object contains three attributes:
+#' @return \code{mcar} Incomplete dataframe object with MCAR mechanism.
+#' The detailed description could be found in \code{generate_miss}
+#' documentation. Each object contains three attributes:
 #' \code{X.incomp}, \code{R.mask}, and \code{real_miss_perc}
 #' @return \code{mar1} Incomplete dataframe object with MAR1 mechanism.
 #' @return \code{mar2} Incomplete dataframe object with MAR2 mechanism.
@@ -210,13 +244,19 @@ generate_miss_ls <- function(df, miss_perc) {
 }
 
 #' monot_quantil
-#' @description Calculate the missing proportion in MAR3, used in 'generate_miss'.
-#' Solve the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1), where m = miss_perc, p = num_col
+#' @description Calculate the missing proportion in MAR3, used in
+#' 'generate_miss'.
+#' Solve the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1), where
+#' m = miss_perc, p = num_col
 #' @param miss_perc Desired proportion of missingness
 #' @param num_col Number of columns
-#' @return The required percentage for the quantil in MAR3. Solution to the function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1)
+#' @return The required percentage for the quantil in MAR3. Solution to th
+#' function (1-x)^p + (1-m)*p*x -1 = 0 in (0, 1)
 monot_quantil <- function(miss_perc, num_col) {
-  poly <- c((1 - miss_perc) * num_col - 1, -(1 - miss_perc) * num_col, rep(0, num_col - 2), 1)
+  poly <- c(
+    (1 - miss_perc) * num_col - 1, -(1 - miss_perc) * num_col,
+    rep(0, num_col - 2), 1
+  )
   root <- polyroot(poly)
   prop <- root[abs(Im(root)) < 1e-9]
   prop <- Re(prop)

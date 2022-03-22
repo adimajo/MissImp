@@ -1,23 +1,27 @@
 #' MI_EM_amelia: Multiple imputation with EM
 #'
-#' @description \code{MI_EM_amelia} is a multiple imputation function with EM algorithm.
-#' This function returns both multiple imputation results of the original incomplete data and
-#' the final imputed data (derived from multiple imputation results by Robin's Rule).
-#' As for categorical columns, both factor form and onehot probability vector form are returned.
+#' @description \code{MI_EM_amelia} is a multiple imputation function with EM
+#' algorithm. This function returns both multiple imputation results of the
+#' original incomplete data and the final imputed data (derived from multiple
+#' imputation results by Robin's Rule). As for categorical columns, both factor
+#' form and onehot probability vector form are returned.
 #'
-#' More details about the EM implementation could be found in the documentation of function \code{amelia} from
-#'  'Amelia' package.
+#' More details about the EM implementation could be found in the documentation
+#' of function \code{amelia} from 'Amelia' package.
 #' @param df_with_mv Data matrix with missing values.
 #' @param col_cat Categorical columns index
 #' @param col_num Numerical columns index
 #' @param num_imp Number of multiple imputations
 #' @export
 #' @return \code{ximp} Final imputed data matrix.
-#' @return \code{ximp.disj} Final imputed data matrix of same type as 'ximp' for the numeric columns.
-#'  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
-#' @return \code{ls_ximp} List imputed data matrix from multiple imputation procedure.
-#' @return \code{ls_ximp.disj} List imputed data matrix from multiple imputation procedure, with categorical columns
-#' in onehot probability vector form.
+#' @return \code{ximp.disj} Final imputed data matrix of same type as 'ximp'
+#' for the numeric columns. For the categorical columns, the prediction of
+#' probability for each category is shown in form of onehot probability vector.
+#' @return \code{ls_ximp} List imputed data matrix from multiple imputation
+#' procedure.
+#' @return \code{ls_ximp.disj} List imputed data matrix from multiple
+#' imputation procedure, with categorical columns in one-hot probability
+#' vector form.
 #' @references
 #' Honaker, J., King, G., Blackwell, M. (2011).
 #' Amelia II: A Program for Missing Data.
@@ -43,7 +47,9 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     df_with_mv <- factor_ordinal_encode(df_with_mv, col_cat)
     # Create the dictionary for disjunctive variable names
     dummy <- dummyVars(" ~ .", data = df_with_mv, sep = "_")
-    col_names.disj.new <- colnames(data.frame(predict(dummy, newdata = df_with_mv)))
+    col_names.disj.new <- colnames(data.frame(predict(dummy,
+      newdata = df_with_mv
+    )))
     dict_name_disj <- list()
     for (i in seq(length(col_names.disj.new))) {
       dict_name_disj[[col_names.disj.new[i]]] <- col_names.disj[i]
@@ -52,7 +58,10 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     dict_name_cat <- dict_onehot(df_with_mv, col_cat)
 
     # imputation
-    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, noms = col_cat, boot.type = "none")
+    imp_amelia <- Amelia::amelia(df_with_mv,
+      m = num_imp, p2s = 0,
+      noms = col_cat, boot.type = "none"
+    )
     # Extract the imputations with categorical columns in onehot form
     imp_amelia_disj <- list()
     i <- 1
@@ -60,10 +69,15 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
       imp$index <- as.numeric(row.names(imp))
       imp_num <- imp[, col_num]
       dummy <- dummyVars(" ~ .", data = imp[, col_cat, drop = FALSE], sep = "_")
-      imp_cat <- data.frame(predict(dummy, newdata = imp[, col_cat, drop = FALSE]))
+      imp_cat <- data.frame(predict(dummy,
+        newdata = imp[, col_cat, drop = FALSE]
+      ))
       imp_num$index <- as.numeric(row.names(imp_num))
       imp_cat$index <- as.numeric(row.names(imp_cat))
-      imp_amelia_disj[[i]] <- merge(x = imp_num, y = imp_cat, by = "index", all = TRUE)
+      imp_amelia_disj[[i]] <- merge(
+        x = imp_num, y = imp_cat,
+        by = "index", all = TRUE
+      )
       names.row <- row.names(df_with_mv)
       row.names(imp_amelia_disj[[i]]) <- imp_amelia_disj[[i]][["index"]]
       imp_amelia_disj[[i]] <- imp_amelia_disj[[i]][names.row, ]
@@ -79,7 +93,10 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     # Derive the final categorical results from the probability vectors
     names_cat <- names(dict_name_cat)
     for (name in names_cat) {
-      ximp.all[[name]] <- apply(ximp.all[dict_name_cat[[name]]], 1, which_max_cat, name, dict_name_cat)
+      ximp.all[[name]] <- apply(
+        ximp.all[dict_name_cat[[name]]], 1,
+        which_max_cat, name, dict_name_cat
+      )
       ximp.all[[name]] <- unlist(ximp.all[[name]])
       ximp.all[[name]] <- factor(ximp.all[[name]])
     }
@@ -88,9 +105,13 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
     row.names(ximp.disj) <- ximp.disj[["index"]]
     ximp.disj <- ximp.disj[names.row, ]
     ximp <- ximp.all[names.row, colnames(df_with_mv)]
-    ximp.disj <- ximp.disj[colnames(ximp.disj) != "index"] # remove "index" column
+    # remove "index" column
+    ximp.disj <- ximp.disj[colnames(ximp.disj) != "index"]
   } else {
-    imp_amelia <- Amelia::amelia(df_with_mv, m = num_imp, p2s = 0, boot.type = "none")
+    imp_amelia <- Amelia::amelia(df_with_mv,
+      m = num_imp, p2s = 0,
+      boot.type = "none"
+    )
     imp_amelia_disj <- list()
     i <- 1
     for (imp in imp_amelia$imputations) {
@@ -119,10 +140,17 @@ MI_EM_amelia <- function(df_with_mv, col_num, col_cat = NULL, num_imp = 5) {
       for (col in name_cat) {
         levels(imp_amelia$imputations[[i]][[col]]) <- dict_lev[[col]]
       }
-      imp_amelia_disj[[i]] <- imp_amelia_disj[[i]][colnames(imp_amelia_disj[[i]]) != "index"]
-      colnames(imp_amelia_disj[[i]]) <- dict_name_disj[colnames(imp_amelia_disj[[i]])]
+      imp_amelia_disj[[i]] <- imp_amelia_disj[[i]][
+        colnames(imp_amelia_disj[[i]]) != "index"
+      ]
+      colnames(imp_amelia_disj[[i]]) <- dict_name_disj[
+        colnames(imp_amelia_disj[[i]])
+      ]
     }
   }
 
-  return(list(ximp = ximp, ximp.disj = ximp.disj, ls_ximp = imp_amelia$imputations, ls_ximp.disj = imp_amelia_disj))
+  return(list(
+    ximp = ximp, ximp.disj = ximp.disj,
+    ls_ximp = imp_amelia$imputations, ls_ximp.disj = imp_amelia_disj
+  ))
 }

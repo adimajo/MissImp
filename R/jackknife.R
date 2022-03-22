@@ -1,7 +1,8 @@
 #' jacksample: create several dataframes by jackknife resampling
 #'
 #' @description
-#' \code{jacksample} function creates \code{num_sample} samples without the group of observation k (k=1,...,\code{num_sample}).
+#' \code{jacksample} function creates \code{num_sample} samples without the
+#' group of observation k (k=1,...,\code{num_sample}).
 #' We regroup the original data into \code{num_sample} groups by their index.
 #' @param df A complete or incomplete dataframe
 #' @param num_sample Number of jackknifed samples.
@@ -60,21 +61,31 @@ jacksample <- function(df, num_sample) {
 #'
 #' @description
 #' \code{combine_jack} function combines several imputed jackknifed dataframes
-#' into the final imputed dataframe and provide the variance for each imputed value.
+#' into the final imputed dataframe and provide the variance for each imputed
+#' value.
 #' @param ls_df A list of imputed jackknifed dataframes.
 #' @param col_con Continous columns index.
 #' @param col_dis Discret columns index.
 #' @param col_cat Categorical columns index.
-#' @param method The encoded method of categorical columns in the imputed dataframes.
+#' @param method The encoded method of categorical columns in the imputed
+#' dataframes.
 #' This function is only coded for "onehot" situation.
-#' @param dict_cat The dictionary of categorical columns names if "onehot" method is applied.
-#' For example, it could be list("Y7"=c("Y7_1","Y7_2"), "Y8"=c("Y8_1","Y8_2","Y8_3")).
-#' @param var_cat The method of variance calculation for the categorical columns.
-#' "unalike" will lead to the calculation of unalikeability, while "wilcox_va" will lead to the calculation of Wilcox index: VarNC.
-#' @return \code{df_result_disj} The final imputed dataframe with the categorical columns in onehot form.
-#' @return \code{df_result_var_disj} The variance matrix for the final imputation dataframe with the categorical columns in onehot form.
-#' @return \code{df_result} The final imputed dataframe with the categorical columns in factor form.
-#' @return \code{df_result_var} The variance matrix for the final imputation dataframe with the categorical columns in factor form.
+#' @param dict_cat The dictionary of categorical columns names if "onehot"
+#' method is applied.
+#' For example, it could be list("Y7"=c("Y7_1","Y7_2"),
+#' "Y8"=c("Y8_1","Y8_2","Y8_3")).
+#' @param var_cat The method of variance calculation for the categorical
+#' columns.
+#' "unalike" will lead to the calculation of unalikeability, while "wilcox_va"
+#' will lead to the calculation of Wilcox index: VarNC.
+#' @return \code{df_result_disj} The final imputed dataframe with the
+#' categorical columns in onehot form.
+#' @return \code{df_result_var_disj} The variance matrix for the final
+#' imputation dataframe with the categorical columns in onehot form.
+#' @return \code{df_result} The final imputed dataframe with the categorical
+#' columns in factor form.
+#' @return \code{df_result_var} The variance matrix for the final imputation
+#' dataframe with the categorical columns in factor form.
 #' @export
 #' @importFrom dplyr %>%
 #' @references Statistical Analysis with Missing Data, by Little and Rubin, 2002
@@ -123,35 +134,54 @@ combine_jack <- function(ls_df,
   df_new_merge <- Reduce(function(dtf1, dtf2) {
     rbind(dtf1, dtf2)
   }, ls_df_minus)
-  # Add the combined result for categorical variables deducted from the onehot result
+  # Add the combined result for categorical variables deducted from the onehot
+  # result
   if (exist_cat) {
     names_cat <- names(dict_cat)
     for (name in names_cat) {
-      df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+      df_new_merge[[name]] <- apply(
+        df_new_merge[dict_cat[[name]]],
+        1, which_max_cat, name, dict_cat
+      )
       df_new_merge[[name]] <- unlist(df_new_merge[[name]])
       df_new_merge[[name]] <- factor(df_new_merge[[name]])
     }
   }
 
   # By Jackknife combining rules for disjunctive part
-  df_new <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], mean) # Here for each indice, there are n_sample-1 values
+  # Here for each indice, there are n_sample-1 values
+  df_new <- stats::aggregate(. ~ index, data = df_new_merge[
+    c("index", ls_col_name)
+  ], mean)
   if (exist_dis) {
-    df_new[col_name_dis] <- round(df_new[col_name_dis]) # round for the discret variables
+    # round for the discret variables
+    df_new[col_name_dis] <- round(df_new[col_name_dis])
   }
-  df_new_var_disj <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], var)
-  # df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (n_sample -
-  #   1)
+  df_new_var_disj <- stats::aggregate(. ~ index,
+    data = df_new_merge[c(
+      "index",
+      ls_col_name
+    )], var
+  )
+  # df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (
+  # n_sample - 1)
 
   # Final result according to the mean of onehot probability
   if (exist_cat) {
     for (name in names_cat) {
-      df_new[[name]] <- apply(df_new[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+      df_new[[name]] <- apply(
+        df_new[dict_cat[[name]]],
+        1, which_max_cat, name, dict_cat
+      )
       df_new[[name]] <- unlist(df_new[[name]])
       df_new[[name]] <- factor(df_new[[name]])
     }
-    df_result <- df_new[-c(1, col_cat + 1)] # remove the index and the onehot columns
+    # remove the index and the onehot columns
+    df_result <- df_new[-c(1, col_cat + 1)]
     if (is_unalike) {
-      df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
+      df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[
+        c("index", names_cat)
+      ], uwo4419::unalike)
     } else {
       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
         dplyr::group_by(.data$index) %>%
@@ -159,11 +189,13 @@ combine_jack <- function(ls_df,
     }
 
     df_new_var <- merge(df_new_var_disj, df_new_cat_var, by = "index")
-    df_result_var <- df_new_var[-c(1, col_cat + 1)] # remove the index and the onehot columns
+    # remove the index and the one-hot columns
+    df_result_var <- df_new_var[-c(1, col_cat + 1)]
 
     # remove index column and the combined categorical columns
     df_result_disj <- df_new[, !(names(df_new) %in% c(names_cat, "index"))]
-    df_result_var_disj <- df_new_var[, !(names(df_new) %in% c(names_cat, "index"))]
+    df_result_var_disj <- df_new_var[, !(
+      names(df_new) %in% c(names_cat, "index"))]
     return(
       list(
         imp.disj = df_result_disj,
@@ -229,11 +261,13 @@ combine_jack <- function(ls_df,
 #   df_new_merge <- Reduce(function(dtf1, dtf2) {
 #     rbind(dtf1, dtf2)
 #   }, ls_df_minus)
-#   # Add the combined result for categorical variables deducted from the onehot result
+#   # Add the combined result for categorical variables deducted from the
+# one-hot result
 #   if (exist_cat) {
 #     names_cat <- names(dict_cat)
 #     for (name in names_cat) {
-#       df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+#       df_new_merge[[name]] <- apply(df_new_merge[dict_cat[[name]]], 1,
+# which_max_cat, name, dict_cat)
 #       df_new_merge[[name]] <- unlist(df_new_merge[[name]])
 #       df_new_merge[[name]] <- factor(df_new_merge[[name]])
 #     }
@@ -242,25 +276,30 @@ combine_jack <- function(ls_df,
 #
 #
 #   # By Jackknife combining rules for disjunctive part
-#   df_new <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], mean) # Here for each indice, there are n_sample-1 values
+#   df_new <- stats::aggregate(. ~ index, data = df_new_merge[c("index",
+# ls_col_name)], mean) # Here for each indice, there are n_sample-1 values
 #   if (exist_dis) {
-#     df_new[col_name_dis] <- round(df_new[col_name_dis]) # round for the discret variables
+# round for the discret variables
+#     df_new[col_name_dis] <- round(df_new[col_name_dis])
 #   }
-#   df_new_var_disj <- stats::aggregate(. ~ index, data = df_new_merge[c("index", ls_col_name)], var)
-#   # df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (n_sample -
-#   #   1)
-#
+#   df_new_var_disj <- stats::aggregate(. ~ index,
+# data = df_new_merge[c("index", ls_col_name)], var)
+#   # df_new_var_disj[c(ls_col_name)] <- df_new_var_disj[c(ls_col_name)] / (
+# n_sample - 1)
 #
 #   # Final result according to the mean of onehot probability
 #   if (exist_cat) {
 #     for (name in names_cat) {
-#       df_new[[name]] <- apply(df_new[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+#       df_new[[name]] <- apply(df_new[dict_cat[[name]]], 1, which_max_cat,
+# name, dict_cat)
 #       df_new[[name]] <- unlist(df_new[[name]])
 #       df_new[[name]] <- factor(df_new[[name]])
 #     }
-#     df_result <- df_new[-c(1, col_cat + 1)] # remove the index and the onehot columns
+#     df_result <- df_new[-c(1, col_cat + 1)] # remove the index and the
+# onehot columns
 #     if (is_unalike) {
-#       df_new_cat_var <- stats::aggregate(. ~ index, data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
+#       df_new_cat_var <- stats::aggregate(. ~ index,
+# data = df_new_merge[c("index", names_cat)], uwo4419::unalike)
 #     } else {
 #       df_new_cat_var <- df_new_merge[c("index", names_cat)] %>%
 #         dplyr::group_by(.data$index) %>%
@@ -268,12 +307,14 @@ combine_jack <- function(ls_df,
 #     }
 #
 #     df_new_var <- merge(df_new_var_disj, df_new_cat_var, by = "index")
-#     df_result_var <- df_new_var[-c(1, col_cat + 1)] # remove the index and the onehot columns
+#     df_result_var <- df_new_var[-c(1, col_cat + 1)] # remove the index and
+# the one-hot columns
 #
 #
 #     # remove index column and the combined categorical columns
 #     df_result_disj <- df_new[, !(names(df_new) %in% c(names_cat, "index"))]
-#     df_result_var_disj <- df_new_var[, !(names(df_new) %in% c(names_cat, "index"))]
+#     df_result_var_disj <-
+# df_new_var[, !(names(df_new) %in% c(names_cat, "index"))]
 #     return(
 #       list(
 #         imp.disj = df_result_disj,

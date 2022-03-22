@@ -58,17 +58,21 @@ VA_fact <- function(x) {
 }
 
 #' dict_onehot
-#' @description Create the dictionary for categorical columns. For example, {Y7:Y7_1,Y7_2,...}.
+#' @description Create the dictionary for categorical columns. For example,
+#' {Y7:Y7_1,Y7_2,...}.
 #' @param df Dataframe.
 #' @param col_cat categorical column index
 #' @export
-#' @return A dictionary that connects onehot form and factor form of the categorical columns.
+#' @return A dictionary that connects onehot form and factor form of the
+#' categorical columns.
 dict_onehot <- function(df, col_cat) {
   dict_name <- list()
   ls_col_name <- colnames(df)
   for (i in col_cat) {
     col_cat_name <- ls_col_name[i]
-    dict_name[[col_cat_name]] <- paste(col_cat_name, levels(df[[col_cat_name]]), sep = "_")
+    dict_name[[col_cat_name]] <- paste(col_cat_name, levels(df[[col_cat_name]]),
+      sep = "_"
+    )
   }
   return(dict_name)
 }
@@ -84,11 +88,13 @@ Mode_cat <- function(x) {
 }
 
 #' dict_level
-#' @description Create the dictionary for categorical columns levels. For example, {Y7:A,B,C,...}.
+#' @description Create the dictionary for categorical columns levels.
+#' For example, {Y7:A,B,C,...}.
 #' @param df Dataframe.
 #' @param col_cat categorical column index
 #' @export
-#' @return A dictionary that connects categorical columns with their original levels.
+#' @return A dictionary that connects categorical columns with their
+#' original levels.
 dict_level <- function(df, col_cat) {
   ls_col_cat_name <- colnames(df)[col_cat]
   res <- list()
@@ -99,7 +105,8 @@ dict_level <- function(df, col_cat) {
 }
 
 #' which.max.random
-#' @description Determines the location, i.e., index of the maximum of a numeric (or logical) vector.
+#' @description Determines the location, i.e., index of the maximum of a
+#' numeric (or logical) vector.
 #' In case of tie, the index is selected randomly.
 #' @param vec Numeric (logical, integer or double) vector.
 #' @export

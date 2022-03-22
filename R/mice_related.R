@@ -1,25 +1,29 @@
 #' result_mice: Multiple imputation with bayesian method
 #'
-#' @description \code{result_mice} is a function that retrieve the final imputed dataset after
-#' running function \code{mice} in the 'mice' package.
-#' As for categorical columns, both factor form and onehot probability vector form are returned
+#' @description \code{result_mice} is a function that retrieve the final imputed
+#' dataset after running function \code{mice} in the 'mice' package.
+#' As for categorical columns, both factor form and onehot probability vector
+#' form are returned
 #'
-#' More details about the MICE implementation could be found in the documentation of function \code{mice} from
-#'  'mice' package.
+#' More details about the MICE implementation could be found in the
+#' documentation of function \code{mice} from the 'mice' package.
 #' @param res Result returned by \code{mice} function
 #' @param col_cat Categorical columns index
 #' @param impnum Number of multiple imputations
 #' @export
-#' @return \code{ximp} Final imputed data matrix, which is obtained with Robin's Rule.
-#' @return \code{ximp.disj} Final imputed data matrix of same type as 'ximp' for the numeric columns.
-#'  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
+#' @return \code{ximp} Final imputed data matrix, which is obtained with
+#' Rubin's Rule.
+#' @return \code{ximp.disj} Final imputed data matrix of same type as 'ximp' for
+#' the numeric columns. For the categorical columns, the prediction of
+#' probability for each category is shown in form of onehot probability vector.
 #' @references Van Buuren, S., Groothuis-Oudshoorn, K. (2011). \code{mice}:
 #' Multivariate Imputation by Chained Equations in \code{R}. \emph{Journal of
 #' Statistical Software}, \bold{45}(3), 1-67.
 #' \url{https://www.jstatsoft.org/v45/i03/}
 #'
 #' Van Buuren, S. (2018).
-#' \href{https://stefvanbuuren.name/fimd/sec-FCS.html#sec:MICE}{\emph{Flexible Imputation of Missing Data. Second Edition.}}
+#' \href{https://stefvanbuuren.name/fimd/sec-FCS.html#sec:MICE}{\emph{Flexible
+#' Imputation of Missing Data. Second Edition.}}
 #' Chapman & Hall/CRC. Boca Raton, FL.
 #'
 #' Van Buuren, S., Brand, J.P.L., Groothuis-Oudshoorn C.G.M., Rubin, D.B. (2006)
@@ -62,7 +66,10 @@ result_mice <- function(res, impnum, col_cat = c()) {
     names_cat <- names(dict_cat)
 
     for (name in names_cat) {
-      ximp.all[[name]] <- apply(ximp.all[dict_cat[[name]]], 1, which_max_cat, name, dict_cat)
+      ximp.all[[name]] <- apply(
+        ximp.all[dict_cat[[name]]], 1,
+        which_max_cat, name, dict_cat
+      )
       ximp.all[[name]] <- unlist(ximp.all[[name]])
       ximp.all[[name]] <- factor(ximp.all[[name]])
     }

@@ -1,5 +1,6 @@
 #' prepare_df_for_em
-#' @description Change the position of categorical columns to adapt to the em.mix input form.
+#' @description Change the position of categorical columns to adapt to the
+#' em.mix input form.
 #' @param df Original dataframe
 #' @param col_cat Categorical columns index in \code{df}
 #' @return Dataframe where the categorical columns are the first columns
@@ -10,16 +11,20 @@ prepare_df_for_em <- function(df, col_cat) {
 }
 
 #' prob_vector_cat
-#' @description Extract the probability vector from a tensor of probability. For example,
-#' if there are only 2 categorical variables \code{(Y1, Y2)} with \code{nlevels(Y1)=2, nlevels(Y2)=3},
-#'  then the tensor is a matrix of probability. \code{tensor[i,j]} is the probability of \code{Y1=i, Y2=j}.
-#'  If \code{obs=(NA,2)}, then \code{prob_vector_cat} returns the probability vector
-#'  of \code{Y1} when \code{Y2=2} and the onehot probability vector of \code{Y2=2}.
-#'  If \code{obs=(NA,NA)}, then \code{prob_vector_cat} returns the marginal probability vector
-#'  of \code{Y1} and that of \code{Y2=2}.
+#' @description Extract the probability vector from a tensor of probability.
+#' For example, if there are only 2 categorical variables \code{(Y1, Y2)} with
+#' \code{nlevels(Y1)=2, nlevels(Y2)=3}, then the tensor is a matrix of
+#' probability. \code{tensor[i,j]} is the probability of \code{Y1=i, Y2=j}. If
+#' \code{obs=(NA,2)}, then \code{prob_vector_cat} returns the probability vector
+#' of \code{Y1} when \code{Y2=2} and the onehot probability vector of
+#' \code{Y2=2}. If \code{obs=(NA,NA)}, then \code{prob_vector_cat} returns the
+#' marginal probability vector of \code{Y1} and that of \code{Y2=2}.
 #' @param obs One observation of all categorical variables.
-#' @param tensor A tensor (multidimensional array) of probability, with dimension \code{nlevels(Y1) x nlevels(Y2) x...x nlevels(Yk)} if there are k categorical columns.
-#' @param dict_name_cat A dictionary of categorical variable names and their corresponding onehot name. For example, \code{Y7: Y7_1, Y7_2,...}.
+#' @param tensor A tensor (multidimensional array) of probability, with
+#' dimension \code{nlevels(Y1) x nlevels(Y2) x...x nlevels(Yk)} if there are k
+#' categorical columns.
+#' @param dict_name_cat A dictionary of categorical variable names and their
+#' corresponding onehot name. For example, \code{Y7: Y7_1, Y7_2,...}.
 #' @export
 #' @return Probability vector for all categorical columns.
 prob_vector_cat <- function(obs, tensor, dict_name_cat) {
@@ -55,16 +60,22 @@ prob_vector_cat <- function(obs, tensor, dict_name_cat) {
 
 #' em: modified EM Imputation with probability vector
 #'
-#' @description \code{em} is a em imputation function that returns categorical columns results both in factor and in onehot probability vector form.
-#' Please find the detailed documentation of \code{em.mix} and \code{imp.mix} in the 'mix' package. Only the modifications are explained on this page.
-#' After the estimation of parameter \code{pi} in \code{em.mix}, we change it into a tensor (multidimensional array) and
-#' extract the probability vector from this tensor with the help of function \code{prob_vector_cat}.
+#' @description \code{em} is a em imputation function that returns categorical
+#' columns results both in factor and in onehot probability vector form.
+#' Please find the detailed documentation of \code{em.mix} and \code{imp.mix}
+#' in the 'mix' package. Only the modifications are explained on this page.
+#' After the estimation of parameter \code{pi} in \code{em.mix}, we change it
+#' into a tensor (multidimensional array) and
+#' extract the probability vector from this tensor with the help of function
+#' \code{prob_vector_cat}.
 #' @param df Data matrix with missing values.
 #' @param col_cat Categorical columns index
 #' @export
 #' @return \code{ximp} imputed data matrix.
-#' @return \code{ximp.disj} imputed data matrix of same type as 'ximp' for the numeric columns.
-#'  For the categorical columns, the prediction of probability for each category is shown in form of onehot probability vector.
+#' @return \code{ximp.disj} imputed data matrix of same type as 'ximp' for the
+#' numeric columns.
+#' For the categorical columns, the prediction of probability for each
+#' category is shown in form of onehot probability vector.
 em <- function(df, col_cat) {
   is_norm_package_installed()
   is_mix_package_installed()
@@ -93,12 +104,15 @@ em <- function(df, col_cat) {
 
   df.cat <- df[, col_cat, drop = FALSE]
   # prepare for em and imputation
-  # The categorical columns must be ordinal encoded and they must be the first columns of the dataframe
+  # The categorical columns must be ordinal encoded and they must be the first
+  # columns of the dataframe
   df_for_em <- prepare_df_for_em(df, col_cat)
-  s <- mix::prelim.mix(df_for_em, length(col_cat)) # do preliminary manipulations
+  # do preliminary manipulations
+  s <- mix::prelim.mix(df_for_em, length(col_cat))
   thetahat <- mix::em.mix(s) # ML estimate for unrestricted model
   mix::rngseed(43) # set random number generator seed
-  ximp <- mix::imp.mix(s, thetahat, df_for_em) # impute under newtheta (one draw)
+  # impute under newtheta (one draw)
+  ximp <- mix::imp.mix(s, thetahat, df_for_em)
   ximp <- factor_encode(data.frame(ximp), c(1:length(col_cat)))
   # rearrange columns
   cols <- colnames(df)
