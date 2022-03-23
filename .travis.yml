@@ -2,6 +2,7 @@ dist: bionic
 before_install:
   - sudo apt-get -y install libgsl-dev r-cran-glmnet build-essential
   - Rscript -e "install.packages('devtools')"
+  - Rscript -e "install.packages('covr')"
   - Rscript -e "devtools::install_deps(dependencies=TRUE)"
   - Rscript -e "devtools::document()"
 addons:
@@ -17,4 +18,4 @@ language: R
 sudo: false
 cache: packages
 after_success:
-  - Rscript -e 'covr::codecov(path = "R/", line_exclusions = list("R/method_plot.R" = c(54, 79), "R/glmdisc.R" = 4:5))'
+  - Rscript -e 'covr::codecov(path = "R/")'
