@@ -300,8 +300,3 @@ check_macos:
     - Rscript --vanilla inst/pipeline/rhubcheck.R -p "windows-x86_64-devel" -t "$RHUB_TOKEN"
   allow_failure: true
   timeout: 3 hours
-
-deploy:
-  stage: deploy
-  script:
-    - exit 1
