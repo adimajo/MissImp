@@ -80,7 +80,7 @@
       <h1 data-toc-skip>MissImp Test</h1>
                         <h4 data-toc-skip class="author">Xuwen Liu</h4>
             
-            <h4 data-toc-skip class="date">2022-03-23</h4>
+            <h4 data-toc-skip class="date">2022-03-31</h4>
       
       
       <div class="hidden name"><code>B_MissImp_Test.Rmd</code></div>
@@ -98,7 +98,7 @@
 </h2>
 <p>In the package, 100 rows of the abalone dataset is stored to test different functions.</p>
 <div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">'../data/test_abalone.rda'</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"../data/test_abalone.rda"</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">abalone_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">test_abalone</span><span class="op">)</span>
 <span class="va">col_num</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span>
@@ -159,99 +159,92 @@
 <p>It is also normal that some lines in  are . This comes form the fact that there are too little number of resampled dataset (). If in all those resampled dataset, a certain line shows only once and thus is imputed only once, there is no calculation for the uncertainty of imputation.</p>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##      V2    V3    V4     V5     V6     V7    V8 V9 V1</span>
-<span class="co">## 1    NA 0.365    NA 0.5140 0.2245 0.1010    NA NA  M</span>
-<span class="co">## 2 0.350 0.265 0.090 0.2255 0.0995 0.0485 0.070  7  M</span>
-<span class="co">## 3 0.530 0.420 0.135 0.6770 0.2565 0.1415 0.210  9  F</span>
-<span class="co">## 4 0.440    NA 0.125 0.5160     NA     NA 0.155 10  M</span>
-<span class="co">## 5 0.330 0.255 0.080 0.2050     NA 0.0395 0.055  7  I</span>
-<span class="co">## 6 0.425 0.300 0.095 0.3515 0.1410 0.0775 0.120  8  I</span></code></pre>
+<pre><code><span class="co">##      V2    V3    V4     V5     V6     V7    V8 V9   V1</span>
+<span class="co">## 1 0.455 0.365 0.095 0.5140 0.2245 0.1010 0.150 15    M</span>
+<span class="co">## 2 0.350 0.265 0.090 0.2255 0.0995     NA 0.070  7 &lt;NA&gt;</span>
+<span class="co">## 3 0.530 0.420 0.135 0.6770 0.2565 0.1415 0.210  9    F</span>
+<span class="co">## 4    NA 0.365 0.125 0.5160 0.2155 0.1140 0.155 10    M</span>
+<span class="co">## 5 0.330 0.255 0.080 0.2050 0.0895 0.0395    NA  7    I</span>
+<span class="co">## 6 0.425 0.300 0.095 0.3515 0.1410 0.0775 0.120  8    I</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">imp</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##          V2        V3        V4     V5         V6        V7        V8 V9 V1</span>
-<span class="co">## 1 0.4619375 0.3650000 0.1244062 0.5140 0.22450000 0.1010000 0.1536979  9  M</span>
-<span class="co">## 2 0.3500000 0.2650000 0.0900000 0.2255 0.09950000 0.0485000 0.0700000  7  M</span>
-<span class="co">## 3 0.5300000 0.4200000 0.1350000 0.6770 0.25650000 0.1415000 0.2100000  9  F</span>
-<span class="co">## 4 0.4400000 0.3653906 0.1250000 0.5160 0.21551875 0.1091073 0.1550000 10  M</span>
-<span class="co">## 5 0.3300000 0.2550000 0.0800000 0.2050 0.07986215 0.0395000 0.0550000  7  I</span>
-<span class="co">## 6 0.4250000 0.3000000 0.0950000 0.3515 0.14100000 0.0775000 0.1200000  8  I</span></code></pre>
+<pre><code><span class="co">##          V2    V3    V4     V5     V6         V7         V8 V9 V1</span>
+<span class="co">## 1 0.4550000 0.365 0.095 0.5140 0.2245 0.10100000 0.15000000 15  M</span>
+<span class="co">## 2 0.3500000 0.265 0.090 0.2255 0.0995 0.04207865 0.07000000  7  I</span>
+<span class="co">## 3 0.5300000 0.420 0.135 0.6770 0.2565 0.14150000 0.21000000  9  F</span>
+<span class="co">## 4 0.4698935 0.365 0.125 0.5160 0.2155 0.11400000 0.15500000 10  M</span>
+<span class="co">## 5 0.3300000 0.255 0.080 0.2050 0.0895 0.03950000 0.06622917  7  I</span>
+<span class="co">## 6 0.4250000 0.300 0.095 0.3515 0.1410 0.07750000 0.12000000  8  I</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">imp.disj</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##          V2        V3        V4     V5         V6        V7        V8 V9 V1_F</span>
-<span class="co">## 1 0.4619375 0.3650000 0.1244062 0.5140 0.22450000 0.1010000 0.1536979  9    0</span>
-<span class="co">## 2 0.3500000 0.2650000 0.0900000 0.2255 0.09950000 0.0485000 0.0700000  7    0</span>
-<span class="co">## 3 0.5300000 0.4200000 0.1350000 0.6770 0.25650000 0.1415000 0.2100000  9    1</span>
-<span class="co">## 4 0.4400000 0.3653906 0.1250000 0.5160 0.21551875 0.1091073 0.1550000 10    0</span>
-<span class="co">## 5 0.3300000 0.2550000 0.0800000 0.2050 0.07986215 0.0395000 0.0550000  7    0</span>
-<span class="co">## 6 0.4250000 0.3000000 0.0950000 0.3515 0.14100000 0.0775000 0.1200000  8    0</span>
-<span class="co">##   V1_I V1_M</span>
-<span class="co">## 1    0    1</span>
-<span class="co">## 2    0    1</span>
-<span class="co">## 3    0    0</span>
-<span class="co">## 4    0    1</span>
-<span class="co">## 5    1    0</span>
-<span class="co">## 6    1    0</span></code></pre>
+<pre><code><span class="co">##          V2    V3    V4     V5     V6         V7         V8 V9        V1_F</span>
+<span class="co">## 1 0.4550000 0.365 0.095 0.5140 0.2245 0.10100000 0.15000000 15 0.000000000</span>
+<span class="co">## 2 0.3500000 0.265 0.090 0.2255 0.0995 0.04207865 0.07000000  7 0.003472222</span>
+<span class="co">## 3 0.5300000 0.420 0.135 0.6770 0.2565 0.14150000 0.21000000  9 1.000000000</span>
+<span class="co">## 4 0.4698935 0.365 0.125 0.5160 0.2155 0.11400000 0.15500000 10 0.000000000</span>
+<span class="co">## 5 0.3300000 0.255 0.080 0.2050 0.0895 0.03950000 0.06622917  7 0.000000000</span>
+<span class="co">## 6 0.4250000 0.300 0.095 0.3515 0.1410 0.07750000 0.12000000  8 0.000000000</span>
+<span class="co">##        V1_I     V1_M</span>
+<span class="co">## 1 0.0000000 1.000000</span>
+<span class="co">## 2 0.7000868 0.296441</span>
+<span class="co">## 3 0.0000000 0.000000</span>
+<span class="co">## 4 0.0000000 1.000000</span>
+<span class="co">## 5 1.0000000 0.000000</span>
+<span class="co">## 6 1.0000000 0.000000</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">uncertainty</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##             V2          V3           V4 V5           V6           V7</span>
-<span class="co">## 1 0.0002126953 0.00000e+00 2.673828e-06  0 0.000000e+00 0.0000000000</span>
-<span class="co">## 2 0.0000000000 0.00000e+00 0.000000e+00  0 0.000000e+00 0.0000000000</span>
-<span class="co">## 3 0.0000000000 0.00000e+00 0.000000e+00  0 0.000000e+00 0.0000000000</span>
-<span class="co">## 4 0.0000000000 8.81958e-05 0.000000e+00  0 2.136945e-05 0.0001653547</span>
-<span class="co">## 5 0.0000000000 0.00000e+00 0.000000e+00  0 4.027100e-05 0.0000000000</span>
-<span class="co">## 6 0.0000000000 0.00000e+00 0.000000e+00  0 0.000000e+00 0.0000000000</span>
-<span class="co">##            V8        V9            V1</span>
-<span class="co">## 1 6.56467e-07 0.6004253 -2.220446e-16</span>
-<span class="co">## 2 0.00000e+00 0.0000000 -2.220446e-16</span>
-<span class="co">## 3 0.00000e+00 0.0000000 -2.220446e-16</span>
-<span class="co">## 4 0.00000e+00 0.0000000 -2.220446e-16</span>
-<span class="co">## 5 0.00000e+00 0.0000000 -2.220446e-16</span>
-<span class="co">## 6 0.00000e+00 0.0000000 -2.220446e-16</span></code></pre>
+<pre><code><span class="co">##             V2 V3 V4 V5 V6           V7           V8 V9            V1</span>
+<span class="co">## 1 0.000000e+00  0  0  0  0 0.000000e+00 0.0000000000  0 -2.220446e-16</span>
+<span class="co">## 2 0.000000e+00  0  0  0  0 4.503686e-05 0.0000000000  0  5.000000e-01</span>
+<span class="co">## 3 0.000000e+00  0  0  0  0 0.000000e+00 0.0000000000  0 -2.220446e-16</span>
+<span class="co">## 4 4.377765e-06  0  0  0  0 0.000000e+00 0.0000000000  0 -2.220446e-16</span>
+<span class="co">## 5 0.000000e+00  0  0  0  0 0.000000e+00 0.0002153138  0 -2.220446e-16</span>
+<span class="co">## 6 0.000000e+00  0  0  0  0 0.000000e+00 0.0000000000  0 -2.220446e-16</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">uncertainty.disj</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##             V2          V3           V4 V5           V6           V7</span>
-<span class="co">## 1 0.0002126953 0.00000e+00 2.673828e-06  0 0.000000e+00 0.0000000000</span>
-<span class="co">## 2 0.0000000000 0.00000e+00 0.000000e+00  0 0.000000e+00 0.0000000000</span>
-<span class="co">## 3 0.0000000000 0.00000e+00 0.000000e+00  0 0.000000e+00 0.0000000000</span>
-<span class="co">## 4 0.0000000000 8.81958e-05 0.000000e+00  0 2.136945e-05 0.0001653547</span>
-<span class="co">## 5 0.0000000000 0.00000e+00 0.000000e+00  0 4.027100e-05 0.0000000000</span>
-<span class="co">## 6 0.0000000000 0.00000e+00 0.000000e+00  0 0.000000e+00 0.0000000000</span>
-<span class="co">##            V8        V9 V1_F V1_I V1_M</span>
-<span class="co">## 1 6.56467e-07 0.6004253    0    0    0</span>
-<span class="co">## 2 0.00000e+00 0.0000000    0    0    0</span>
-<span class="co">## 3 0.00000e+00 0.0000000    0    0    0</span>
-<span class="co">## 4 0.00000e+00 0.0000000    0    0    0</span>
-<span class="co">## 5 0.00000e+00 0.0000000    0    0    0</span>
-<span class="co">## 6 0.00000e+00 0.0000000    0    0    0</span></code></pre>
+<pre><code><span class="co">##             V2 V3 V4 V5 V6           V7           V8 V9         V1_F      V1_I</span>
+<span class="co">## 1 0.000000e+00  0  0  0  0 0.000000e+00 0.0000000000  0 0.000000e+00 0.0000000</span>
+<span class="co">## 2 0.000000e+00  0  0  0  0 4.503686e-05 0.0000000000  0 4.822531e-05 0.1044628</span>
+<span class="co">## 3 0.000000e+00  0  0  0  0 0.000000e+00 0.0000000000  0 0.000000e+00 0.0000000</span>
+<span class="co">## 4 4.377765e-06  0  0  0  0 0.000000e+00 0.0000000000  0 0.000000e+00 0.0000000</span>
+<span class="co">## 5 0.000000e+00  0  0  0  0 0.000000e+00 0.0002153138  0 0.000000e+00 0.0000000</span>
+<span class="co">## 6 0.000000e+00  0  0  0  0 0.000000e+00 0.0000000000  0 0.000000e+00 0.0000000</span>
+<span class="co">##        V1_M</span>
+<span class="co">## 1 0.0000000</span>
+<span class="co">## 2 0.1062592</span>
+<span class="co">## 3 0.0000000</span>
+<span class="co">## 4 0.0000000</span>
+<span class="co">## 5 0.0000000</span>
+<span class="co">## 6 0.0000000</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">MSE</span></code></pre></div>
 <pre><code><span class="co">## $list_MSE</span>
-<span class="co">## [1] 0.6995555 1.9214132 1.4630506 1.0283104</span>
+<span class="co">## [1] 1.1255460 1.8012099 0.7347307 2.1940199</span>
 <span class="co">## </span>
 <span class="co">## $Mean_MSE</span>
-<span class="co">## [1] 1.278082</span>
+<span class="co">## [1] 1.463877</span>
 <span class="co">## </span>
 <span class="co">## $Variance_MSE</span>
-<span class="co">## [1] 0.2817224</span>
+<span class="co">## [1] 0.4310081</span>
 <span class="co">## </span>
 <span class="co">## $list_MSE_scale</span>
-<span class="co">## [1] 0.01629414 0.04060260 0.03449230 0.01779064</span>
+<span class="co">## [1] 0.01106567 0.01587142 0.01192461 0.01628618</span>
 <span class="co">## </span>
 <span class="co">## $Mean_MSE_scale</span>
-<span class="co">## [1] 0.02729492</span>
+<span class="co">## [1] 0.01378697</span>
 <span class="co">## </span>
 <span class="co">## $Variance_MSE_scale</span>
-<span class="co">## [1] 0.0001467484</span></code></pre>
+<span class="co">## [1] 7.154938e-06</span></code></pre>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">F1</span></code></pre></div>
 <pre><code><span class="co">## $list_F1</span>
-<span class="co">## [1] 0.3636364 0.6666667 0.5000000 0.5294118</span>
+<span class="co">## [1] 0.5333333 0.4705882 0.5000000 0.3333333</span>
 <span class="co">## </span>
 <span class="co">## $Mean_F1</span>
-<span class="co">## [1] 0.5149287</span>
+<span class="co">## [1] 0.4593137</span>
 <span class="co">## </span>
 <span class="co">## $Variance_F1</span>
-<span class="co">## [1] 0.0154488</span></code></pre>
+<span class="co">## [1] 0.007710816</span></code></pre>
 <p>At last, we perform a simple mean imputation as the baseline imputation method. After choosing a certain column (V5 in the example), we can compare the density distribution of the missing values, the imputed values by the method chosen above and the mean imputed values.</p>
 <div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res_mean_imp</span> <span class="op">&lt;-</span> <span class="va">df</span>
@@ -283,11 +276,11 @@
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">ycol</span><span class="op">)</span></code></pre></div>
 <p><img src="B_MissImp_Test_files/figure-html/density_comp_with_mean_imp-2.png" width="700"></p>
 <div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#dat &lt;- data.frame(</span>
+<code class="sourceCode R"><span class="co"># dat &lt;- data.frame(</span>
 <span class="co">#  y = c(X.miss[[ycol]], df[[ycol]]),</span>
 <span class="co">#  lines = rep(c("missing", "observed"), each = length(df[[ycol]]))</span>
-<span class="co">#)</span>
-<span class="co">#ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +</span>
+<span class="co"># )</span>
+<span class="co"># ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +</span>
 <span class="co">#  ggplot2::geom_density(alpha = 0.3) +</span>
 <span class="co">#  ggplot2::labs(x = ycol)</span></code></pre></div>
 </div>
