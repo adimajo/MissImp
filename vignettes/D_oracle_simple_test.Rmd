@@ -38,8 +38,9 @@ complete_df_generator <- function(n) {
 
   X.complete.cat2 <- (0.5 * X.complete.cont1[, 1] + 0.2 * X.complete.cont1[, 2] > 8) * 1
 
-  X.complete <- data.frame(cbind(X.complete.cont1,
-                                 X.complete.cat, X.complete.cat2
+  X.complete <- data.frame(cbind(
+    X.complete.cont1,
+    X.complete.cat, X.complete.cat2
   ))
   X.complete[, 3] <- as.factor(X.complete[, 3])
   X.complete[, 4] <- as.factor(X.complete[, 4])
@@ -49,16 +50,15 @@ complete_df_generator <- function(n) {
 
 n <- 4000
 X.complete <- complete_df_generator(n)
-
 ```
 
 ```{r rd_param_settings}
 
 mech <- "MAR1"
 miss_prop <- 0.3
-col_cat <- c(3,4)
+col_cat <- c(3, 4)
 col_dis <- c()
-col_num <- c(1,2)
+col_num <- c(1, 2)
 rs <- generate_miss(X.complete, miss_prop, mechanism = mech)
 df <- rs$X.incomp
 df_complete <- X.complete
@@ -76,12 +76,11 @@ imp_method <- "PCA"
 resample_method <- "bootstrap"
 cat_combine_by <- "onehot"
 var_cat <- "wilcox_va"
-
 ```
 
 ```{r oracle}
 
-oracle_impute <- function(x){
+oracle_impute <- function(x) {
   mask <- is.na(x)
   mu1.X <- c(9, 8)
   Sigma1.X <- matrix(c(
@@ -89,30 +88,30 @@ oracle_impute <- function(x){
     14, 25
   ), nrow = 2)
   ro <- Sigma1.X[2] / sqrt(Sigma1.X[1] * Sigma1.X[4])
-  if(any(mask)){
-    if(mask[3]){
+  if (any(mask)) {
+    if (mask[3]) {
       x[3] <- stats::rbinom(1, size = 5, prob = 0.4)
     }
-    
-    if(mask[1] & mask[2]){
-      x[c(1,2)] <- MASS::mvrnorm(1, mu1.X, Sigma1.X)
+
+    if (mask[1] & mask[2]) {
+      x[c(1, 2)] <- MASS::mvrnorm(1, mu1.X, Sigma1.X)
     } else {
-      if(mask[1]){
-      x_2 <- as.numeric(x[2])
-      mu_new <- mu1.X[1] + sqrt(Sigma1.X[1] / Sigma1.X[4]) * ro * (x_2 - mu1.X[2])
-      sigma_new <- (1 - ro * ro) * Sigma1.X[1]
-      x[1] <- rnorm(1, mean=mu_new, sd=sigma_new)
+      if (mask[1]) {
+        x_2 <- as.numeric(x[2])
+        mu_new <- mu1.X[1] + sqrt(Sigma1.X[1] / Sigma1.X[4]) * ro * (x_2 - mu1.X[2])
+        sigma_new <- (1 - ro * ro) * Sigma1.X[1]
+        x[1] <- rnorm(1, mean = mu_new, sd = sigma_new)
       } else {
-        if(mask[2]){
-        x_1 <- as.numeric(x[1])
-        mu_new <- mu1.X[2] + sqrt(Sigma1.X[4] / Sigma1.X[1]) * ro * (x_1 - mu1.X[1])
-        sigma_new <- (1 - ro * ro) * Sigma1.X[4]
-        x[2] <- rnorm(1, mean=mu_new, sd=sigma_new)
+        if (mask[2]) {
+          x_1 <- as.numeric(x[1])
+          mu_new <- mu1.X[2] + sqrt(Sigma1.X[4] / Sigma1.X[1]) * ro * (x_1 - mu1.X[1])
+          sigma_new <- (1 - ro * ro) * Sigma1.X[4]
+          x[2] <- rnorm(1, mean = mu_new, sd = sigma_new)
         }
       }
     }
-    
-    if(mask[4]){
+
+    if (mask[4]) {
       x_1 <- as.numeric(x[1])
       x_2 <- as.numeric(x[2])
       x[4] <- (0.5 * x_1 + 0.2 * x_2 > 8) * 1
@@ -129,7 +128,6 @@ oracle_impute <- function(x){
 # }
 # ls_MSE(X.complete, list(df.imp), is.na(df), col_num, resample_method = "none")
 # ls_F1(X.complete, list(df.imp), is.na(df), col_cat, col_cat, resample_method = "none")
-
 ```
 
 ```{r different_miss_perc}
@@ -165,17 +163,16 @@ for (miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)) {
     ls_scared_mse <- c(ls_scared_mse, res_imp$MSE$Mean_MSE_scale)
     ls_f1 <- c(ls_f1, res_imp$F1$Mean_F1)
 
-    #Oracle
+    # Oracle
     df.imp <- data.frame(t(apply(df_incomp, 1, oracle_impute)))
-    for(s in col_num){
-    df.imp[, s] <- as.numeric(df.imp[, s])
+    for (s in col_num) {
+      df.imp[, s] <- as.numeric(df.imp[, s])
     }
     ls.MSE <- ls_MSE(X.complete, list(df.imp), is.na(df), col_num, resample_method = "none")
     ls.F1 <- ls_F1(X.complete, list(df.imp), is.na(df), col_cat, col_cat, resample_method = "none")
     ls_mse_oracle <- c(ls_mse_oracle, ls.MSE$Mean_MSE)
     ls_scared_mse_oracle <- c(ls_scared_mse_oracle, ls.MSE$Mean_MSE_scale)
     ls_f1_oracle <- c(ls_f1_oracle, ls.F1$Mean_F1)
-    
   }
 
   result[["mechanisme"]][i] <- mech
@@ -196,13 +193,11 @@ for (miss_prop in c(0.005, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5)) {
   i <- i + 1
 }
 data.frame(result)
-
 ```
 
 ```{r write_csv}
 
 # write.csv(result,"test_MAR1_PCA_boot_oracle.csv")
-
 ```
 
 ```{r draw}
@@ -218,7 +213,7 @@ predframe[["scaled_MSE_oracle"]] <- res_EM$scaled_MSE_oracle
 predframe[["lwr_oracle"]] <- res_EM$scaled_MSE_oracle - 1 * sqrt(res_EM$Var_scaled_MSE_oracle)
 predframe[["upr_oracle"]] <- res_EM$scaled_MSE_oracle + 1 * sqrt(res_EM$Var_scaled_MSE_oracle)
 
-colors <- c("EM"="red", "Oracle"="blue")
+colors <- c("EM" = "red", "Oracle" = "blue")
 
 p1 <- ggplot(predframe, aes(x = miss_perc)) +
   scale_colour_manual(values = colors) +
@@ -234,5 +229,4 @@ p1 <- ggplot(predframe, aes(x = miss_perc)) +
   labs(colour = "Imputation method")
 
 show(p1)
-
 ```

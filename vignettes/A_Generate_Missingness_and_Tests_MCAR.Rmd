@@ -107,7 +107,7 @@ p_val <- 0.05
 After the generation of incomplete datasets, we test if the missing data mechanism is MCAR by performing three classical statistic tests: the dummy variable test \code{dummy_test}, Little's MCAR test \code{mcar_test} from package \code{naniar} and the normality tests (Hawkin's test and non-parametric test included) \code{TestMCARNormality} from package \code{MissMech}. Our null hypothesis H0 is that the missing data mechanism is MCAR. As the normality test is only written for numerical data, here the test is performed on only the numerical part of the input dataframe.
 
 ```{r tests_for_one_df, warning=FALSE}
-t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7,8), p_val = p_val)
+t <- mcar_test_combined(list_df.mix[[5]], col_cat = c(7, 8), p_val = p_val)
 print(t$test_results)
 ```
 
@@ -140,7 +140,7 @@ test_results[["Miss_Mech_test"]] <- c((test_p_vals[["Hawkin.s.test"]] < p_val) *
 test_p_vals <- test_p_vals[c("type", "mechanism", "Dummy.variable.test", "Little.s.MCAR.test", "Hawkin.s.test", "Non.parametric.test")]
 
 test_p_vals
-test_results 
+test_results
 ```
 
 The result of MissMech test is not very accurate. This may due to the problem of implementation in MissMech package, which is not available on CRAN anymore.

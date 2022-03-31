@@ -13,3 +13,4 @@
 ^.github$
 ^build.env
 ^lintr_out.json
+^covrignore

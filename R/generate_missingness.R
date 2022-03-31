@@ -70,6 +70,7 @@ generate_miss <- function(df,
   is_pracma_package_installed()
   mechanism <-
     match.arg(mechanism, c("MCAR", "MAR1", "MAR2", "MAR3", "MNAR1", "MNAR2"))
+  df <- as.data.frame(df)
   ls_col_name <- colnames(df)
   num_col <- length(ls_col_name)
   if (mechanism == "MCAR") {

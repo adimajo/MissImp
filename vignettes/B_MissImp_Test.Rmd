@@ -24,7 +24,7 @@ library(MissImp)
 In the package, 100 rows of the abalone dataset is stored to test different functions.
 
 ```{r load_data}
-load('../data/test_abalone.rda')
+load("../data/test_abalone.rda")
 ```
 
 ```{r preprocessing_abalone}
@@ -148,11 +148,11 @@ ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
   ggplot2::geom_density(alpha = 0.3) +
   ggplot2::labs(x = ycol)
 
-#dat <- data.frame(
+# dat <- data.frame(
 #  y = c(X.miss[[ycol]], df[[ycol]]),
 #  lines = rep(c("missing", "observed"), each = length(df[[ycol]]))
-#)
-#ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
+# )
+# ggplot2::ggplot(dat, ggplot2::aes(x = y, fill = lines)) +
 #  ggplot2::geom_density(alpha = 0.3) +
 #  ggplot2::labs(x = ycol)
 ```
